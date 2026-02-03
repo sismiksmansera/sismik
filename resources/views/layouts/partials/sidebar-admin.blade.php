@@ -1,0 +1,93 @@
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        @php
+            $logoImage = $loginSettings->logo_image ?? null;
+        @endphp
+        @if($logoImage)
+            <img src="{{ asset('storage/' . $logoImage) }}" alt="Logo Sekolah" class="sidebar-logo">
+        @else
+            <img src="{{ asset('assets/images/logo-sekolah.png') }}" alt="Logo Sekolah" class="sidebar-logo" onerror="this.style.display='none'">
+        @endif
+        <div class="brand-name">SISMIK</div>
+        <p>Panel Admin</p>
+        <div class="toggle-indicator">‹ Klik untuk collapse</div>
+    </div>
+
+
+    <nav class="sidebar-menu">
+        <div class="menu-label">Menu Utama</div>
+        <a href="{{ route('admin.dashboard') }}" class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <div class="menu-label">Manajemen Data</div>
+        <a href="{{ route('admin.siswa.index') }}" class="menu-item {{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}">
+            <i class="fas fa-users"></i>
+            <span>Manajemen Siswa</span>
+        </a>
+        <a href="{{ route('admin.rombel.index') }}" class="menu-item {{ request()->routeIs('admin.rombel.*') ? 'active' : '' }}">
+            <i class="fas fa-chalkboard"></i>
+            <span>Manajemen Rombel</span>
+        </a>
+        <a href="{{ route('admin.guru.index') }}" class="menu-item {{ request()->routeIs('admin.guru.*') ? 'active' : '' }}">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span>Manajemen Guru</span>
+        </a>
+        <a href="{{ route('admin.guru-bk.index') }}" class="menu-item {{ request()->routeIs('admin.guru-bk.*') ? 'active' : '' }}">
+            <i class="fas fa-user-graduate"></i>
+            <span>Manajemen Guru BK</span>
+        </a>
+
+        <div class="menu-label">Akademik</div>
+        <a href="#" class="menu-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Jadwal Pelajaran</span>
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fas fa-book"></i>
+            <span>Mata Pelajaran</span>
+        </a>
+        <a href="{{ route('admin.ekstrakurikuler.index') }}" class="menu-item {{ request()->routeIs('admin.ekstrakurikuler.*') ? 'active' : '' }}">
+            <i class="fas fa-futbol"></i>
+            <span>Ekstrakurikuler</span>
+        </a>
+
+        <div class="menu-label">Laporan</div>
+        <a href="#" class="menu-item">
+            <i class="fas fa-chart-bar"></i>
+            <span>Laporan</span>
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fas fa-print"></i>
+            <span>Cetak Raport</span>
+        </a>
+
+        <div class="menu-label">Pengaturan</div>
+        <a href="{{ route('admin.manajemen-sekolah') }}" class="menu-item {{ request()->routeIs('admin.manajemen-sekolah') ? 'active' : '' }}">
+            <i class="fas fa-school"></i>
+            <span>Manajemen Sekolah</span>
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fas fa-cog"></i>
+            <span>Pengaturan Lainnya</span>
+        </a>
+        <a href="{{ route('admin.keamanan.index') }}" class="menu-item {{ request()->routeIs('admin.keamanan.*') ? 'active' : '' }}">
+            <i class="fas fa-shield-alt"></i>
+            <span>Keamanan</span>
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fas fa-database"></i>
+            <span>Backup & Restore</span>
+        </a>
+
+        <div class="menu-label">Akun</div>
+        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+            @csrf
+            <button type="submit" class="menu-item" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left; font-family: inherit; font-size: inherit;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </form>
+    </nav>
+</div>

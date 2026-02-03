@@ -1,0 +1,17 @@
+# Allow access to image files only
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Deny access to all other files
+Order Deny,Allow
+Deny from all
+
+# Disable PHP execution
+php_flag engine off
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>

@@ -1,0 +1,148 @@
+<?php
+
+namespace App\Http\Controllers\Guru;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\DataPeriodik;
+
+class TugasTambahanController extends Controller
+{
+    public function index(Request $request)
+    {
+        // Get logged in guru
+        $guru = Auth::guard('guru')->user();
+        if (!$guru) {
+            return redirect()->route('login')->with('error', 'Data guru tidak ditemukan!');
+        }
+        $guruNama = $guru->nama;
+
+        // Get active period
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '2024/2025';
+        $semesterAktif = $periodik->semester ?? 'Ganjil';
+
+        // Parse tahun pelajaran
+        $tahunAwal = (int) explode('/', $tahunPelajaran)[0];
+        $tahunAwalMinus1 = $tahunAwal - 1;
+        $tahunAwalMinus2 = $tahunAwal - 2;
+
+        // 1. PEMBINA EKSTRAKURIKULER
+        $tugasPembina = [];
+        $ekstrakurikuler = DB::table('ekstrakurikuler')
+            ->where(function($q) use ($guruNama) {
+                $q->where('pembina_1', $guruNama)
+                  ->orWhere('pembina_2', $guruNama)
+                  ->orWhere('pembina_3', $guruNama);
+            })
+            ->where('tahun_pelajaran', $tahunPelajaran)
+            ->where('semester', $semesterAktif)
+            ->orderBy('nama_ekstrakurikuler', 'asc')
+            ->get();
+
+        foreach ($ekstrakurikuler as $ekstra) {
+            // Count members
+            $jumlahAnggota = DB::table('anggota_ekstrakurikuler')
+                ->where('ekstrakurikuler_id', $ekstra->id)
+                ->where('tahun_pelajaran', $ekstra->tahun_pelajaran)
+                ->where('semester', $ekstra->semester)
+                ->count();
+
+            // Count prestasi
+            $jumlahPrestasi = DB::table('prestasi_siswa')
+                ->where('sumber_prestasi', 'ekstrakurikuler')
+                ->where('sumber_id', $ekstra->id)
+                ->where('tahun_pelajaran', $ekstra->tahun_pelajaran)
+                ->where('semester', $ekstra->semester)
+                ->count();
+
+            // Determine position
+            $posisi = '';
+            if ($ekstra->pembina_1 == $guruNama) $posisi = 'Pembina Utama';
+            elseif ($ekstra->pembina_2 == $guruNama) $posisi = 'Pembina Kedua';
+            elseif ($ekstra->pembina_3 == $guruNama) $posisi = 'Pembina Ketiga';
+
+            $tugasPembina[] = [
+                'id' => $ekstra->id,
+                'nama' => $ekstra->nama_ekstrakurikuler,
+                'posisi' => $posisi,
+                'jumlah_anggota' => $jumlahAnggota,
+                'jumlah_prestasi' => $jumlahPrestasi,
+                'semester' => $ekstra->semester,
+            ];
+        }
+
+        // 2. WALI KELAS
+        $tugasWaliKelas = [];
+        $rombelList = DB::table('rombel')
+            ->where('wali_kelas', $guruNama)
+            ->where('tahun_pelajaran', $tahunPelajaran)
+            ->where('semester', $semesterAktif)
+            ->orderBy('nama_rombel', 'asc')
+            ->get();
+
+        foreach ($rombelList as $rombel) {
+            $namaRombel = $rombel->nama_rombel;
+
+            // Count siswa dynamically
+            if (strtolower($semesterAktif) == 'ganjil') {
+                $jumlahSiswa = DB::table('siswa')
+                    ->where(function($q) use ($tahunAwal, $tahunAwalMinus1, $tahunAwalMinus2, $namaRombel) {
+                        $q->where(function($q2) use ($tahunAwal, $namaRombel) {
+                            $q2->where('angkatan_masuk', $tahunAwal)->where('rombel_semester_1', $namaRombel);
+                        })
+                        ->orWhere(function($q2) use ($tahunAwalMinus1, $namaRombel) {
+                            $q2->where('angkatan_masuk', $tahunAwalMinus1)->where('rombel_semester_3', $namaRombel);
+                        })
+                        ->orWhere(function($q2) use ($tahunAwalMinus2, $namaRombel) {
+                            $q2->where('angkatan_masuk', $tahunAwalMinus2)->where('rombel_semester_5', $namaRombel);
+                        });
+                    })
+                    ->count();
+            } else {
+                $jumlahSiswa = DB::table('siswa')
+                    ->where(function($q) use ($tahunAwal, $tahunAwalMinus1, $tahunAwalMinus2, $namaRombel) {
+                        $q->where(function($q2) use ($tahunAwal, $namaRombel) {
+                            $q2->where('angkatan_masuk', $tahunAwal)->where('rombel_semester_2', $namaRombel);
+                        })
+                        ->orWhere(function($q2) use ($tahunAwalMinus1, $namaRombel) {
+                            $q2->where('angkatan_masuk', $tahunAwalMinus1)->where('rombel_semester_4', $namaRombel);
+                        })
+                        ->orWhere(function($q2) use ($tahunAwalMinus2, $namaRombel) {
+                            $q2->where('angkatan_masuk', $tahunAwalMinus2)->where('rombel_semester_6', $namaRombel);
+                        });
+                    })
+                    ->count();
+            }
+
+            // Count prestasi
+            $jumlahPrestasi = DB::table('prestasi_siswa')
+                ->where('sumber_prestasi', 'rombel')
+                ->where('sumber_id', $rombel->id)
+                ->where('tahun_pelajaran', $tahunPelajaran)
+                ->where('semester', $semesterAktif)
+                ->count();
+
+            $tugasWaliKelas[] = [
+                'id' => $rombel->id,
+                'nama' => $rombel->nama_rombel,
+                'tingkat' => $rombel->tingkat ?? '',
+                'jumlah_siswa' => $jumlahSiswa,
+                'jumlah_prestasi' => $jumlahPrestasi,
+            ];
+        }
+
+        $totalTugas = count($tugasPembina) + count($tugasWaliKelas);
+
+        return view('guru.tugas-tambahan', compact(
+            'guru',
+            'tahunPelajaran',
+            'semesterAktif',
+            'tugasPembina',
+            'tugasWaliKelas',
+            'totalTugas'
+        ));
+    }
+}
