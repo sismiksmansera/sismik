@@ -619,6 +619,8 @@
                             $backUrl = route('guru.dashboard');
                             if ($fromPage === 'tugas-mengajar') {
                                 $backUrl = route('guru.tugas-mengajar');
+                            } elseif ($fromPage === 'presensi-selector') {
+                                $backUrl = route('guru.presensi-selector');
                             }
                         @endphp
                         <a href="{{ $backUrl }}" class="btn-back">

@@ -31,16 +31,23 @@
     .presensi-header-section .page-title {
         font-size: 28px;
         font-weight: 700;
-        margin: 0;
+        margin: 0 0 8px 0;
         color: white;
         text-transform: uppercase;
         letter-spacing: 1px;
+    }
+    
+    .presensi-header-section .page-subtitle {
+        font-size: 14px;
+        font-weight: 500;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.9);
     }
 
     /* SELECTION AND INFO ROW */
     .selection-info-row {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 15px;
         margin-bottom: 25px;
     }
@@ -107,6 +114,42 @@
         text-transform: uppercase;
         letter-spacing: 0.3px;
         margin: 0;
+    }
+
+    /* ACTION BUTTON ROW */
+    .action-button-row {
+        display: none;
+        margin-bottom: 25px;
+    }
+    
+    .action-button-row.show {
+        display: flex;
+        justify-content: center;
+    }
+    
+    .btn-lakukan-presensi {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 30px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-lakukan-presensi:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        color: white;
+    }
+    
+    .btn-lakukan-presensi i {
+        font-size: 18px;
     }
 
     /* MODAL STYLES */
@@ -352,9 +395,10 @@
                     <i class="fas fa-clipboard-list"></i>
                 </div>
                 <h1 class="page-title">Presensi Siswa</h1>
+                <p class="page-subtitle">{{ $tahunPelajaran }} - Semester {{ ucfirst($semesterAktif) }}</p>
             </div>
 
-            <!-- Selection and Info Cards Row -->
+            <!-- Selection Cards Row -->
             <div class="selection-info-row">
                 <div class="selection-card" id="mapelCard" onclick="openMapelModal()">
                     <div class="card-icon mapel-icon">
@@ -376,15 +420,13 @@
                         <span class="card-label">Rombel</span>
                     </div>
                 </div>
-                <div class="info-card">
-                    <div class="card-icon period-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="card-content">
-                        <p class="card-value">{{ $tahunPelajaran }}</p>
-                        <span class="card-label">{{ ucfirst($semesterAktif) }}</span>
-                    </div>
-                </div>
+            </div>
+
+            <!-- Action Button Row -->
+            <div class="action-button-row" id="actionButtonRow">
+                <a href="#" id="btnLakukanPresensi" class="btn-lakukan-presensi">
+                    <i class="fas fa-clipboard-check"></i> Lakukan Presensi
+                </a>
             </div>
 
             <!-- Students Section (hidden initially) -->
@@ -545,8 +587,9 @@
         document.getElementById('rombelPlaceholder').style.display = 'block';
         document.getElementById('rombelValue').style.display = 'none';
 
-        // Hide students section
+        // Hide students section and action button
         document.getElementById('studentsSection').classList.remove('show');
+        document.getElementById('actionButtonRow').classList.remove('show');
 
         // Close modal
         bootstrap.Modal.getInstance(document.getElementById('mapelModal')).hide();
@@ -564,6 +607,13 @@
 
         // Close modal
         bootstrap.Modal.getInstance(document.getElementById('rombelModal')).hide();
+
+        // Show action button with correct link
+        const actionRow = document.getElementById('actionButtonRow');
+        const btnPresensi = document.getElementById('btnLakukanPresensi');
+        const presensiUrl = `{{ route('guru.presensi.index') }}?mapel=${encodeURIComponent(selectedMapel.name)}&id_rombel=${selectedRombel.id}&nama_rombel=${encodeURIComponent(selectedRombel.name)}&from=presensi-selector`;
+        btnPresensi.href = presensiUrl;
+        actionRow.classList.add('show');
 
         // Load students with presensi
         loadRekapData();
