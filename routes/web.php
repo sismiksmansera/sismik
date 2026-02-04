@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Admin\GuruController;
 use App\Http\Controllers\Admin\GuruBKController;
 use App\Http\Controllers\Admin\PrestasiController;
+use App\Http\Controllers\Admin\JadwalPelajaranController;
 use App\Http\Controllers\Admin\PanggilanOrtuController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\GuruBK\DashboardController as GuruBKDashboardController;
@@ -78,6 +79,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/mapel/jadwal', [MataPelajaranController::class, 'getJadwal'])->name('mapel.jadwal.get');
     Route::post('/mapel/jadwal', [MataPelajaranController::class, 'saveJadwal'])->name('mapel.jadwal.save');
     Route::get('/mapel/agama-islam-id', [MataPelajaranController::class, 'getAgamaIslamId'])->name('mapel.agama-islam-id');
+    
+    // Jadwal Pelajaran (Jadwal Harian)
+    Route::get('/jadwal-pelajaran', [JadwalPelajaranController::class, 'index'])->name('jadwal-pelajaran.index');
     
     // Prestasi Management
     Route::get('/prestasi/lihat', [PrestasiController::class, 'lihat'])->name('prestasi.lihat');

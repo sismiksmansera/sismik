@@ -40,7 +40,7 @@
         </a>
 
         <div class="menu-label">Akademik</div>
-        <a href="#" class="menu-item">
+        <a href="{{ route('admin.jadwal-pelajaran.index') }}" class="menu-item {{ request()->routeIs('admin.jadwal-pelajaran.*') ? 'active' : '' }}">
             <i class="fas fa-calendar-alt"></i>
             <span>Jadwal Pelajaran</span>
         </a>
