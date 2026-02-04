@@ -391,6 +391,11 @@
     }
 </style>
 
+<div class="layout">
+    @include('layouts.partials.sidebar-admin')
+    
+    <div class="main-content">
+
 <!-- HEADER SECTION -->
 <div class="content-header">
     <div class="header-content">
@@ -531,4 +536,6 @@
         </div>
     </div>
 @endforeach
+    </div>
+</div>
 @endsection
