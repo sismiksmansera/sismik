@@ -324,16 +324,299 @@
         padding: 0 25px 25px;
     }
     
+    /* Table Action Buttons */
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        transition: all 0.2s ease;
+    }
+    .btn-action.edit {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+    }
+    .btn-action.edit:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+    }
+    .btn-action.delete {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    .btn-action.delete:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(239,68,68,0.4);
+    }
+    
+    /* Delete Confirm Modal */
+    .confirm-modal-content {
+        text-align: center;
+        padding: 20px 0;
+    }
+    .confirm-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 28px;
+        color: #d97706;
+    }
+    .confirm-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+    .confirm-message {
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .confirm-highlight {
+        background: #fef3c7;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin: 16px 0;
+        font-weight: 600;
+        color: #92400e;
+    }
+    
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+        background: white;
+        border-radius: 16px;
+        width: 95%;
+        max-width: 900px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    @keyframes slideIn {
+        from { transform: translateY(-30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header {
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 16px 16px 0 0;
+    }
+    .modal-header h3 { font-size: 18px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 10px; }
+    .modal-close {
+        width: 36px; height: 36px;
+        border: none;
+        background: rgba(255,255,255,0.2);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 18px;
+        color: white;
+        transition: all 0.2s ease;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+    .modal-body { padding: 24px; background: #f8fafc; }
+    .modal-footer {
+        padding: 16px 24px;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        border-radius: 0 0 16px 16px;
+    }
+    
+    /* Form in Modal */
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-weight: 600; margin-bottom: 8px; color: #374151; }
+    .form-select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        background: white;
+        transition: border-color 0.2s;
+    }
+    .form-select:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    
+    /* Jadwal Table in Modal */
+    .jadwal-table-wrapper {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .jadwal-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .jadwal-table th {
+        background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+        color: white;
+        padding: 10px 6px;
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+    }
+    .jadwal-table th:first-child { border-radius: 8px 0 0 0; }
+    .jadwal-table th:last-child { border-radius: 0 8px 0 0; }
+    .jadwal-table td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 4px;
+        text-align: center;
+        background: white;
+    }
+    .jadwal-table .hari-cell {
+        text-align: left;
+        font-weight: 600;
+        background: #f1f5f9 !important;
+        color: #1d4ed8;
+        padding-left: 12px;
+        min-width: 80px;
+    }
+    .jadwal-checkbox {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #10b981;
+    }
+    .jadwal-checkbox:disabled {
+        cursor: not-allowed;
+        opacity: 0.4;
+    }
+    .jadwal-legend {
+        display: flex;
+        gap: 16px;
+        margin-top: 12px;
+        padding: 10px 14px;
+        background: #f8fafc;
+        border-radius: 8px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+    .jadwal-legend span { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+    .legend-dot.green { background: #10b981; }
+    .legend-dot.gray { background: #d1d5db; }
+    
+    /* Toast Notification */
+    .toast-container {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .toast {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        animation: toastSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        max-width: 400px;
+        min-width: 300px;
+    }
+    .toast.success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    .toast.error {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+    .toast.warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+    .toast-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .toast-content {
+        flex: 1;
+    }
+    .toast-title {
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 2px;
+    }
+    .toast-message {
+        font-size: 13px;
+        opacity: 0.9;
+    }
+    .toast-close {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.2s;
+    }
+    .toast-close:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    @keyframes toastSlide {
+        from { transform: translateX(120%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    .toast.hide {
+        animation: toastSlideOut 0.3s ease forwards;
+    }
+    @keyframes toastSlideOut {
+        to { transform: translateX(120%); opacity: 0; }
+    }
+    
     @media (max-width: 768px) {
         .content-header { flex-direction: column; }
         .teacher-info-card { min-width: auto; width: 100%; }
         .stats-grid { grid-template-columns: 1fr; }
         .filter-group { flex-direction: column; align-items: stretch; }
+        .toast-container { left: 16px; right: 16px; top: 16px; }
+        .toast { min-width: auto; max-width: none; }
     }
 </style>
 @endpush
 
 @section('content')
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
 <div class="layout">
     @include('layouts.partials.sidebar-admin')
 
@@ -401,7 +684,12 @@
         <div class="content-section">
             <div class="section-header">
                 <h2><i class="fas fa-list-alt"></i> Daftar Penugasan</h2>
-                <span class="badge">{{ $totalMapel }} Mapel</span>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="badge">{{ $totalMapel }} Mapel</span>
+                    <button class="btn btn-primary" onclick="openModal('modalPenugasan')" style="padding: 8px 16px; font-size: 13px;">
+                        <i class="fas fa-plus"></i> Tambah Penugasan
+                    </button>
+                </div>
             </div>
 
             <!-- Table Controls -->
@@ -440,6 +728,7 @@
                                 <th>Mata Pelajaran & Jadwal</th>
                                 <th class="text-center" width="120">Jam/Minggu</th>
                                 <th class="text-center" width="100">Status</th>
+                                <th class="text-center" width="130">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -478,6 +767,16 @@
                                     <td class="text-center">
                                         <span class="status-badge active">Aktif</span>
                                     </td>
+                                    <td class="text-center">
+                                        <div style="display:flex;gap:6px;justify-content:center;">
+                                            <button class="btn-action edit" onclick="editPenugasan({{ $p['id_rombel'] }}, {{ $p['id_mapel'] }})" title="Edit Jadwal">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn-action delete" onclick="deletePenugasan({{ $p['id_rombel'] }}, {{ $p['id_mapel'] }}, '{{ $p['nama_rombel'] }}', '{{ $p['nama_mapel'] }}')" title="Hapus Penugasan">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -486,6 +785,7 @@
                                 <td colspan="3" style="text-align: right;"><strong>Total Jam Mengajar per Minggu</strong></td>
                                 <td class="text-center"><strong>{{ $totalJamTable }} jam</strong></td>
                                 <td class="text-center">-</td>
+                                <td></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -512,6 +812,124 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Tambah Penugasan -->
+<div class="modal-overlay" id="modalPenugasan">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus-circle"></i> Tambah Penugasan Mengajar</h3>
+            <button class="modal-close" onclick="closeModal('modalPenugasan')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-school" style="color: #3b82f6;"></i> Pilih Rombel</label>
+                <select id="selectRombel" class="form-select" onchange="loadJadwalKonflik()">
+                    <option value="">-- Pilih Rombel --</option>
+                    @foreach($rombelList as $rombel)
+                        <option value="{{ $rombel->id }}">{{ $rombel->nama_rombel }}</option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-book" style="color: #3b82f6;"></i> Pilih Mata Pelajaran</label>
+                <select id="selectMapel" class="form-select" onchange="loadJadwalKonflik()">
+                    <option value="">-- Pilih Mata Pelajaran --</option>
+                    @foreach($mapelList as $mapel)
+                        <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <div class="form-group" id="jadwalSection" style="display: none;">
+                <label class="form-label"><i class="fas fa-clock" style="color: #3b82f6;"></i> Jadwal Pelajaran</label>
+                <div class="jadwal-table-wrapper">
+                    <table class="jadwal-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Hari</th>
+                                <th colspan="11">Jam Pelajaran ke-</th>
+                            </tr>
+                            <tr>
+                                @for($j = 1; $j <= 11; $j++)
+                                    <th>{{ $j }}</th>
+                                @endfor
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php $hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']; @endphp
+                            @foreach($hariList as $h)
+                                <tr>
+                                    <td class="hari-cell">{{ $h }}</td>
+                                    @for($j = 1; $j <= 11; $j++)
+                                        <td>
+                                            <input type="checkbox" 
+                                                name="jadwal[{{ $h }}][]" 
+                                                value="{{ $j }}" 
+                                                class="jadwal-checkbox"
+                                                data-hari="{{ $h }}"
+                                                data-jam="{{ $j }}">
+                                        </td>
+                                    @endfor
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="jadwal-legend">
+                    <span><div class="legend-dot green"></div> Tersedia untuk dipilih</span>
+                    <span><div class="legend-dot gray"></div> Sudah terisi mapel lain (disabled)</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modalPenugasan')">
+                <i class="fas fa-times"></i> Batal
+            </button>
+            <button type="button" class="btn btn-primary" id="btnSavePenugasan" onclick="savePenugasan()">
+                <i class="fas fa-save"></i> Simpan Penugasan
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            <h3><i class="fas fa-exclamation-triangle"></i> Konfirmasi Hapus</h3>
+            <button class="modal-close" onclick="closeModal('modalDelete')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="confirm-modal-content">
+                <div class="confirm-icon">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <div class="confirm-title">Hapus Penugasan?</div>
+                <div class="confirm-message">
+                    Anda akan menghapus penugasan berikut:
+                </div>
+                <div class="confirm-highlight" id="deleteInfo"></div>
+                <div class="confirm-message">
+                    Semua jadwal terkait penugasan ini akan dihapus. Tindakan ini tidak dapat dibatalkan.
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="justify-content: center;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modalDelete')">
+                <i class="fas fa-times"></i> Batal
+            </button>
+            <button type="button" class="btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;" onclick="confirmDelete()">
+                <i class="fas fa-trash"></i> Ya, Hapus
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden inputs for delete -->
+<input type="hidden" id="deleteIdRombel" value="">
+<input type="hidden" id="deleteIdMapel" value="">
+
 @endsection
 
 @push('scripts')
@@ -540,5 +958,272 @@
         url.searchParams.delete('semester');
         window.location.href = url.toString();
     });
+    
+    // Modal functions
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); resetJadwalForm(); }
+    
+    // Reset jadwal form
+    function resetJadwalForm() {
+        document.getElementById('selectRombel').value = '';
+        document.getElementById('selectMapel').value = '';
+        document.getElementById('jadwalSection').style.display = 'none';
+        document.querySelectorAll('.jadwal-checkbox').forEach(cb => {
+            cb.checked = false;
+            cb.disabled = false;
+            cb.title = '';
+        });
+    }
+    
+    // Load jadwal konflik when rombel and mapel selected
+    function loadJadwalKonflik() {
+        const idRombel = document.getElementById('selectRombel').value;
+        const idMapel = document.getElementById('selectMapel').value;
+        
+        if (!idRombel || !idMapel) {
+            document.getElementById('jadwalSection').style.display = 'none';
+            return;
+        }
+        
+        // Reset checkboxes
+        document.querySelectorAll('.jadwal-checkbox').forEach(cb => {
+            cb.checked = false;
+            cb.disabled = false;
+            cb.title = '';
+        });
+        
+        // Load konflik data
+        fetch(`{{ route('admin.guru.penugasan.check-jadwal', ['id' => $guru->id]) }}?id_rombel=${idRombel}&id_mapel=${idMapel}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.jadwal_terisi) {
+                    Object.entries(data.jadwal_terisi).forEach(([hari, jamArray]) => {
+                        jamArray.forEach(jamInfo => {
+                            const cb = document.querySelector(`input[name="jadwal[${hari}][]"][value="${jamInfo.jam}"]`);
+                            if (cb) {
+                                cb.disabled = true;
+                                cb.title = `Sudah terisi: ${jamInfo.mapel} (${jamInfo.guru})`;
+                            }
+                        });
+                    });
+                }
+                document.getElementById('jadwalSection').style.display = 'block';
+            })
+            .catch(err => {
+                console.error('Error loading jadwal:', err);
+                document.getElementById('jadwalSection').style.display = 'block';
+            });
+    }
+    
+    // Save penugasan
+    function savePenugasan() {
+        const idRombel = document.getElementById('selectRombel').value;
+        const idMapel = document.getElementById('selectMapel').value;
+        
+        if (!idRombel || !idMapel) {
+            showToast('warning', 'Perhatian', 'Silakan pilih Rombel dan Mata Pelajaran terlebih dahulu!');
+            return;
+        }
+        
+        // Collect checked jadwal
+        const jadwal = {};
+        document.querySelectorAll('.jadwal-checkbox:checked:not(:disabled)').forEach(cb => {
+            const hari = cb.dataset.hari;
+            const jam = cb.value;
+            if (!jadwal[hari]) jadwal[hari] = [];
+            jadwal[hari].push(jam);
+        });
+        
+        if (Object.keys(jadwal).length === 0) {
+            showToast('warning', 'Perhatian', 'Silakan pilih minimal satu jam pelajaran!');
+            return;
+        }
+        
+        // Save via AJAX
+        fetch('{{ route('admin.guru.penugasan.save', ['id' => $guru->id]) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                id_rombel: idRombel,
+                id_mapel: idMapel,
+                jadwal: jadwal
+            })
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.status === 'success') {
+                showToast('success', 'Berhasil!', result.message);
+                closeModal('modalPenugasan');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('error', 'Gagal!', result.message);
+            }
+        })
+        .catch(err => showToast('error', 'Error!', err.message));
+    }
+    
+    // Toast notification function
+    function showToast(type, title, message) {
+        // Create container if not exists
+        var container = document.getElementById('toastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.style.cssText = 'position:fixed;top:24px;right:24px;z-index:99999;';
+            document.body.appendChild(container);
+        }
+        
+        var bgColors = {
+            success: 'linear-gradient(135deg, #10b981, #059669)',
+            error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            warning: 'linear-gradient(135deg, #f59e0b, #d97706)'
+        };
+        var icons = { success: '✓', error: '✕', warning: '!' };
+        
+        var toast = document.createElement('div');
+        toast.style.cssText = 'display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:12px;' +
+            'box-shadow:0 10px 40px rgba(0,0,0,0.3);margin-bottom:12px;min-width:300px;max-width:400px;' +
+            'background:' + bgColors[type] + ';color:white;font-family:inherit;animation:none;';
+        
+        toast.innerHTML = '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);' +
+            'display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;">' + icons[type] + '</div>' +
+            '<div style="flex:1;">' +
+                '<div style="font-weight:700;font-size:15px;margin-bottom:2px;">' + title + '</div>' +
+                '<div style="font-size:13px;opacity:0.9;">' + message + '</div>' +
+            '</div>' +
+            '<button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,0.2);border:none;' +
+            'width:28px;height:28px;border-radius:6px;color:white;cursor:pointer;font-size:18px;">×</button>';
+        
+        container.appendChild(toast);
+        
+        // Auto remove after 4 seconds
+        setTimeout(function() {
+            if (toast.parentElement) toast.remove();
+        }, 4000);
+    }
+    
+    // Close modal on outside click
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+    });
+    
+    // Edit mode tracking
+    var isEditMode = false;
+    var editIdRombel = null;
+    var editIdMapel = null;
+    
+    // Edit penugasan - open modal with existing data
+    function editPenugasan(idRombel, idMapel) {
+        isEditMode = true;
+        editIdRombel = idRombel;
+        editIdMapel = idMapel;
+        
+        // Set dropdown values
+        document.getElementById('selectRombel').value = idRombel;
+        document.getElementById('selectMapel').value = idMapel;
+        
+        // Change modal title and button
+        document.querySelector('#modalPenugasan .modal-header h3').innerHTML = '<i class="fas fa-edit"></i> Edit Penugasan Mengajar';
+        document.getElementById('btnSavePenugasan').innerHTML = '<i class="fas fa-save"></i> Update Penugasan';
+        
+        openModal('modalPenugasan');
+        
+        // Load jadwal and mark existing ones
+        loadJadwalForEdit(idRombel, idMapel);
+    }
+    
+    // Load jadwal for editing
+    function loadJadwalForEdit(idRombel, idMapel) {
+        // Reset all checkboxes
+        document.querySelectorAll('.jadwal-checkbox').forEach(function(cb) {
+            cb.checked = false;
+            cb.disabled = false;
+            cb.title = '';
+        });
+        
+        // Load konflik data and existing jadwal
+        fetch('{{ route("admin.guru.penugasan.check-jadwal", ["id" => $guru->id]) }}?id_rombel=' + idRombel + '&id_mapel=' + idMapel)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success && data.jadwal_terisi) {
+                    Object.keys(data.jadwal_terisi).forEach(function(hari) {
+                        data.jadwal_terisi[hari].forEach(function(jamInfo) {
+                            var cb = document.querySelector('input[name="jadwal[' + hari + '][]"][value="' + jamInfo.jam + '"]');
+                            if (cb) {
+                                // If same mapel, check it; otherwise disable
+                                if (parseInt(jamInfo.id_mapel) === parseInt(idMapel)) {
+                                    cb.checked = true;
+                                    cb.disabled = false;
+                                } else {
+                                    cb.disabled = true;
+                                    cb.title = 'Sudah terisi: ' + jamInfo.mapel + ' (' + jamInfo.guru + ')';
+                                }
+                            }
+                        });
+                    });
+                }
+                document.getElementById('jadwalSection').style.display = 'block';
+            })
+            .catch(function(err) {
+                console.error('Error loading jadwal:', err);
+                document.getElementById('jadwalSection').style.display = 'block';
+            });
+    }
+    
+    // Delete penugasan - show confirmation modal
+    function deletePenugasan(idRombel, idMapel, namaRombel, namaMapel) {
+        document.getElementById('deleteIdRombel').value = idRombel;
+        document.getElementById('deleteIdMapel').value = idMapel;
+        document.getElementById('deleteInfo').innerHTML = '<strong>' + namaMapel + '</strong><br>Rombel: ' + namaRombel;
+        openModal('modalDelete');
+    }
+    
+    // Confirm delete
+    function confirmDelete() {
+        var idRombel = document.getElementById('deleteIdRombel').value;
+        var idMapel = document.getElementById('deleteIdMapel').value;
+        
+        fetch('{{ route("admin.guru.penugasan.delete", ["id" => $guru->id]) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                id_rombel: idRombel,
+                id_mapel: idMapel
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+            closeModal('modalDelete');
+            if (result.status === 'success') {
+                showToast('success', 'Berhasil!', result.message);
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                showToast('error', 'Gagal!', result.message);
+            }
+        })
+        .catch(function(err) {
+            showToast('error', 'Error!', err.message);
+        });
+    }
+    
+    // Override closeModal to reset edit mode
+    var originalCloseModal = closeModal;
+    closeModal = function(id) {
+        document.getElementById(id).classList.remove('active');
+        if (id === 'modalPenugasan') {
+            resetJadwalForm();
+            isEditMode = false;
+            editIdRombel = null;
+            editIdMapel = null;
+            document.querySelector('#modalPenugasan .modal-header h3').innerHTML = '<i class="fas fa-plus-circle"></i> Tambah Penugasan Mengajar';
+            document.getElementById('btnSavePenugasan').innerHTML = '<i class="fas fa-save"></i> Simpan Penugasan';
+        }
+    };
 </script>
 @endpush

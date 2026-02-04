@@ -117,6 +117,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/guru/delete-ajax', [GuruController::class, 'deleteAjax'])->name('guru.delete-ajax');
     Route::get('/guru/{id}/tugas-mengajar', [GuruController::class, 'tugasMengajar'])->name('guru.tugas-mengajar');
     Route::get('/guru/{id}/aktivitas', [GuruController::class, 'aktivitas'])->name('guru.aktivitas');
+    Route::get('/guru/{id}/penugasan/check-jadwal', [GuruController::class, 'checkJadwalKonflik'])->name('guru.penugasan.check-jadwal');
+    Route::post('/guru/{id}/penugasan', [GuruController::class, 'savePenugasan'])->name('guru.penugasan.save');
+    Route::post('/guru/{id}/penugasan/delete', [GuruController::class, 'deletePenugasan'])->name('guru.penugasan.delete');
     
     // Guru BK Management
     Route::get('/guru-bk', [GuruBKController::class, 'index'])->name('guru-bk.index');

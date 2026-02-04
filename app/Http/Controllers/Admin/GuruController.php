@@ -338,10 +338,150 @@ class GuruController extends Controller
             ];
         }
         
+        // Get rombel list for active period (for modal)
+        $rombelList = \App\Models\Rombel::where('tahun_pelajaran', $tahunAktif)
+            ->whereRaw('LOWER(semester) = ?', [strtolower($semesterAktif)])
+            ->orderBy('nama_rombel', 'asc')
+            ->get();
+        
+        // Get mapel list (for modal)
+        $mapelList = \App\Models\MataPelajaran::orderBy('nama_mapel', 'asc')->get();
+        
         return view('admin.guru.tugas-mengajar', compact(
             'guru', 'penugasanWithJadwal', 'tahunList', 'tahunFilter', 'semesterFilter',
-            'totalRombel', 'totalMapel', 'totalJam', 'tahunAktif', 'semesterAktif'
+            'totalRombel', 'totalMapel', 'totalJam', 'tahunAktif', 'semesterAktif',
+            'rombelList', 'mapelList'
         ));
+    }
+    
+    /**
+     * Check jadwal konflik for a specific rombel (AJAX)
+     */
+    public function checkJadwalKonflik(Request $request, $id)
+    {
+        $idRombel = $request->input('id_rombel');
+        $idMapel = $request->input('id_mapel');
+        
+        // Get active period
+        $periodeAktif = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodeAktif->tahun_pelajaran ?? '';
+        $semesterAktif = strtolower($periodeAktif->semester ?? '');
+        
+        // Get jadwal terisi for this rombel (all mapel)
+        $jadwalTerisi = \DB::table('jadwal_pelajaran as jp')
+            ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
+            ->where('jp.id_rombel', $idRombel)
+            ->where('jp.tahun_pelajaran', $tahunAktif)
+            ->whereRaw('LOWER(jp.semester) = ?', [$semesterAktif])
+            ->select('jp.hari', 'jp.jam_ke', 'jp.id_mapel', 'mp.nama_mapel', 'jp.nama_guru')
+            ->get();
+        
+        // Group by hari
+        $jadwalByHari = [];
+        foreach ($jadwalTerisi as $j) {
+            $jadwalByHari[$j->hari][] = [
+                'jam' => $j->jam_ke,
+                'mapel' => $j->nama_mapel,
+                'guru' => $j->nama_guru,
+                'id_mapel' => $j->id_mapel
+            ];
+        }
+        
+        return response()->json([
+            'success' => true,
+            'jadwal_terisi' => $jadwalByHari,
+            'id_mapel_selected' => $idMapel
+        ]);
+    }
+    
+    /**
+     * Save penugasan mengajar (AJAX)
+     */
+    public function savePenugasan(Request $request, $id)
+    {
+        try {
+            $guru = Guru::findOrFail($id);
+            $namaGuru = $guru->nama;
+            
+            $idRombel = $request->input('id_rombel');
+            $idMapel = $request->input('id_mapel');
+            $jadwal = $request->input('jadwal', []);
+            
+            // Get active period
+            $periodeAktif = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+            $tahunAktif = $periodeAktif->tahun_pelajaran ?? '';
+            $semesterAktif = strtolower($periodeAktif->semester ?? '');
+            
+            // Delete existing jadwal for this guru + rombel + mapel
+            \App\Models\JadwalPelajaran::where('id_mapel', $idMapel)
+                ->where('id_rombel', $idRombel)
+                ->where('nama_guru', $namaGuru)
+                ->where('tahun_pelajaran', $tahunAktif)
+                ->whereRaw('LOWER(semester) = ?', [$semesterAktif])
+                ->delete();
+            
+            // Insert new jadwal
+            foreach ($jadwal as $hari => $jamArray) {
+                foreach ($jamArray as $jam) {
+                    \App\Models\JadwalPelajaran::create([
+                        'id_mapel' => $idMapel,
+                        'id_rombel' => $idRombel,
+                        'hari' => $hari,
+                        'jam_ke' => $jam,
+                        'nama_guru' => $namaGuru,
+                        'tahun_pelajaran' => $tahunAktif,
+                        'semester' => $semesterAktif
+                    ]);
+                }
+            }
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Penugasan berhasil disimpan!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Delete penugasan mengajar (AJAX)
+     */
+    public function deletePenugasan(Request $request, $id)
+    {
+        try {
+            $guru = Guru::findOrFail($id);
+            $namaGuru = $guru->nama;
+            
+            $idRombel = $request->input('id_rombel');
+            $idMapel = $request->input('id_mapel');
+            
+            // Get active period
+            $periodeAktif = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+            $tahunAktif = $periodeAktif->tahun_pelajaran ?? '';
+            $semesterAktif = strtolower($periodeAktif->semester ?? '');
+            
+            // Delete jadwal for this guru + rombel + mapel
+            $deleted = \App\Models\JadwalPelajaran::where('id_mapel', $idMapel)
+                ->where('id_rombel', $idRombel)
+                ->where('nama_guru', $namaGuru)
+                ->where('tahun_pelajaran', $tahunAktif)
+                ->whereRaw('LOWER(semester) = ?', [$semesterAktif])
+                ->delete();
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Penugasan berhasil dihapus! (' . $deleted . ' jadwal dihapus)'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
     }
     
     /**
