@@ -550,6 +550,12 @@ class RiwayatAkademikController extends Controller
             ->where('semester', $periodeAktif->semester)
             ->orderBy('tanggal_pelaksanaan', 'desc')->get();
         
+        // Get catatan bimbingan konseling
+        $catatanBkList = CatatanBimbingan::where('nisn', $siswa->nisn)
+            ->where('tahun_pelajaran', $periodeAktif->tahun_pelajaran)
+            ->where('semester', $periodeAktif->semester)
+            ->orderBy('tanggal', 'desc')->get();
+        
         return [
             'siswa' => $siswa,
             'rekapNilai' => $rekapNilai,
@@ -557,7 +563,8 @@ class RiwayatAkademikController extends Controller
             'presensiTotal' => $presensiTotal,
             'persentaseKehadiran' => $persentaseKehadiran,
             'ekstraList' => $ekstraList,
-            'prestasiList' => $prestasiList
+            'prestasiList' => $prestasiList,
+            'catatanBkList' => $catatanBkList
         ];
     }
     

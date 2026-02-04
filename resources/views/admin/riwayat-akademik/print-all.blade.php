@@ -85,6 +85,7 @@
         $persentaseKehadiran = $data['persentaseKehadiran'];
         $ekstraList = $data['ekstraList'];
         $prestasiList = $data['prestasiList'];
+        $catatanBkList = $data['catatanBkList'] ?? [];
     @endphp
     <div class="container {{ $index > 0 ? 'page-break' : '' }}">
         <!-- KOP SURAT -->
@@ -260,6 +261,45 @@
                                 <span class="badge badge-{{ strtolower($ekstra['nilai']) }}">{{ $ekstra['nilai'] }}</span>
                             @else
                                 -
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+        
+        <!-- CATATAN BIMBINGAN KONSELING -->
+        @if(count($catatanBkList) > 0)
+        <div class="section">
+            <div class="section-title">📝 Catatan Bimbingan Konseling</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 12%;">Tanggal</th>
+                        <th style="width: 15%;">Jenis</th>
+                        <th>Masalah</th>
+                        <th>Penyelesaian</th>
+                        <th style="width: 10%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($catatanBkList as $i => $catatan)
+                    <tr>
+                        <td class="text-center">{{ $i + 1 }}</td>
+                        <td class="text-center">{{ $catatan->tanggal ? $catatan->tanggal->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $catatan->jenis_bimbingan ?? '-' }}</td>
+                        <td style="font-size: 9pt;">{{ Str::limit($catatan->masalah, 60) }}</td>
+                        <td style="font-size: 9pt;">{{ Str::limit($catatan->penyelesaian, 60) }}</td>
+                        <td class="text-center">
+                            @if($catatan->status == 'Selesai')
+                                <span class="badge badge-a">Selesai</span>
+                            @elseif($catatan->status == 'Proses')
+                                <span class="badge badge-c">Proses</span>
+                            @else
+                                <span class="badge badge-d">{{ $catatan->status ?? '-' }}</span>
                             @endif
                         </td>
                     </tr>
