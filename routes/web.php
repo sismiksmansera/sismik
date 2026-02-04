@@ -148,9 +148,16 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     
     // Ekstrakurikuler Management
     Route::get('/ekstrakurikuler', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'index'])->name('ekstrakurikuler.index');
+    Route::get('/ekstrakurikuler/create', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'create'])->name('ekstrakurikuler.create');
+    Route::post('/ekstrakurikuler', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'store'])->name('ekstrakurikuler.store');
+    Route::get('/ekstrakurikuler/{id}/edit', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'edit'])->name('ekstrakurikuler.edit');
+    Route::put('/ekstrakurikuler/{id}', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'update'])->name('ekstrakurikuler.update');
     Route::delete('/ekstrakurikuler/{id}', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'destroy'])->name('ekstrakurikuler.destroy');
     Route::post('/ekstrakurikuler/copy', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'copy'])->name('ekstrakurikuler.copy');
     Route::get('/ekstrakurikuler/preview-copy', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'previewCopy'])->name('ekstrakurikuler.preview-copy');
+    Route::post('/ekstrakurikuler/get-siswa', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'getSiswa'])->name('ekstrakurikuler.get-siswa');
+    Route::get('/ekstrakurikuler/get-siswa-by-ids', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'getSiswaByIds'])->name('ekstrakurikuler.get-siswa-by-ids');
+
     
     // Keamanan (Security) Management
     Route::get('/keamanan', [\App\Http\Controllers\Admin\KeamananController::class, 'index'])->name('keamanan.index');

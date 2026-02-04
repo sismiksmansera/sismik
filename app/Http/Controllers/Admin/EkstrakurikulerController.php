@@ -171,4 +171,246 @@ class EkstrakurikulerController extends Controller
         
         return response()->json($list);
     }
+    
+    /**
+     * Show form to create new ekstrakurikuler
+     */
+    public function create()
+    {
+        // Get active period
+        $periodeAktif = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodeAktif->tahun_pelajaran ?? date('Y') . '/' . (date('Y') + 1);
+        $semesterAktif = $periodeAktif->semester ?? 'Ganjil';
+        
+        // Get pembina list (guru + guru_bk)
+        $pembinaList = $this->getPembinaList();
+        
+        // Get rombel list for modal
+        $rombelList = \App\Models\Rombel::where('tahun_pelajaran', $tahunAktif)
+            ->whereRaw('LOWER(semester) = ?', [strtolower($semesterAktif)])
+            ->orderBy('nama_rombel', 'asc')
+            ->pluck('nama_rombel');
+        
+        // Get angkatan list
+        $angkatanList = \App\Models\Siswa::select('angkatan_masuk')
+            ->whereNotNull('angkatan_masuk')
+            ->distinct()
+            ->orderBy('angkatan_masuk', 'desc')
+            ->pluck('angkatan_masuk');
+        
+        return view('admin.ekstrakurikuler.create', compact(
+            'tahunAktif', 'semesterAktif', 'pembinaList', 'rombelList', 'angkatanList'
+        ));
+    }
+    
+    /**
+     * Store new ekstrakurikuler
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama_ekstrakurikuler' => 'required|min:3'
+        ]);
+        
+        // Get active period
+        $periodeAktif = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+        
+        $ekstra = new Ekstrakurikuler();
+        $ekstra->nama_ekstrakurikuler = $request->nama_ekstrakurikuler;
+        $ekstra->tahun_pelajaran = $periodeAktif->tahun_pelajaran;
+        $ekstra->semester = $periodeAktif->semester;
+        $ekstra->pembina_1 = $request->pembina_1;
+        $ekstra->pembina_2 = $request->pembina_2;
+        $ekstra->pembina_3 = $request->pembina_3;
+        $ekstra->deskripsi = $request->deskripsi;
+        $ekstra->save();
+        
+        // Save anggota if any
+        if ($request->has('anggota_ids') && is_array($request->anggota_ids)) {
+            foreach ($request->anggota_ids as $siswaId) {
+                AnggotaEkstrakurikuler::create([
+                    'ekstrakurikuler_id' => $ekstra->id,
+                    'siswa_id' => $siswaId,
+                    'tahun_pelajaran' => $periodeAktif->tahun_pelajaran,
+                    'semester' => $periodeAktif->semester,
+                    'tanggal_bergabung' => now()->format('Y-m-d')
+                ]);
+            }
+        }
+        
+        return redirect()->route('admin.ekstrakurikuler.index')
+            ->with('success', 'Ekstrakurikuler berhasil ditambahkan!');
+    }
+    
+    /**
+     * Show form to edit ekstrakurikuler
+     */
+    public function edit($id)
+    {
+        $ekstra = Ekstrakurikuler::findOrFail($id);
+        
+        // Get pembina list
+        $pembinaList = $this->getPembinaList();
+        
+        // Get anggota terdaftar
+        $anggotaTerdaftar = AnggotaEkstrakurikuler::where('ekstrakurikuler_id', $id)
+            ->where('tahun_pelajaran', $ekstra->tahun_pelajaran)
+            ->where('semester', $ekstra->semester)
+            ->pluck('siswa_id')
+            ->toArray();
+        
+        // Get rombel list for modal
+        $rombelList = \App\Models\Rombel::where('tahun_pelajaran', $ekstra->tahun_pelajaran)
+            ->whereRaw('LOWER(semester) = ?', [strtolower($ekstra->semester)])
+            ->orderBy('nama_rombel', 'asc')
+            ->pluck('nama_rombel');
+        
+        // Get angkatan list
+        $angkatanList = \App\Models\Siswa::select('angkatan_masuk')
+            ->whereNotNull('angkatan_masuk')
+            ->distinct()
+            ->orderBy('angkatan_masuk', 'desc')
+            ->pluck('angkatan_masuk');
+        
+        return view('admin.ekstrakurikuler.edit', compact(
+            'ekstra', 'pembinaList', 'anggotaTerdaftar', 'rombelList', 'angkatanList'
+        ));
+    }
+    
+    /**
+     * Update ekstrakurikuler
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama_ekstrakurikuler' => 'required|min:3'
+        ]);
+        
+        $ekstra = Ekstrakurikuler::findOrFail($id);
+        $ekstra->nama_ekstrakurikuler = $request->nama_ekstrakurikuler;
+        $ekstra->pembina_1 = $request->pembina_1;
+        $ekstra->pembina_2 = $request->pembina_2;
+        $ekstra->pembina_3 = $request->pembina_3;
+        $ekstra->deskripsi = $request->deskripsi;
+        $ekstra->save();
+        
+        // Delete old anggota and save new ones
+        AnggotaEkstrakurikuler::where('ekstrakurikuler_id', $id)
+            ->where('tahun_pelajaran', $ekstra->tahun_pelajaran)
+            ->where('semester', $ekstra->semester)
+            ->delete();
+        
+        if ($request->has('anggota_ids') && is_array($request->anggota_ids)) {
+            foreach ($request->anggota_ids as $siswaId) {
+                AnggotaEkstrakurikuler::create([
+                    'ekstrakurikuler_id' => $ekstra->id,
+                    'siswa_id' => $siswaId,
+                    'tahun_pelajaran' => $ekstra->tahun_pelajaran,
+                    'semester' => $ekstra->semester
+                ]);
+            }
+        }
+        
+        return redirect()->route('admin.ekstrakurikuler.index')
+            ->with('success', 'Ekstrakurikuler berhasil diupdate!');
+    }
+    
+    /**
+     * Get siswa for ekstrakurikuler modal (AJAX)
+     */
+    public function getSiswa(Request $request)
+    {
+        $search = $request->input('search', '');
+        $rombel = $request->input('rombel', '');
+        $angkatan = $request->input('angkatan', '');
+        $tahun = $request->input('tahun_aktif', '');
+        $semester = $request->input('semester_aktif', '');
+        
+        $query = \App\Models\Siswa::query();
+        
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%$search%")
+                  ->orWhere('nis', 'like', "%$search%")
+                  ->orWhere('nisn', 'like', "%$search%");
+            });
+        }
+        
+        if (!empty($rombel)) {
+            $query->where('rombel_aktif', $rombel);
+        }
+        
+        if (!empty($angkatan)) {
+            $query->where('angkatan_masuk', $angkatan);
+        }
+        
+        $siswa = $query->orderBy('nama', 'asc')->limit(100)->get();
+        
+        $data = $siswa->map(function($s) {
+            return [
+                'id' => $s->id,
+                'nama' => $s->nama,
+                'nis' => $s->nis,
+                'rombel_aktif' => $s->rombel_aktif,
+                'angkatan' => $s->angkatan_masuk
+            ];
+        });
+        
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
+    }
+    
+    /**
+     * Get siswa by IDs (AJAX)
+     */
+    public function getSiswaByIds(Request $request)
+    {
+        $ids = $request->input('ids', '');
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'data' => []]);
+        }
+        
+        $idArray = explode(',', $ids);
+        $siswa = \App\Models\Siswa::whereIn('id', $idArray)->get();
+        
+        $data = $siswa->map(function($s) {
+            return [
+                'id' => $s->id,
+                'nama' => $s->nama,
+                'nis' => $s->nis,
+                'rombel_aktif' => $s->rombel_aktif,
+                'angkatan' => $s->angkatan_masuk
+            ];
+        });
+        
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
+    }
+    
+    /**
+     * Get pembina list (guru + guru_bk)
+     */
+    private function getPembinaList()
+    {
+        $guru = \App\Models\Guru::where('status', 'Aktif')
+            ->orderBy('nama', 'asc')
+            ->pluck('nama')
+            ->toArray();
+        
+        $guruBK = DB::table('guru_bk')
+            ->where('status', 'Aktif')
+            ->orderBy('nama', 'asc')
+            ->pluck('nama')
+            ->toArray();
+        
+        $pembinaList = array_merge($guru, $guruBK);
+        sort($pembinaList);
+        
+        return $pembinaList;
+    }
 }
+

@@ -261,7 +261,7 @@
                 <button type="button" id="btnSalinEkstra" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
                     <i class="fas fa-copy"></i> Salin dari Semester Lain
                 </button>
-                <a href="{{ url('admin/input_ekstrakurikuler.php') }}" class="btn btn-primary" style="background: white; color: #3b82f6;">
+                <a href="{{ route('admin.ekstrakurikuler.create') }}" class="btn btn-primary" style="background: white; color: #3b82f6;">
                     <i class="fas fa-plus"></i> Tambah Baru
                 </a>
             </div>
@@ -410,7 +410,7 @@
                             </div>
                             
                             <div class="ekstra-actions">
-                                <a href="{{ url('admin/edit_ekstrakurikuler.php?id=' . $ekstra->id) }}" class="btn-action btn-edit">
+                                <a href="{{ route('admin.ekstrakurikuler.edit', $ekstra->id) }}" class="btn-action btn-edit">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
                                 <button onclick="confirmDelete({{ $ekstra->id }}, '{{ addslashes($ekstra->nama_ekstrakurikuler) }}')" class="btn-action btn-danger">
@@ -425,7 +425,7 @@
                     <i class="fas fa-futbol"></i>
                     <h3>Tidak Ada Data Ekstrakurikuler</h3>
                     <p>Belum ada data ekstrakurikuler untuk periode yang dipilih</p>
-                    <a href="{{ url('admin/input_ekstrakurikuler.php') }}" class="btn btn-primary">
+                    <a href="{{ route('admin.ekstrakurikuler.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Tambah Ekstrakurikuler
                     </a>
                 </div>
