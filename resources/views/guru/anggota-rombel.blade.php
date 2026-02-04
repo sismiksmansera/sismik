@@ -126,6 +126,17 @@
     color: white;
 }
 
+.btn-katrol-leger {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+}
+
+.btn-katrol-leger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+    color: white;
+}
+
 /* STATS GRID */
 .stats-grid {
     display: grid;
@@ -426,6 +437,16 @@
                 <a href="{{ route('guru.tugas-tambahan') }}" class="btn-modern btn-back">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
+                @if($lockPrintLegerNilai != 'Ya')
+                <a href="{{ route('guru.leger.print-nilai', ['rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" target="_blank" class="btn-modern btn-leger">
+                    <i class="fas fa-table"></i> Cetak Leger Akademik
+                </a>
+                @endif
+                @if($lockPrintLegerKatrol != 'Ya')
+                <a href="{{ route('guru.leger.print-katrol', ['rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" target="_blank" class="btn-modern btn-katrol-leger">
+                    <i class="fas fa-chart-line"></i> Cetak Leger Katrol
+                </a>
+                @endif
                 @if($lockPrintRiwayatAll != 'Ya')
                 <a href="{{ route('guru.riwayat-akademik.print-all', ['rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" target="_blank" class="btn-modern btn-print-all">
                     <i class="fas fa-print"></i> Cetak Semua Riwayat

@@ -158,6 +158,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/riwayat-akademik', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'show'])->name('riwayat-akademik');
     Route::get('/riwayat-akademik/print', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'print'])->name('riwayat-akademik.print');
     Route::get('/riwayat-akademik/print-all', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'printAll'])->name('riwayat-akademik.print-all');
+    
+    // Leger (Cetak Leger Nilai & Katrol)
+    Route::get('/leger/print-nilai', [\App\Http\Controllers\Admin\LegerController::class, 'printNilai'])->name('leger.print-nilai');
+    Route::get('/leger/print-katrol', [\App\Http\Controllers\Admin\LegerController::class, 'printKatrol'])->name('leger.print-katrol');
 });
 
 // Guru Routes
@@ -247,6 +251,10 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::get('/riwayat-akademik', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'show'])->name('riwayat-akademik');
     Route::get('/riwayat-akademik/print', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'print'])->name('riwayat-akademik.print');
     Route::get('/riwayat-akademik/print-all', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'printAll'])->name('riwayat-akademik.print-all');
+    
+    // Leger routes
+    Route::get('/leger/print-nilai', [\App\Http\Controllers\Admin\LegerController::class, 'printNilai'])->name('leger.print-nilai');
+    Route::get('/leger/print-katrol', [\App\Http\Controllers\Admin\LegerController::class, 'printKatrol'])->name('leger.print-katrol');
 });
 
 
