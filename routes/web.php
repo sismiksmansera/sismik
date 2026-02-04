@@ -153,6 +153,11 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     // Raport (Print Raport)
     Route::get('/raport/print', [\App\Http\Controllers\Admin\RaportController::class, 'print'])->name('raport.print');
     Route::get('/raport/print-all', [\App\Http\Controllers\Admin\RaportController::class, 'printAll'])->name('raport.print-all');
+    
+    // Riwayat Akademik
+    Route::get('/riwayat-akademik', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'show'])->name('riwayat-akademik');
+    Route::get('/riwayat-akademik/print', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'print'])->name('riwayat-akademik.print');
+    Route::get('/riwayat-akademik/print-all', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'printAll'])->name('riwayat-akademik.print-all');
 });
 
 // Guru Routes
@@ -236,6 +241,10 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     
     // Print Raport route
     Route::get('/raport/print', [\App\Http\Controllers\Admin\RaportController::class, 'print'])->name('raport.print');
+    
+    // Riwayat Akademik route
+    Route::get('/riwayat-akademik', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'show'])->name('riwayat-akademik');
+    Route::get('/riwayat-akademik/print', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'print'])->name('riwayat-akademik.print');
 });
 
 

@@ -496,8 +496,9 @@
                                         </div>
                                     </div>
                                     <div class="member-actions-row">
-                                        <a href="#" class="btn-action-card btn-cetak" title="Cetak Riwayat">
-                                            <i class="fas fa-print"></i> Riwayat
+                                        <a href="{{ route('guru.riwayat-akademik', ['nisn' => $siswa->nisn]) }}" 
+                                           class="btn-action-card btn-cetak" title="Lihat Riwayat" target="_blank">
+                                            <i class="fas fa-history"></i> Riwayat
                                         </a>
                                         <a href="{{ route('guru.raport.print', ['nisn' => $siswa->nisn, 'rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" 
                                            class="btn-action-card btn-raport-card" title="Cetak Raport" target="_blank">

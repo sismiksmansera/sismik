@@ -284,6 +284,8 @@
                     @php
                         $hasFoto = $siswa->foto && Storage::disk('public')->exists('siswa/' . $siswa->foto);
                         $initials = collect(explode(' ', $siswa->nama))->map(fn($p) => strtoupper(substr($p, 0, 1)))->take(2)->join('');
+                        $fotoSize = $hasFoto ? Storage::disk('public')->size('siswa/' . $siswa->foto) : 0;
+                        $fotoSizeFormatted = $fotoSize > 0 ? ($fotoSize >= 1024 * 1024 ? number_format($fotoSize / (1024 * 1024), 2) . ' MB' : number_format($fotoSize / 1024, 2) . ' KB') : '-';
                     @endphp
                     
                     <div class="profile-avatar" onclick="openFotoModal()">
@@ -551,6 +553,9 @@
         <div style="margin-top: 15px; text-align: center; color: white;">
             <h4 style="margin: 0;">{{ $siswa->nama }}</h4>
             <p style="opacity: 0.8; margin: 5px 0;">Foto Profil</p>
+            <p style="opacity: 0.7; margin: 5px 0; font-size: 13px;">
+                <i class="fas fa-file-image"></i> Ukuran: {{ $fotoSizeFormatted }}
+            </p>
         </div>
     </div>
 </div>

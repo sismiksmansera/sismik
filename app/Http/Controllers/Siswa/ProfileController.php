@@ -70,14 +70,16 @@ class ProfileController extends Controller
             }
 
             // Generate filename
-            $filename = 'siswa_' . $siswa->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filename = 'siswa_' . $siswa->id . '_' . time() . '.jpg';
+            $uploadPath = storage_path('app/public/siswa/' . $filename);
             
-            // Store file
-            $tempPath = $file->storeAs('siswa', $filename, 'public');
+            // Ensure directory exists
+            if (!file_exists(storage_path('app/public/siswa'))) {
+                mkdir(storage_path('app/public/siswa'), 0755, true);
+            }
             
-            // Compress image if needed
-            $fullPath = storage_path('app/public/siswa/' . $filename);
-            $this->compressImage($fullPath, $fullPath, 250);
+            // Compress image directly from temp upload to max 250KB
+            $this->compressImage($file->getPathname(), $uploadPath, 250);
             
             // Update database
             Siswa::where('id', $siswa->id)->update(['foto' => $filename]);
@@ -92,32 +94,43 @@ class ProfileController extends Controller
      */
     private function compressImage($source, $destination, $maxSizeKB = 250)
     {
+        $maxSizeBytes = $maxSizeKB * 1024;
+        
         if (!file_exists($source)) {
             return false;
         }
 
         $info = getimagesize($source);
         if ($info === false) {
+            copy($source, $destination);
             return false;
         }
 
         $mime = $info['mime'];
+        $image = null;
         
         switch ($mime) {
             case 'image/jpeg':
-                $image = imagecreatefromjpeg($source);
+                $image = @imagecreatefromjpeg($source);
                 break;
             case 'image/png':
-                $image = imagecreatefrompng($source);
+                $image = @imagecreatefrompng($source);
+                if ($image) {
+                    imagepalettetotruecolor($image);
+                    imagealphablending($image, true);
+                    imagesavealpha($image, true);
+                }
                 break;
             case 'image/gif':
-                $image = imagecreatefromgif($source);
+                $image = @imagecreatefromgif($source);
                 break;
             default:
+                copy($source, $destination);
                 return false;
         }
 
         if (!$image) {
+            copy($source, $destination);
             return false;
         }
 
@@ -137,12 +150,10 @@ class ProfileController extends Controller
 
             $resized = imagecreatetruecolor($newWidth, $newHeight);
             
-            // Preserve transparency for PNG
-            if ($mime === 'image/png') {
+            if ($mime === 'image/png' || $mime === 'image/gif') {
+                imagecolortransparent($resized, imagecolorallocatealpha($resized, 0, 0, 0, 127));
                 imagealphablending($resized, false);
                 imagesavealpha($resized, true);
-                $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
-                imagefilledrectangle($resized, 0, 0, $newWidth, $newHeight, $transparent);
             }
 
             imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
@@ -150,25 +161,26 @@ class ProfileController extends Controller
             $image = $resized;
         }
 
-        // Compress with decreasing quality until target size
-        $quality = 90;
+        // Compress with decreasing quality using temp file
+        $quality = 85;
+        $tempPath = sys_get_temp_dir() . '/compress_' . uniqid() . '.jpg';
+        
         do {
-            ob_start();
-            if ($mime === 'image/png') {
-                $pngQuality = intval(9 - ($quality / 10));
-                imagepng($image, null, max(0, min(9, $pngQuality)));
-            } else {
-                imagejpeg($image, null, $quality);
+            imagejpeg($image, $tempPath, $quality);
+            $currentSize = filesize($tempPath);
+            
+            if ($currentSize <= $maxSizeBytes || $quality <= 20) {
+                break;
             }
-            $imageData = ob_get_clean();
-            $size = strlen($imageData) / 1024;
+            
             $quality -= 10;
-        } while ($size > $maxSizeKB && $quality > 10);
+        } while ($quality > 20);
 
-        // Save final image
-        file_put_contents($destination, $imageData);
+        // Move to destination
+        $result = copy($tempPath, $destination);
         imagedestroy($image);
-
-        return true;
+        @unlink($tempPath);
+        
+        return $result;
     }
 }

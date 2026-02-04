@@ -237,7 +237,8 @@
                     <a href="#" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
                         <i class="fas fa-table"></i> Leger Akademik
                     </a>
-                    <a href="#" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">
+                    <a href="{{ route('admin.riwayat-akademik.print-all', ['rombel_id' => $rombel->id, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" 
+                       class="btn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;" target="_blank">
                         <i class="fas fa-history"></i> Riwayat Semua
                     </a>
                     <a href="{{ route('admin.rombel.index') }}" class="btn btn-secondary">
@@ -286,7 +287,8 @@
                                     <td class="text-center">{{ $siswa->agama ?? '-' }}</td>
                                     <td class="text-center">
                                         <div style="display: flex; justify-content: center; gap: 6px;">
-                                            <a href="#" class="action-btn btn-info-action" title="Riwayat Akademik">
+                                            <a href="{{ route('admin.riwayat-akademik', ['nisn' => $siswa->nisn]) }}" 
+                                               class="action-btn btn-info-action" title="Riwayat Akademik" target="_blank">
                                                 <i class="fas fa-history"></i>
                                             </a>
                                             <a href="{{ route('admin.raport.print', ['nisn' => $siswa->nisn, 'rombel_id' => $rombel->id, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" 
