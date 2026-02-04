@@ -93,6 +93,39 @@
     color: white;
 }
 
+.btn-leger {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.btn-leger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    color: white;
+}
+
+.btn-print-all {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-print-all:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.btn-raport-all {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.btn-raport-all:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    color: white;
+}
+
 /* STATS GRID */
 .stats-grid {
     display: grid;
@@ -393,6 +426,16 @@
                 <a href="{{ route('guru.tugas-tambahan') }}" class="btn-modern btn-back">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
+                @if($lockPrintRiwayatAll != 'Ya')
+                <a href="{{ route('guru.riwayat-akademik.print-all', ['rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" target="_blank" class="btn-modern btn-print-all">
+                    <i class="fas fa-print"></i> Cetak Semua Riwayat
+                </a>
+                @endif
+                @if($lockPrintRaportAll != 'Ya')
+                <a href="{{ route('guru.raport.print-all', ['rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" target="_blank" class="btn-modern btn-raport-all">
+                    <i class="fas fa-file-alt"></i> Cetak Semua Raport
+                </a>
+                @endif
                 <a href="{{ route('guru.lihat-prestasi', ['type' => 'rombel', 'id' => $idRombel]) }}" class="btn-modern btn-prestasi">
                     <i class="fas fa-trophy"></i> Lihat Prestasi
                 </a>
@@ -496,14 +539,18 @@
                                         </div>
                                     </div>
                                     <div class="member-actions-row">
+                                        @if($lockPrintRiwayatGuru != 'Ya')
                                         <a href="{{ route('guru.riwayat-akademik', ['nisn' => $siswa->nisn]) }}" 
                                            class="btn-action-card btn-cetak" title="Lihat Riwayat" target="_blank">
                                             <i class="fas fa-history"></i> Riwayat
                                         </a>
+                                        @endif
+                                        @if($lockPrintRaport != 'Ya')
                                         <a href="{{ route('guru.raport.print', ['nisn' => $siswa->nisn, 'rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" 
                                            class="btn-action-card btn-raport-card" title="Cetak Raport" target="_blank">
                                             <i class="fas fa-file-alt"></i> Raport
                                         </a>
+                                        @endif
                                         <a href="{{ route('guru.catatan-wali-kelas', ['siswa_id' => $siswa->id, 'rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" class="btn-action-card btn-catatan" title="Catatan Wali Kelas">
                                             <i class="fas fa-sticky-note"></i> Catatan
                                         </a>

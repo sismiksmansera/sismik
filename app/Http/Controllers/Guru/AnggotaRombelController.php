@@ -83,9 +83,26 @@ class AnggotaRombelController extends Controller
         $totalPerempuan = $siswaList->where('jk', 'Perempuan')->count();
         $totalSiswa = $siswaList->count();
 
+        // Fetch lock settings from raport_settings
+        $lockSettings = DB::table('raport_settings')
+            ->join('data_periodik', 'raport_settings.periodik_id', '=', 'data_periodik.id')
+            ->where('data_periodik.aktif', 'Ya')
+            ->select('raport_settings.*')
+            ->first();
+        
+        $lockPrintLegerNilai = $lockSettings->lock_print_leger_nilai ?? 'Tidak';
+        $lockPrintRiwayatAll = $lockSettings->lock_print_riwayat_all ?? 'Tidak';
+        $lockPrintLegerKatrol = $lockSettings->lock_print_leger_katrol ?? 'Tidak';
+        $lockPrintRaportAll = $lockSettings->lock_print_raport_all ?? 'Tidak';
+        $lockKatrolNilai = $lockSettings->lock_katrol_nilai ?? 'Tidak';
+        $lockPrintRaport = $lockSettings->lock_print_raport ?? 'Tidak';
+        $lockPrintRiwayatGuru = $lockSettings->lock_print_riwayat_guru ?? 'Tidak';
+
         return view('guru.anggota-rombel', compact(
             'guru', 'rombel', 'siswaList', 'tahunPelajaran', 'semester',
-            'totalLaki', 'totalPerempuan', 'totalSiswa', 'idRombel'
+            'totalLaki', 'totalPerempuan', 'totalSiswa', 'idRombel',
+            'lockPrintLegerNilai', 'lockPrintRiwayatAll', 'lockPrintLegerKatrol',
+            'lockPrintRaportAll', 'lockKatrolNilai', 'lockPrintRaport', 'lockPrintRiwayatGuru'
         ));
     }
 }
