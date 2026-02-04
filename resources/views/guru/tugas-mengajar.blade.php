@@ -822,54 +822,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- CARD FOOTER - ACTION BUTTONS -->
-                            <div class="card-footer">
-                                <div class="action-buttons-group">
-                                    @if($isPeriodeAktif)
-                                        <a href="{{ route('guru.presensi.index', ['id_rombel' => $assignment['id_rombel'], 'mapel' => $assignment['nama_mapel'], 'from' => 'tugas-mengajar']) }}" 
-                                           class="btn-action btn-info" title="Input Presensi Siswa">
-                                            <i class="fas fa-clipboard-check"></i> Lakukan Presensi
-                                        </a>
-                                        <a href="{{ route('guru.rekap-presensi', ['id_rombel' => $assignment['id_rombel'], 'mapel' => $assignment['nama_mapel']]) }}" 
-                                           class="btn-action btn-warning" title="Lihat Rekap Presensi">
-                                            <i class="fas fa-chart-bar"></i> Lihat Presensi
-                                        </a>
-                                        <a href="{{ route('guru.penilaian.index', ['id_rombel' => $assignment['id_rombel'], 'mapel' => $assignment['nama_mapel'], 'from' => 'tugas-mengajar']) }}" 
-                                           class="btn-action btn-primary" title="Buat Penilaian">
-                                            <i class="fas fa-edit"></i> Buat Penilaian
-                                        </a>
-                                        <a href="{{ route('guru.lihat-nilai', ['id_rombel' => $assignment['id_rombel'], 'mapel' => $assignment['nama_mapel']]) }}" 
-                                           class="btn-action btn-success" title="Lihat Nilai">
-                                            <i class="fas fa-eye"></i> Lihat Nilai
-                                        </a>
-                                        <button type="button" class="btn-action btn-secondary" title="Scan Barcode">
-                                            <i class="fas fa-qrcode"></i> Scan Barcode
-                                        </button>
-                                    @else
-                                        <button type="button" class="btn-action btn-info btn-disabled" 
-                                                onclick="alert('Periode ini bukan periode aktif. Anda hanya bisa melakukan presensi/penilaian pada periode aktif.')">
-                                            <i class="fas fa-clipboard-check"></i> Lakukan Presensi
-                                        </button>
-                                        <button type="button" class="btn-action btn-warning btn-disabled" 
-                                                onclick="alert('Periode ini bukan periode aktif.')">
-                                            <i class="fas fa-chart-bar"></i> Lihat Presensi
-                                        </button>
-                                        <button type="button" class="btn-action btn-primary btn-disabled" 
-                                                onclick="alert('Periode ini bukan periode aktif.')">
-                                            <i class="fas fa-edit"></i> Buat Penilaian
-                                        </button>
-                                        <button type="button" class="btn-action btn-success btn-disabled" 
-                                                onclick="alert('Periode ini bukan periode aktif.')">
-                                            <i class="fas fa-eye"></i> Lihat Nilai
-                                        </button>
-                                        <button type="button" class="btn-action btn-secondary btn-disabled" 
-                                                onclick="alert('Periode ini bukan periode aktif.')">
-                                            <i class="fas fa-qrcode"></i> Scan Barcode
-                                        </button>
-                                    @endif
-                                </div>
-                            </div>
                         </div>
                     @endforeach
                 </div>
