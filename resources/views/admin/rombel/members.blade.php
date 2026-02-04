@@ -230,7 +230,8 @@
                     <a href="#" class="btn" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: white;">
                         <i class="fas fa-chart-line"></i> Leger Katrol
                     </a>
-                    <a href="#" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                    <a href="{{ route('admin.raport.print-all', ['rombel_id' => $rombel->id, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" 
+                       class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white;" target="_blank">
                         <i class="fas fa-print"></i> Raport Semua
                     </a>
                     <a href="#" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">

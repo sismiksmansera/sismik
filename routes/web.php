@@ -152,6 +152,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     
     // Raport (Print Raport)
     Route::get('/raport/print', [\App\Http\Controllers\Admin\RaportController::class, 'print'])->name('raport.print');
+    Route::get('/raport/print-all', [\App\Http\Controllers\Admin\RaportController::class, 'printAll'])->name('raport.print-all');
 });
 
 // Guru Routes

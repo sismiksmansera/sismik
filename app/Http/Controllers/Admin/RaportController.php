@@ -276,4 +276,199 @@ class RaportController extends Controller
             default: return 'Kurang';
         }
     }
+    
+    /**
+     * Print raport for all students in a rombel
+     */
+    public function printAll(Request $request)
+    {
+        $rombelId = $request->query('rombel_id');
+        $tahun = $request->query('tahun');
+        $semester = $request->query('semester');
+        
+        if (!$rombelId || !$tahun || !$semester) {
+            return response('<script>alert("Parameter tidak lengkap!"); window.close();</script>');
+        }
+        
+        // Get rombel data
+        $rombel = Rombel::find($rombelId);
+        if (!$rombel) {
+            return response('<script>alert("Rombel tidak ditemukan!"); window.close();</script>');
+        }
+        
+        // Get wali kelas NIP
+        $nipWaliKelas = '';
+        if (!empty($rombel->wali_kelas)) {
+            $guru = Guru::where('nama', $rombel->wali_kelas)->first();
+            if ($guru) {
+                $nipWaliKelas = $guru->nip ?? '';
+            }
+        }
+        
+        // Get active period
+        $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
+        if (!$periodeAktif) {
+            $periodeAktif = (object)[
+                'tahun_pelajaran' => '2024/2025',
+                'semester' => 'Ganjil',
+                'nama_kepala' => '',
+                'nip_kepala' => ''
+            ];
+        }
+        
+        // Get tanggal bagi raport from settings
+        $tanggalBagiRaport = '';
+        $raportSettings = RaportSettings::whereHas('periodik', function($q) {
+            $q->where('aktif', 'Ya');
+        })->first();
+        
+        if ($raportSettings && $raportSettings->tanggal_bagi_raport) {
+            $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            $tanggalObj = $raportSettings->tanggal_bagi_raport;
+            $tanggalBagiRaport = $tanggalObj->format('d') . ' ' . 
+                                 $bulanIndo[(int)$tanggalObj->format('n')] . ' ' . 
+                                 $tanggalObj->format('Y');
+        }
+        
+        $semesterJadwal = strtolower($periodeAktif->semester);
+        
+        // Get all students in rombel
+        $siswaList = $this->getSiswaByRombel($rombel->nama_rombel, $tahun, $semester);
+        
+        if ($siswaList->isEmpty()) {
+            return response('<script>alert("Tidak ada siswa dalam rombel ini!"); window.close();</script>');
+        }
+        
+        // Prepare data for each student
+        $studentsData = [];
+        foreach ($siswaList as $siswa) {
+            $agamaSiswa = $siswa->agama ?? '';
+            
+            // Get all mata pelajaran
+            $mapelList = $this->getMapelForRaport($rombelId, $periodeAktif->tahun_pelajaran, $semesterJadwal, $agamaSiswa);
+            
+            // Get nilai katrol for each mapel
+            $nilaiMapel = [];
+            $totalNilai = 0;
+            $jumlahMapelValid = 0;
+            
+            foreach ($mapelList as $mapel) {
+                $nilaiKatrol = NilaiKatrol::where('rombel_id', $rombelId)
+                    ->where('tahun_pelajaran', $periodeAktif->tahun_pelajaran)
+                    ->where('semester', $periodeAktif->semester)
+                    ->where('nisn', $siswa->nisn)
+                    ->where('mapel', $mapel->nama_mapel)
+                    ->first();
+                
+                $nilai = $nilaiKatrol ? floatval($nilaiKatrol->nilai_katrol) : null;
+                
+                $nilaiMapel[] = [
+                    'mapel' => $mapel->nama_mapel,
+                    'nilai' => $nilai
+                ];
+                
+                if ($nilai !== null) {
+                    $totalNilai += $nilai;
+                    $jumlahMapelValid++;
+                }
+            }
+            
+            // Grouping IPA/IPS for class X
+            if ($rombel->tingkat == 'X') {
+                $nilaiMapel = $this->groupIpaIps($nilaiMapel);
+                
+                // Recalculate totals
+                $totalNilai = 0;
+                $jumlahMapelValid = 0;
+                foreach ($nilaiMapel as $item) {
+                    if ($item['nilai'] !== null) {
+                        $totalNilai += $item['nilai'];
+                        $jumlahMapelValid++;
+                    }
+                }
+            }
+            
+            $rataRata = $jumlahMapelValid > 0 ? round($totalNilai / $jumlahMapelValid, 1) : 0;
+            
+            // Get attendance data
+            $presensi = PresensiSiswa::where('nisn', $siswa->nisn)
+                ->where('tahun_pelajaran', $periodeAktif->tahun_pelajaran)
+                ->where('semester', $periodeAktif->semester)
+                ->selectRaw("
+                    COUNT(*) as total,
+                    SUM(CASE WHEN presensi = 'H' THEN 1 ELSE 0 END) as hadir,
+                    SUM(CASE WHEN presensi = 'S' THEN 1 ELSE 0 END) as sakit,
+                    SUM(CASE WHEN presensi = 'I' THEN 1 ELSE 0 END) as izin,
+                    SUM(CASE WHEN presensi = 'A' THEN 1 ELSE 0 END) as alfa
+                ")
+                ->first();
+            
+            // Get ekstrakurikuler
+            $ekstraList = AnggotaEkstrakurikuler::where('siswa_id', $siswa->id)
+                ->where('tahun_pelajaran', $periodeAktif->tahun_pelajaran)
+                ->where('semester', $periodeAktif->semester)
+                ->with('ekstrakurikuler')
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'nama_ekstrakurikuler' => $item->ekstrakurikuler->nama_ekstrakurikuler ?? '',
+                        'nilai' => $item->nilai
+                    ];
+                })
+                ->toArray();
+            
+            $studentsData[] = [
+                'siswa' => $siswa,
+                'nilaiMapel' => $nilaiMapel,
+                'totalNilai' => $totalNilai,
+                'rataRata' => $rataRata,
+                'presensi' => $presensi,
+                'ekstraList' => $ekstraList
+            ];
+        }
+        
+        return view('admin.raport.print-all', compact(
+            'rombel',
+            'nipWaliKelas',
+            'periodeAktif',
+            'tanggalBagiRaport',
+            'studentsData'
+        ));
+    }
+    
+    /**
+     * Get students by rombel name for specific period
+     */
+    private function getSiswaByRombel($rombelNama, $tahun, $semester)
+    {
+        $tahunAjaran = explode('/', $tahun);
+        $tahunAwal = intval($tahunAjaran[0]);
+        
+        $query = Siswa::query();
+        
+        if ($semester == 'Ganjil') {
+            $query->where(function($q) use ($rombelNama, $tahunAwal) {
+                $q->where(function($sq) use ($rombelNama, $tahunAwal) {
+                    $sq->where('angkatan_masuk', $tahunAwal)->where('rombel_semester_1', $rombelNama);
+                })->orWhere(function($sq) use ($rombelNama, $tahunAwal) {
+                    $sq->where('angkatan_masuk', $tahunAwal - 1)->where('rombel_semester_3', $rombelNama);
+                })->orWhere(function($sq) use ($rombelNama, $tahunAwal) {
+                    $sq->where('angkatan_masuk', $tahunAwal - 2)->where('rombel_semester_5', $rombelNama);
+                });
+            });
+        } else { // Genap
+            $query->where(function($q) use ($rombelNama, $tahunAwal) {
+                $q->where(function($sq) use ($rombelNama, $tahunAwal) {
+                    $sq->where('angkatan_masuk', $tahunAwal)->where('rombel_semester_2', $rombelNama);
+                })->orWhere(function($sq) use ($rombelNama, $tahunAwal) {
+                    $sq->where('angkatan_masuk', $tahunAwal - 1)->where('rombel_semester_4', $rombelNama);
+                })->orWhere(function($sq) use ($rombelNama, $tahunAwal) {
+                    $sq->where('angkatan_masuk', $tahunAwal - 2)->where('rombel_semester_6', $rombelNama);
+                });
+            });
+        }
+        
+        return $query->orderBy('nama')->get();
+    }
 }
