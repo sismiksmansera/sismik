@@ -499,7 +499,8 @@
                                         <a href="#" class="btn-action-card btn-cetak" title="Cetak Riwayat">
                                             <i class="fas fa-print"></i> Riwayat
                                         </a>
-                                        <a href="#" class="btn-action-card btn-raport-card" title="Cetak Raport">
+                                        <a href="{{ route('guru.raport.print', ['nisn' => $siswa->nisn, 'rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" 
+                                           class="btn-action-card btn-raport-card" title="Cetak Raport" target="_blank">
                                             <i class="fas fa-file-alt"></i> Raport
                                         </a>
                                         <a href="{{ route('guru.catatan-wali-kelas', ['siswa_id' => $siswa->id, 'rombel_id' => $idRombel, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" class="btn-action-card btn-catatan" title="Catatan Wali Kelas">

@@ -288,7 +288,8 @@
                                             <a href="#" class="action-btn btn-info-action" title="Riwayat Akademik">
                                                 <i class="fas fa-history"></i>
                                             </a>
-                                            <a href="#" class="action-btn btn-success-action" title="Cetak Raport">
+                                            <a href="{{ route('admin.raport.print', ['nisn' => $siswa->nisn, 'rombel_id' => $rombel->id, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" 
+                                               class="action-btn btn-success-action" title="Cetak Raport" target="_blank">
                                                 <i class="fas fa-file-alt"></i>
                                             </a>
                                         </div>

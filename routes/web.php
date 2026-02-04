@@ -149,6 +149,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/keamanan', [\App\Http\Controllers\Admin\KeamananController::class, 'index'])->name('keamanan.index');
     Route::post('/keamanan/unlock', [\App\Http\Controllers\Admin\KeamananController::class, 'unlock'])->name('keamanan.unlock');
     Route::post('/keamanan/clear-all', [\App\Http\Controllers\Admin\KeamananController::class, 'clearAll'])->name('keamanan.clear-all');
+    
+    // Raport (Print Raport)
+    Route::get('/raport/print', [\App\Http\Controllers\Admin\RaportController::class, 'print'])->name('raport.print');
 });
 
 // Guru Routes
@@ -229,6 +232,9 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::get('/catatan-wali-kelas', [\App\Http\Controllers\Guru\CatatanWaliKelasController::class, 'index'])->name('catatan-wali-kelas');
     Route::post('/catatan-wali-kelas/simpan', [\App\Http\Controllers\Guru\CatatanWaliKelasController::class, 'simpan'])->name('catatan-wali-kelas.simpan');
     Route::post('/catatan-wali-kelas/hapus', [\App\Http\Controllers\Guru\CatatanWaliKelasController::class, 'hapus'])->name('catatan-wali-kelas.hapus');
+    
+    // Print Raport route
+    Route::get('/raport/print', [\App\Http\Controllers\Admin\RaportController::class, 'print'])->name('raport.print');
 });
 
 
