@@ -48,14 +48,16 @@ class DashboardController extends Controller
         }
         
         // Get rombel ID
-        if ($namaRombel && $tahunAktif) {
+        if ($namaRombel && $tahunAktif && $semesterAktif) {
             $rombel = Rombel::where('nama_rombel', $namaRombel)
                 ->where('tahun_pelajaran', $tahunAktif)
+                ->whereRaw('LOWER(semester) = LOWER(?)', [$semesterAktif])
                 ->first();
             if ($rombel) {
                 $idRombel = $rombel->id;
             }
         }
+
         
         // Get jadwal hari ini
         $jadwalPerMapel = [];
