@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Siswa;
 use App\Models\Rombel;
 use App\Models\GuruBK;
+use App\Models\Guru;
 use App\Models\DataPeriodik;
 use App\Services\NameCascadeService;
 
@@ -74,6 +75,14 @@ class SiswaController extends Controller
         // Get guru BK list
         $guruBKList = GuruBK::where('status', 'Aktif')->orderBy('nama')->get();
         
+        // Get list of all Guru + Guru BK for Wali Kelas dropdown
+        $guruList = Guru::where('status', 'Aktif')->orderBy('nama')->get(['nama']);
+        $guruWaliList = $guruList->pluck('nama')
+            ->merge($guruBKList->pluck('nama'))
+            ->unique()
+            ->sort()
+            ->values();
+        
         // Get angkatan list
         $angkatanList = range(date('Y') - 3, date('Y') + 1);
         
@@ -82,6 +91,7 @@ class SiswaController extends Controller
             'siswaList',
             'rombelList',
             'guruBKList',
+            'guruWaliList',
             'angkatanList',
             'tahunAktif',
             'semesterAktif'
@@ -344,6 +354,31 @@ class SiswaController extends Controller
         }
 
         $siswa->update([$column => $namaGuruBK ?: null]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Update guru wali per semester (AJAX)
+     */
+    public function updateWaliSemester(Request $request)
+    {
+        $nisn = $request->input('nisn');
+        $semester = intval($request->input('semester'));
+        $namaGuruWali = $request->input('nama_guru_wali');
+
+        if (empty($nisn) || $semester < 1 || $semester > 6) {
+            return response()->json(['success' => false, 'msg' => 'Data tidak valid']);
+        }
+
+        $column = "guru_wali_sem_$semester";
+        $siswa = Siswa::where('nisn', $nisn)->first();
+        
+        if (!$siswa) {
+            return response()->json(['success' => false, 'msg' => 'Siswa tidak ditemukan']);
+        }
+
+        $siswa->update([$column => $namaGuruWali ?: null]);
 
         return response()->json(['success' => true]);
     }
