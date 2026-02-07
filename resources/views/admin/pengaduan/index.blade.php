@@ -515,8 +515,6 @@ function teruskanPengaduan(id, nama, rombel) {
     
     openModal('modalTeruskan');
 }
-}
-
 
 
 
