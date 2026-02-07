@@ -1105,19 +1105,18 @@ document.getElementById('saveBK')?.addEventListener('click', async function() {
     location.reload();
 });
 
-// Close modal on backdrop click - but not when clicking inside modal-dialog
+// Close modal on backdrop click - using closest() for reliable detection
 document.querySelectorAll('.modal').forEach(m => {
-    m.addEventListener('click', e => { 
-        // Only close if clicking exactly on the modal backdrop
-        if (e.target === m) closeModal(m.id); 
+    m.addEventListener('click', function(e) { 
+        // Check if click target is inside modal-dialog or modal content
+        const clickedInsideDialog = e.target.closest('.modal-dialog') || e.target.closest('[style*="position: relative"]');
+        
+        // Only close if NOT clicking inside the dialog content
+        if (!clickedInsideDialog) {
+            closeModal(this.id); 
+        }
     });
-    // Prevent clicks inside modal-dialog from propagating to modal
-    const dialog = m.querySelector('.modal-dialog');
-    if (dialog) {
-        dialog.addEventListener('click', e => e.stopPropagation());
-    }
 });
-
 
 // Foto Modal Functions
 function openFotoModal(nama, fotoUrl, siswaId) {
