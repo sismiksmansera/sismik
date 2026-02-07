@@ -1019,8 +1019,12 @@ class GuruController extends Controller
                         continue;
                     }
                     
+                    // Store old name before updating
+                    $oldName = $guru->nama;
+                    $newName = trim($data[2] ?? $guru->nama);
+                    
                     // Update fields (excluding ID and NIP)
-                    $guru->nama = trim($data[2] ?? $guru->nama);
+                    $guru->nama = $newName;
                     $guru->jenis_kelamin = trim($data[3] ?? $guru->jenis_kelamin);
                     $guru->no_hp = trim($data[4] ?? $guru->no_hp);
                     $guru->email = trim($data[5] ?? $guru->email);
@@ -1029,6 +1033,11 @@ class GuruController extends Controller
                     $guru->golongan = trim($data[8] ?? $guru->golongan);
                     $guru->status = trim($data[9] ?? $guru->status);
                     $guru->save();
+                    
+                    // Cascade name update if name changed
+                    if ($oldName !== $newName && !empty($newName)) {
+                        NameCascadeService::updateGuruName($oldName, $newName);
+                    }
                     
                     $updated++;
                 } catch (\Exception $e) {

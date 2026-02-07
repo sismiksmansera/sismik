@@ -120,6 +120,22 @@ class NameCascadeService
                 ->update(['nama_wali_kelas' => $newName]);
         }
         
+        // 11. siswa - guru_wali_sem_* columns (Guru bisa jadi Guru Wali)
+        if (Schema::hasTable('siswa')) {
+            $waliColumns = [
+                'guru_wali_sem_1', 'guru_wali_sem_2', 'guru_wali_sem_3',
+                'guru_wali_sem_4', 'guru_wali_sem_5', 'guru_wali_sem_6'
+            ];
+            
+            foreach ($waliColumns as $column) {
+                if (Schema::hasColumn('siswa', $column)) {
+                    $affected += DB::table('siswa')
+                        ->where($column, $oldName)
+                        ->update([$column => $newName]);
+                }
+            }
+        }
+        
         return $affected;
     }
     
@@ -276,6 +292,20 @@ class NameCascadeService
             ];
             
             foreach ($bkColumns as $column) {
+                if (Schema::hasColumn('siswa', $column)) {
+                    $affected += DB::table('siswa')
+                        ->where($column, $oldName)
+                        ->update([$column => $newName]);
+                }
+            }
+            
+            // Also update guru_wali_sem columns (Guru BK can be Guru Wali)
+            $waliColumns = [
+                'guru_wali_sem_1', 'guru_wali_sem_2', 'guru_wali_sem_3',
+                'guru_wali_sem_4', 'guru_wali_sem_5', 'guru_wali_sem_6'
+            ];
+            
+            foreach ($waliColumns as $column) {
                 if (Schema::hasColumn('siswa', $column)) {
                     $affected += DB::table('siswa')
                         ->where($column, $oldName)
