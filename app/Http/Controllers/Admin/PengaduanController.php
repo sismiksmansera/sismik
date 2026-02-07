@@ -53,6 +53,10 @@ class PengaduanController extends Controller
         // Enrich with student data
         foreach ($pengaduanList as $item) {
             $siswa = Siswa::where('nisn', $item->nisn)->first();
+            $waliKelas = '';
+            $rombelAktif = $item->rombel_pelapor;
+            $guruBkSiswa = '';
+            
             if ($siswa) {
                 $semesterAktifSiswa = $this->calculateActiveSemester(
                     $siswa->angkatan_masuk,
@@ -63,20 +67,32 @@ class PengaduanController extends Controller
                 $bkCol = 'bk_semester_' . $semesterAktifSiswa;
                 
                 $item->semester_aktif_siswa = $semesterAktifSiswa;
-                $item->rombel_aktif = $siswa->$rombelCol ?? $item->rombel_pelapor;
-                $item->guru_bk_siswa = $siswa->$bkCol ?? '';
-                
-                // Get wali kelas
-                $rombel = Rombel::where('nama_rombel', $item->rombel_aktif)
-                    ->where('tahun_pelajaran', $tahunAktif)
-                    ->where('semester', $semesterAktif)
-                    ->first();
-                $item->wali_kelas = $rombel->wali_kelas ?? '';
-            } else {
-                $item->rombel_aktif = $item->rombel_pelapor;
-                $item->guru_bk_siswa = '';
-                $item->wali_kelas = '';
+                $rombelAktif = !empty($siswa->$rombelCol) ? $siswa->$rombelCol : $item->rombel_pelapor;
+                $guruBkSiswa = $siswa->$bkCol ?? '';
             }
+            
+            // Get wali kelas - try with rombel_aktif first, then rombel_pelapor
+            $rombelToCheck = [$rombelAktif];
+            if ($rombelAktif !== $item->rombel_pelapor && !empty($item->rombel_pelapor)) {
+                $rombelToCheck[] = $item->rombel_pelapor;
+            }
+            
+            foreach ($rombelToCheck as $namaRombel) {
+                if (empty($waliKelas)) {
+                    $rombel = Rombel::where('nama_rombel', $namaRombel)
+                        ->where('tahun_pelajaran', $tahunAktif)
+                        ->where('semester', $semesterAktif)
+                        ->first();
+                    if ($rombel && !empty($rombel->wali_kelas)) {
+                        $waliKelas = $rombel->wali_kelas;
+                        break;
+                    }
+                }
+            }
+            
+            $item->rombel_aktif = $rombelAktif;
+            $item->guru_bk_siswa = $guruBkSiswa;
+            $item->wali_kelas = $waliKelas;
             
             // Check if new (within 24 hours)
             $item->is_new = $item->created_at && $item->created_at->diffInHours(now()) < 24;

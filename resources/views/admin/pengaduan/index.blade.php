@@ -505,20 +505,47 @@ function submitKelola(e) {
 function teruskanPengaduan(id, nama, rombel, waliKelas, guruBk) {
     document.getElementById('teruskan_id').value = id;
     document.getElementById('teruskan_pelapor').textContent = nama;
-    document.getElementById('teruskan_rombel').textContent = rombel;
+    document.getElementById('teruskan_rombel').textContent = rombel || '-';
     
     // Populate wali kelas option
     const wkGroup = document.getElementById('optgroup_walikelas');
     wkGroup.innerHTML = '';
-    if (waliKelas) {
+    if (waliKelas && waliKelas.trim() !== '') {
         const opt = document.createElement('option');
         opt.value = waliKelas;
-        opt.textContent = 'Wali Kelas: ' + waliKelas;
+        opt.textContent = 'Wali Kelas ' + (rombel || '') + ': ' + waliKelas;
+        opt.dataset.role = 'wali_kelas';
+        wkGroup.appendChild(opt);
+    } else {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.disabled = true;
+        opt.textContent = '(Wali kelas tidak ditemukan)';
         wkGroup.appendChild(opt);
     }
     
+    // Highlight guru BK siswa if available
+    const gbkGroup = document.getElementById('optgroup_gurubk');
+    // Reset all highlighting
+    for (let i = 0; i < gbkGroup.options.length; i++) {
+        gbkGroup.options[i].textContent = gbkGroup.options[i].textContent.replace(' ★ (BK Siswa)', '');
+    }
+    // Add highlight for guru BK siswa
+    if (guruBk && guruBk.trim() !== '') {
+        for (let i = 0; i < gbkGroup.options.length; i++) {
+            if (gbkGroup.options[i].value === guruBk) {
+                gbkGroup.options[i].textContent = gbkGroup.options[i].value + ' ★ (BK Siswa)';
+                break;
+            }
+        }
+    }
+    
+    // Reset select
+    document.getElementById('teruskan_tujuan').value = '';
+    
     openModal('modalTeruskan');
 }
+
 
 function updateNIP() {
     const sel = document.getElementById('teruskan_tujuan');
