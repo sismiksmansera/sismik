@@ -412,6 +412,73 @@
     .members-cards-grid { grid-template-columns: 1fr; padding: 15px; }
 }
 </style>
+
+<style>
+/* PHOTO MODAL */
+.photo-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.photo-modal-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    text-align: center;
+}
+
+.photo-modal-content img {
+    max-width: 400px;
+    max-height: 70vh;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.photo-modal-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: white;
+    cursor: pointer;
+}
+
+.photo-modal-info {
+    margin-top: 15px;
+    color: white;
+}
+
+.photo-modal-info h4 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.photo-modal-info p {
+    margin: 5px 0 0;
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+.member-avatar.clickable {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.member-avatar.clickable:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+</style>
 @endpush
 
 @section('content')
@@ -516,7 +583,8 @@
                             <div class="member-card" id="card-{{ $siswa->id }}">
                                 <div class="member-card-header" onclick="toggleCard({{ $siswa->id }})">
                                     <div class="member-header-left">
-                                        <div class="member-avatar">
+                                        <div class="member-avatar {{ $hasFoto ? 'clickable' : '' }}" 
+                                             @if($hasFoto) onclick="event.stopPropagation(); openPhotoModal('{{ asset('storage/siswa/' . $siswa->foto) }}', '{{ $siswa->nama }}')" @endif>
                                             @if($hasFoto)
                                                 <img src="{{ asset('storage/siswa/' . $siswa->foto) }}" alt="{{ $siswa->nama }}">
                                             @else
@@ -594,10 +662,41 @@
     </div>
 </div>
 
+<!-- Photo Modal -->
+<div id="photoModal" class="photo-modal" onclick="closePhotoModal()">
+    <div class="photo-modal-content" onclick="event.stopPropagation()">
+        <button onclick="closePhotoModal()" class="photo-modal-close">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="modalPhoto" src="" alt="Foto Siswa">
+        <div class="photo-modal-info">
+            <h4 id="modalName"></h4>
+            <p>Foto Profil Siswa</p>
+        </div>
+    </div>
+</div>
+
 <script>
 function toggleCard(id) {
     const card = document.getElementById('card-' + id);
     card.classList.toggle('expanded');
 }
+
+function openPhotoModal(photoUrl, name) {
+    document.getElementById('modalPhoto').src = photoUrl;
+    document.getElementById('modalName').textContent = name;
+    document.getElementById('photoModal').style.display = 'flex';
+}
+
+function closePhotoModal() {
+    document.getElementById('photoModal').style.display = 'none';
+}
+
+// ESC to close modal
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePhotoModal();
+    }
+});
 </script>
 @endsection
