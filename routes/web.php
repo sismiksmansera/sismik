@@ -276,6 +276,7 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
 Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(function () {
     Route::get('/dashboard', [GuruBKDashboardController::class, 'index'])->name('dashboard');
     Route::get('/stop-impersonate', [GuruBKDashboardController::class, 'stopImpersonate'])->name('stop-impersonate');
+    Route::post('/presensi-detail', [GuruBKDashboardController::class, 'getPresensiDetail'])->name('presensi-detail');
     
     // Profile routes
     Route::get('/profil', [\App\Http\Controllers\GuruBK\ProfileController::class, 'index'])->name('profil');

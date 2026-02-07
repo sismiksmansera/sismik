@@ -308,6 +308,64 @@
             </div>
         </div>
 
+        <!-- Presensi Hari Ini Stats -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <i class="fas fa-user-clock"></i>
+                <h3>Rekap Presensi Hari Ini - {{ $hariIni ?? 'Hari Ini' }}, {{ $tanggalFormatted ?? '' }}</h3>
+            </div>
+            @if(($hariIni ?? 'Minggu') === 'Minggu')
+                <div style="text-align: center; padding: 20px; color: #6b7280;">
+                    <i class="fas fa-calendar-times" style="font-size: 48px; color: #d1d5db; margin-bottom: 10px;"></i>
+                    <p>Tidak ada jadwal pelajaran di hari Minggu</p>
+                </div>
+            @else
+                <div class="quick-stats-grid">
+                    <div class="stat-card-mini danger presensi-stat-card" data-status="A" style="cursor: pointer;">
+                        <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                        <div>
+                            <h3>{{ number_format($presensiStats['A'] ?? 0) }}</h3>
+                            <p>Alpha</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini warning presensi-stat-card" data-status="S" style="cursor: pointer;">
+                        <div class="stat-icon"><i class="fas fa-thermometer-half"></i></div>
+                        <div>
+                            <h3>{{ number_format($presensiStats['S'] ?? 0) }}</h3>
+                            <p>Sakit</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini info presensi-stat-card" data-status="I" style="cursor: pointer;">
+                        <div class="stat-icon"><i class="fas fa-envelope"></i></div>
+                        <div>
+                            <h3>{{ number_format($presensiStats['I'] ?? 0) }}</h3>
+                            <p>Izin</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini purple presensi-stat-card" data-status="D" style="cursor: pointer;">
+                        <div class="stat-icon"><i class="fas fa-certificate"></i></div>
+                        <div>
+                            <h3>{{ number_format($presensiStats['D'] ?? 0) }}</h3>
+                            <p>Dispensasi</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini" style="background: linear-gradient(135deg, #78350f, #92400e); color: white; cursor: pointer;" data-status="B" class="presensi-stat-card">
+                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);"><i class="fas fa-door-open" style="color: white;"></i></div>
+                        <div>
+                            <h3 style="color: white;">{{ number_format($presensiStats['B'] ?? 0) }}</h3>
+                            <p style="color: rgba(255,255,255,0.8);">Bolos</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding: 12px 15px; background: rgba(139, 92, 246, 0.1); border-radius: 10px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-info-circle" style="color: #8b5cf6;"></i>
+                        <span style="font-size: 13px; color: #4b5563;">Total {{ $totalPresensiIssues ?? 0 }} kejadian ketidakhadiran tercatat hari ini. Klik kartu untuk melihat detail.</span>
+                    </div>
+                </div>
+            @endif
+        </div>
+
         <!-- Quick Actions -->
         <div class="chart-card">
             <div class="chart-header">
@@ -374,4 +432,165 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Presensi Detail -->
+<div id="presensiDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; overflow-y: auto;">
+    <div style="position: relative; margin: 30px auto; max-width: 900px; background: white; border-radius: 16px; padding: 0; max-height: calc(100vh - 60px); display: flex; flex-direction: column;">
+        <div style="padding: 20px 25px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div id="modalIconWrapper" style="width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-users" style="font-size: 20px; color: white;"></i>
+                </div>
+                <div>
+                    <h3 id="modalTitle" style="margin: 0; font-size: 18px; color: #1f2937;">Detail Presensi</h3>
+                    <p id="modalSubtitle" style="margin: 4px 0 0 0; font-size: 13px; color: #6b7280;">Daftar siswa</p>
+                </div>
+            </div>
+            <button onclick="closePresensiModal()" style="background: none; border: none; font-size: 24px; color: #6b7280; cursor: pointer; padding: 5px;">&times;</button>
+        </div>
+        
+        <div id="modalLoadingState" style="padding: 40px; text-align: center;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 36px; color: #8b5cf6;"></i>
+            <p style="margin-top: 15px; color: #6b7280;">Memuat data...</p>
+        </div>
+        
+        <div id="modalContentWrapper" style="display: none; flex: 1; overflow-y: auto; padding: 0 25px 25px;">
+            <div id="modalEmptyState" style="display: none; text-align: center; padding: 40px;">
+                <i class="fas fa-check-circle" style="font-size: 48px; color: #10b981;"></i>
+                <p style="margin-top: 15px; color: #6b7280; font-size: 16px;">Tidak ada data untuk kategori ini</p>
+            </div>
+            
+            <div id="modalTableWrapper" style="display: none; overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <thead>
+                        <tr style="background: #f9fafb;">
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #374151;">No</th>
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #374151;">Rombel</th>
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #374151;">Nama Siswa</th>
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #374151;">Mata Pelajaran</th>
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #374151;">Guru</th>
+                            <th style="padding: 12px 15px; text-align: center; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #374151;">Jam Ke</th>
+                        </tr>
+                    </thead>
+                    <tbody id="presensiTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+function openPresensiModal(status) {
+    const modal = document.getElementById('presensiDetailModal');
+    const loadingState = document.getElementById('modalLoadingState');
+    const contentWrapper = document.getElementById('modalContentWrapper');
+    const emptyState = document.getElementById('modalEmptyState');
+    const tableWrapper = document.getElementById('modalTableWrapper');
+    const iconWrapper = document.getElementById('modalIconWrapper');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    
+    // Show modal with loading
+    modal.style.display = 'block';
+    loadingState.style.display = 'block';
+    contentWrapper.style.display = 'none';
+    document.body.style.overflow = 'hidden';
+    
+    // Set icon color based on status
+    const statusColors = {
+        'A': 'linear-gradient(135deg, #ef4444, #dc2626)',
+        'S': 'linear-gradient(135deg, #f59e0b, #d97706)',
+        'I': 'linear-gradient(135deg, #06b6d4, #0891b2)',
+        'D': 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+        'B': 'linear-gradient(135deg, #78350f, #92400e)'
+    };
+    iconWrapper.style.background = statusColors[status] || '#6b7280';
+    
+    // Fetch data
+    fetch('{{ route("guru_bk.presensi-detail") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadingState.style.display = 'none';
+        contentWrapper.style.display = 'block';
+        
+        modalTitle.textContent = 'Detail ' + (data.statusLabel || status);
+        modalSubtitle.textContent = data.count + ' data ditemukan';
+        
+        if (data.success && data.data.length > 0) {
+            emptyState.style.display = 'none';
+            tableWrapper.style.display = 'block';
+            
+            const tbody = document.getElementById('presensiTableBody');
+            tbody.innerHTML = '';
+            
+            data.data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #f3f4f6';
+                row.innerHTML = `
+                    <td style="padding: 12px 15px; color: #6b7280;">${index + 1}</td>
+                    <td style="padding: 12px 15px;">
+                        <span style="background: rgba(139, 92, 246, 0.1); color: #7c3aed; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;">
+                            ${item.rombel}
+                        </span>
+                    </td>
+                    <td style="padding: 12px 15px; font-weight: 500; color: #1f2937;">${item.nama_siswa}</td>
+                    <td style="padding: 12px 15px; color: #4b5563;">${item.mapel}</td>
+                    <td style="padding: 12px 15px; color: #4b5563;">${item.guru}</td>
+                    <td style="padding: 12px 15px; text-align: center;">
+                        <span style="background: #e5e7eb; color: #374151; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                            ${item.jam_ke}
+                        </span>
+                    </td>
+                `;
+                row.addEventListener('mouseenter', function() { this.style.background = '#f9fafb'; });
+                row.addEventListener('mouseleave', function() { this.style.background = 'white'; });
+                tbody.appendChild(row);
+            });
+        } else {
+            emptyState.style.display = 'block';
+            tableWrapper.style.display = 'none';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        loadingState.style.display = 'none';
+        contentWrapper.style.display = 'block';
+        emptyState.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444;"></i><p style="margin-top: 15px; color: #6b7280;">Gagal memuat data</p>';
+        emptyState.style.display = 'block';
+        tableWrapper.style.display = 'none';
+    });
+}
+
+function closePresensiModal() {
+    document.getElementById('presensiDetailModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Close modal when clicking outside
+document.getElementById('presensiDetailModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePresensiModal();
+    }
+});
+
+// Add click handlers to presensi stat cards
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-status]').forEach(function(card) {
+        card.addEventListener('click', function() {
+            const status = this.getAttribute('data-status');
+            openPresensiModal(status);
+        });
+    });
+});
+</script>
+@endpush
 @endsection
