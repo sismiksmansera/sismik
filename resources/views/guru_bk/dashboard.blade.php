@@ -270,44 +270,6 @@
         </div>
         @endif
 
-        <!-- Stats Cards -->
-        <div class="chart-card">
-            <div class="chart-header">
-                <i class="fas fa-chart-pie"></i>
-                <h3>Statistik Catatan Bimbingan</h3>
-            </div>
-            <div class="quick-stats-grid">
-                <div class="stat-card-mini primary">
-                    <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
-                    <div>
-                        <h3>{{ number_format($totalCatatan) }}</h3>
-                        <p>Total Catatan</p>
-                    </div>
-                </div>
-                <div class="stat-card-mini warning">
-                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                    <div>
-                        <h3>{{ number_format($catatanBelum) }}</h3>
-                        <p>Belum Ditangani</p>
-                    </div>
-                </div>
-                <div class="stat-card-mini info">
-                    <div class="stat-icon"><i class="fas fa-spinner"></i></div>
-                    <div>
-                        <h3>{{ number_format($catatanProses) }}</h3>
-                        <p>Dalam Proses</p>
-                    </div>
-                </div>
-                <div class="stat-card-mini success">
-                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                    <div>
-                        <h3>{{ number_format($catatanSelesai) }}</h3>
-                        <p>Selesai</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Presensi Hari Ini Stats -->
         <div class="chart-card">
             <div class="chart-header">
@@ -364,6 +326,44 @@
                     </div>
                 </div>
             @endif
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <i class="fas fa-chart-pie"></i>
+                <h3>Statistik Catatan Bimbingan</h3>
+            </div>
+            <div class="quick-stats-grid">
+                <div class="stat-card-mini primary">
+                    <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+                    <div>
+                        <h3>{{ number_format($totalCatatan) }}</h3>
+                        <p>Total Catatan</p>
+                    </div>
+                </div>
+                <div class="stat-card-mini warning">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <h3>{{ number_format($catatanBelum) }}</h3>
+                        <p>Belum Ditangani</p>
+                    </div>
+                </div>
+                <div class="stat-card-mini info">
+                    <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+                    <div>
+                        <h3>{{ number_format($catatanProses) }}</h3>
+                        <p>Dalam Proses</p>
+                    </div>
+                </div>
+                <div class="stat-card-mini success">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <h3>{{ number_format($catatanSelesai) }}</h3>
+                        <p>Selesai</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Quick Actions -->
