@@ -40,12 +40,18 @@ class TugasTambahanController extends Controller
         // 2. WALI KELAS
         $tugasWaliKelas = $this->getTugasWaliKelas($guru_nama, $periodeAktif);
 
+        // 3. GURU WALI - Siswa yang dibimbing oleh guru ini
+        $guruWaliData = $this->getGuruWaliData($guru_nama, $periodeAktif);
+        $totalSiswaBimbinganWali = array_sum(array_column($guruWaliData, 'jumlah'));
+
         // Total tugas
-        $totalTugas = count($tugasPembina) + count($tugasWaliKelas);
+        $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbinganWali > 0 ? 1 : 0);
 
         return view('guru-bk.tugas-tambahan', compact(
             'tugasPembina',
             'tugasWaliKelas',
+            'guruWaliData',
+            'totalSiswaBimbinganWali',
             'totalTugas',
             'periodeAktif'
         ));
@@ -159,5 +165,76 @@ class TugasTambahanController extends Controller
         }
 
         return $tugasWaliKelas;
+    }
+
+    /**
+     * Get guru wali data - students assigned to this guru as guru wali
+     */
+    private function getGuruWaliData($guru_nama, $periodeAktif)
+    {
+        $guruWaliData = [];
+
+        $tahun_ajaran = explode('/', $periodeAktif->tahun_pelajaran);
+        $tahunAwal = intval($tahun_ajaran[0]);
+        $tahunAwalMinus1 = $tahunAwal - 1;
+        $tahunAwalMinus2 = $tahunAwal - 2;
+
+        if (strtolower($periodeAktif->semester) == 'ganjil') {
+            // Kelas X - Semester 1
+            $kelas10 = DB::table('siswa')
+                ->where('angkatan_masuk', $tahunAwal)
+                ->where('guru_wali_sem_1', $guru_nama)
+                ->count();
+            if ($kelas10 > 0) {
+                $guruWaliData[] = ['tingkat' => 'X', 'semester' => 1, 'jumlah' => $kelas10];
+            }
+
+            // Kelas XI - Semester 3
+            $kelas11 = DB::table('siswa')
+                ->where('angkatan_masuk', $tahunAwalMinus1)
+                ->where('guru_wali_sem_3', $guru_nama)
+                ->count();
+            if ($kelas11 > 0) {
+                $guruWaliData[] = ['tingkat' => 'XI', 'semester' => 3, 'jumlah' => $kelas11];
+            }
+
+            // Kelas XII - Semester 5
+            $kelas12 = DB::table('siswa')
+                ->where('angkatan_masuk', $tahunAwalMinus2)
+                ->where('guru_wali_sem_5', $guru_nama)
+                ->count();
+            if ($kelas12 > 0) {
+                $guruWaliData[] = ['tingkat' => 'XII', 'semester' => 5, 'jumlah' => $kelas12];
+            }
+        } else {
+            // Kelas X - Semester 2
+            $kelas10 = DB::table('siswa')
+                ->where('angkatan_masuk', $tahunAwal)
+                ->where('guru_wali_sem_2', $guru_nama)
+                ->count();
+            if ($kelas10 > 0) {
+                $guruWaliData[] = ['tingkat' => 'X', 'semester' => 2, 'jumlah' => $kelas10];
+            }
+
+            // Kelas XI - Semester 4
+            $kelas11 = DB::table('siswa')
+                ->where('angkatan_masuk', $tahunAwalMinus1)
+                ->where('guru_wali_sem_4', $guru_nama)
+                ->count();
+            if ($kelas11 > 0) {
+                $guruWaliData[] = ['tingkat' => 'XI', 'semester' => 4, 'jumlah' => $kelas11];
+            }
+
+            // Kelas XII - Semester 6
+            $kelas12 = DB::table('siswa')
+                ->where('angkatan_masuk', $tahunAwalMinus2)
+                ->where('guru_wali_sem_6', $guru_nama)
+                ->count();
+            if ($kelas12 > 0) {
+                $guruWaliData[] = ['tingkat' => 'XII', 'semester' => 6, 'jumlah' => $kelas12];
+            }
+        }
+
+        return $guruWaliData;
     }
 }

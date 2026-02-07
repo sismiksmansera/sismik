@@ -19,7 +19,7 @@
             </div>
             <div class="stat-info">
                 <h3>{{ count($tugasPembina) }}</h3>
-                <p>Pembina Ekstrakurikuler</p>
+                <p>Pembina Ekstra</p>
             </div>
         </div>
         <div class="stat-card">
@@ -29,6 +29,15 @@
             <div class="stat-info">
                 <h3>{{ count($tugasWaliKelas) }}</h3>
                 <p>Wali Kelas</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ $totalSiswaBimbinganWali }}</h3>
+                <p>Siswa Wali</p>
             </div>
         </div>
         <div class="stat-card">
@@ -179,6 +188,58 @@
         </div>
         @endif
 
+        {{-- GURU WALI (SISWA BIMBINGAN) --}}
+        @if($totalSiswaBimbinganWali > 0)
+        <div class="section-container">
+            <div class="section-header">
+                <div class="section-icon purple">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h2>Guru Wali (Siswa Bimbingan)</h2>
+            </div>
+
+            <div class="task-cards-grid">
+                <div class="task-card">
+                    {{-- Header Card --}}
+                    <div class="task-card-header purple">
+                        <div class="task-card-header-content">
+                            <div class="task-card-icon">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div>
+                                <h3>Siswa Bimbingan</h3>
+                                <span class="task-badge">
+                                    <i class="fas fa-heart"></i> Guru Wali
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Body Card --}}
+                    <div class="task-card-body">
+                        <div class="task-stats-grid" style="grid-template-columns: 1fr 1fr;">
+                            <a href="{{ route('guru_bk.siswa-wali') }}" class="task-stat-item hoverable purple-hover" style="grid-column: span 2;">
+                                <div class="task-stat-value" style="color: #8b5cf6;">{{ $totalSiswaBimbinganWali }}</div>
+                                <div class="task-stat-label">Total Siswa Bimbingan</div>
+                            </a>
+                        </div>
+                        @if(count($guruWaliData) > 0)
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                @foreach($guruWaliData as $wali)
+                                    <span style="background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: #374151;">
+                                        <strong>Kelas {{ $wali['tingkat'] }}</strong>: {{ $wali['jumlah'] }} siswa
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
     @else
         {{-- EMPTY STATE --}}
         <div class="empty-state">
@@ -238,7 +299,7 @@
 /* Stats Grid */
 .tugas-tambahan-bk .stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     margin-bottom: 25px;
 }
@@ -276,6 +337,7 @@
 .tugas-tambahan-bk .stat-icon.primary { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
 .tugas-tambahan-bk .stat-icon.success { background: linear-gradient(135deg, #10b981, #059669); }
 .tugas-tambahan-bk .stat-icon.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.tugas-tambahan-bk .stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
 
 .tugas-tambahan-bk .stat-info h3 {
     margin: 0;
@@ -314,6 +376,7 @@
 
 .section-icon.blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
 .section-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.section-icon.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
 
 .section-header h2 {
     margin: 0;
@@ -350,6 +413,10 @@
 
 .task-card-header.green {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.task-card-header.purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 .task-card-header-content {
@@ -413,6 +480,10 @@
 
 .task-stat-item.green-hover:hover {
     background: rgba(16, 185, 129, 0.15);
+}
+
+.task-stat-item.purple-hover:hover {
+    background: rgba(139, 92, 246, 0.15);
 }
 
 .task-stat-value {
