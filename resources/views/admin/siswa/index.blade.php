@@ -311,6 +311,12 @@
         max-height: 90vh;
         overflow: hidden;
         animation: slideIn 0.3s ease;
+        position: relative;
+        z-index: 1051;
+        pointer-events: auto;
+    }
+    .modal-dialog * {
+        pointer-events: auto;
     }
     @keyframes slideIn {
         from { transform: translateY(-30px); opacity: 0; }
@@ -415,8 +421,6 @@
         border-radius: 6px;
         font-size: 12px;
         cursor: pointer;
-        position: relative;
-        z-index: 100;
     }
     
     /* Warning Notice */
@@ -1105,9 +1109,16 @@ document.getElementById('saveBK')?.addEventListener('click', async function() {
     location.reload();
 });
 
-// Modal closing is handled only by close buttons - no backdrop click
-// This prevents issues with dropdown selection inside modals
-
+// Close modal when clicking on backdrop (outside modal-dialog)
+// Only close if click is directly on the modal element (backdrop), not its children
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('mousedown', function(e) {
+        // Only close if the mousedown target is exactly the modal backdrop
+        if (e.target === this) {
+            closeModal(this.id);
+        }
+    });
+});
 
 // Foto Modal Functions
 function openFotoModal(nama, fotoUrl, siswaId) {
