@@ -8,6 +8,7 @@ use App\Models\GuruBK;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Services\NameCascadeService;
 
 class GuruBKController extends Controller
 {
@@ -101,6 +102,7 @@ class GuruBKController extends Controller
     public function update(Request $request, $id)
     {
         $guruBK = GuruBK::findOrFail($id);
+        $oldName = $guruBK->nama; // Store old name for cascade update
 
         $request->validate([
             'nama' => 'required|string|max:255',
@@ -145,6 +147,11 @@ class GuruBKController extends Controller
         }
 
         $guruBK->update($data);
+
+        // Cascade name update if name changed
+        if ($oldName !== $request->nama) {
+            NameCascadeService::updateGuruBKName($oldName, $request->nama);
+        }
 
         // Redirect back to edit page if only uploading foto
         if ($request->hasFile('foto') && !$request->filled('password') && !$request->has('full_update')) {

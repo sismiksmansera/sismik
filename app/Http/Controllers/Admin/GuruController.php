@@ -8,6 +8,7 @@ use App\Models\Guru;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Services\NameCascadeService;
 
 class GuruController extends Controller
 {
@@ -104,6 +105,7 @@ class GuruController extends Controller
     public function update(Request $request, $id)
     {
         $guru = Guru::findOrFail($id);
+        $oldName = $guru->nama; // Store old name for cascade update
 
         $request->validate([
             'nama' => 'required|string|max:255',
@@ -151,6 +153,11 @@ class GuruController extends Controller
         }
 
         $guru->update($data);
+
+        // Cascade name update if name changed
+        if ($oldName !== $request->nama) {
+            NameCascadeService::updateGuruName($oldName, $request->nama);
+        }
 
         // Redirect back to edit page if only uploading foto
         if ($request->hasFile('foto') && !$request->filled('password') && !$request->has('full_update')) {

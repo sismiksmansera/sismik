@@ -11,6 +11,7 @@ use App\Models\Siswa;
 use App\Models\Rombel;
 use App\Models\GuruBK;
 use App\Models\DataPeriodik;
+use App\Services\NameCascadeService;
 
 class SiswaController extends Controller
 {
@@ -167,6 +168,8 @@ class SiswaController extends Controller
         ]);
 
         $siswa = Siswa::findOrFail($id);
+        $oldName = $siswa->nama; // Store old name for cascade update
+        $nisnForCascade = $siswa->nisn; // Store NISN for accurate cascade
         
         $data = [
             'nis' => $request->nis,
@@ -226,6 +229,11 @@ class SiswaController extends Controller
         }
 
         $siswa->update($data);
+
+        // Cascade name update if name changed
+        if ($oldName !== $request->nama) {
+            NameCascadeService::updateSiswaName($oldName, $request->nama, $nisnForCascade);
+        }
 
         // Redirect back to edit page if only uploading foto
         if ($request->hasFile('foto') && !$request->filled('password') && !$request->has('full_update')) {
