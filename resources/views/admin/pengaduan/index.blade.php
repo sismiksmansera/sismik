@@ -556,6 +556,13 @@ function updateNIP() {
 
 function submitTeruskan(e) {
     e.preventDefault();
+    
+    const tujuan = document.getElementById('teruskan_tujuan').value;
+    if (!tujuan || tujuan.trim() === '') {
+        alert('Silakan pilih tujuan penerusan');
+        return;
+    }
+    
     const formData = new FormData(document.getElementById('formTeruskan'));
     
     fetch('{{ route("admin.pengaduan.teruskan") }}', {
@@ -571,6 +578,10 @@ function submitTeruskan(e) {
         } else {
             alert(data.message || 'Gagal meneruskan');
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Terjadi kesalahan jaringan');
     });
 }
 
