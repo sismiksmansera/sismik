@@ -288,7 +288,7 @@
                                     <button onclick="kelolaPengaduan({{ $item->id }}, '{{ $item->status }}', '{{ addslashes($item->tanggapan ?? '') }}')" class="btn-action btn-success" title="Kelola">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button onclick="teruskanPengaduan({{ $item->id }}, '{{ $item->nama_pelapor }}', '{{ $item->rombel_aktif ?? $item->rombel_pelapor }}', '{{ $item->wali_kelas ?? '' }}', '{{ $item->guru_bk_siswa ?? '' }}')" class="btn-action btn-warning" title="Teruskan">
+                                    <button onclick="teruskanPengaduan({{ $item->id }}, '{{ addslashes($item->nama_pelapor) }}', '{{ $item->rombel_aktif ?? $item->rombel_pelapor }}')" class="btn-action btn-warning" title="Teruskan">
                                         <i class="fas fa-share"></i>
                                     </button>
                                     <button onclick="hapusPengaduan({{ $item->id }})" class="btn-action btn-danger" title="Hapus">
@@ -394,18 +394,23 @@
                         <optgroup label="📋 Wakil Kepala Sekolah">
                             @foreach($wakaData as $waka)
                                 @if(!empty($waka['nama']))
-                                <option value="{{ $waka['nama'] }}" data-role="{{ $waka['role'] }}">{{ $waka['role'] }}: {{ $waka['nama'] }}</option>
+                                <option value="{{ $waka['nama'] }}" data-nip="" data-role="{{ $waka['role'] }}">{{ $waka['role'] }}: {{ $waka['nama'] }}</option>
                                 @endif
                             @endforeach
                         </optgroup>
-                        <optgroup label="👨‍💼 Guru BK Siswa" id="optgroup_gurubk">
-                            <!-- Populated dynamically based on student's assigned BK -->
+                        <optgroup label="👨‍💼 Guru BK">
+                            @foreach($guruBkList as $gbk)
+                            <option value="{{ $gbk->nama }}" data-nip="{{ $gbk->nip }}" data-role="Guru BK">{{ $gbk->nama }} ({{ $gbk->nip }})</option>
+                            @endforeach
                         </optgroup>
-                        <optgroup label="👨‍🏫 Wali Kelas Siswa" id="optgroup_walikelas">
-                            <!-- Populated dynamically based on student's rombel -->
+                        <optgroup label="👨‍🏫 Guru / Wali Kelas">
+                            @foreach($guruList as $guru)
+                            <option value="{{ $guru->nama }}" data-nip="{{ $guru->nip }}" data-role="Guru">{{ $guru->nama }} ({{ $guru->nip }})</option>
+                            @endforeach
                         </optgroup>
                     </select>
                 </div>
+
 
                 <div style="background: #fef3c7; padding: 12px; border: 1px solid #fbbf24; border-radius: 10px;">
                     <i class="fas fa-info-circle"></i>
@@ -501,48 +506,15 @@ function submitKelola(e) {
     });
 }
 
-function teruskanPengaduan(id, nama, rombel, waliKelas, guruBk) {
+function teruskanPengaduan(id, nama, rombel) {
     document.getElementById('teruskan_id').value = id;
     document.getElementById('teruskan_pelapor').textContent = nama;
     document.getElementById('teruskan_rombel').textContent = rombel || '-';
     document.getElementById('teruskan_tujuan').value = '';
     document.getElementById('teruskan_nip').value = '';
     
-    // Populate Guru BK Siswa optgroup
-    const gbkGroup = document.getElementById('optgroup_gurubk');
-    gbkGroup.innerHTML = '';
-    if (guruBk && guruBk.trim() !== '') {
-        const opt = document.createElement('option');
-        opt.value = guruBk;
-        opt.textContent = guruBk + ' (Guru BK Siswa)';
-        opt.dataset.role = 'Guru BK';
-        gbkGroup.appendChild(opt);
-    } else {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.disabled = true;
-        opt.textContent = '(Belum ada Guru BK yang ditugaskan)';
-        gbkGroup.appendChild(opt);
-    }
-    
-    // Populate Wali Kelas optgroup
-    const wkGroup = document.getElementById('optgroup_walikelas');
-    wkGroup.innerHTML = '';
-    if (waliKelas && waliKelas.trim() !== '') {
-        const opt = document.createElement('option');
-        opt.value = waliKelas;
-        opt.textContent = waliKelas + ' (Wali Kelas ' + (rombel || '') + ')';
-        opt.dataset.role = 'Wali Kelas';
-        wkGroup.appendChild(opt);
-    } else {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.disabled = true;
-        opt.textContent = '(Belum ada Wali Kelas)';
-        wkGroup.appendChild(opt);
-    }
-    
     openModal('modalTeruskan');
+}
 }
 
 

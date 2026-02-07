@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\Pengaduan;
 use App\Models\DataPeriodik;
 use App\Models\GuruBK;
+use App\Models\Guru;
 use App\Models\Rombel;
 use App\Models\Siswa;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+
 
 class PengaduanController extends Controller
 {
@@ -133,6 +135,11 @@ class PengaduanController extends Controller
             ->orderBy('nama', 'asc')
             ->get(['id', 'nama', 'nip']);
 
+        // Get all active Gurus for forwarding
+        $guruList = Guru::where('status', 'Aktif')
+            ->orderBy('nama', 'asc')
+            ->get(['id', 'nama', 'nip']);
+
         return view('admin.pengaduan.index', compact(
             'periodik',
             'tahunAktif',
@@ -144,9 +151,11 @@ class PengaduanController extends Controller
             'statusStats',
             'totalPengaduan',
             'wakaData',
-            'guruBkList'
+            'guruBkList',
+            'guruList'
         ));
     }
+
 
     /**
      * Get detail pengaduan (AJAX)
