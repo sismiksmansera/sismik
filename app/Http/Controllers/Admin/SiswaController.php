@@ -13,6 +13,9 @@ use App\Models\GuruBK;
 use App\Models\Guru;
 use App\Models\DataPeriodik;
 use App\Services\NameCascadeService;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class SiswaController extends Controller
 {
@@ -476,7 +479,7 @@ class SiswaController extends Controller
     }
 
     /**
-     * Download periodic data template (Excel CSV)
+     * Download periodic data template (Excel XLSX)
      */
     public function downloadPeriodicTemplate()
     {
@@ -485,61 +488,65 @@ class SiswaController extends Controller
         $tahunAktif = $periodeAktif->tahun_pelajaran ?? '';
         $semesterAktif = $periodeAktif->semester ?? '';
         
-        // Calculate semester number (1-6) for each student
+        // Get all active students
         $siswaList = Siswa::where('status_siswa', 'Aktif')
             ->orderBy('nama')
             ->get();
         
-        // Create CSV content
-        $filename = 'template_data_periodik_' . date('Y-m-d') . '.csv';
+        // Create Spreadsheet
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Periodik');
         
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ];
+        // Header row with styling
+        $headers = ['Nama', 'NISN', 'Tahun Pelajaran', 'Semester', 'Rombel', 'Guru BK', 'Guru Wali'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+            $col++;
+        }
         
-        $callback = function() use ($siswaList, $tahunAktif, $semesterAktif) {
-            $file = fopen('php://output', 'w');
+        // Data rows
+        $row = 2;
+        foreach ($siswaList as $siswa) {
+            $semesterNumber = $this->calculateActiveSemester($siswa->angkatan_masuk, $tahunAktif, $semesterAktif);
             
-            // UTF-8 BOM for Excel compatibility
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            $rombelCol = "rombel_semester_{$semesterNumber}";
+            $bkCol = "bk_semester_{$semesterNumber}";
+            $waliCol = "guru_wali_sem_{$semesterNumber}";
             
-            // Header row
-            fputcsv($file, ['Nama', 'NISN', 'Tahun Pelajaran', 'Semester', 'Rombel', 'Guru BK', 'Guru Wali']);
-            
-            foreach ($siswaList as $siswa) {
-                // Calculate active semester for this student
-                $semesterNumber = $this->calculateActiveSemester($siswa->angkatan_masuk, $tahunAktif, $semesterAktif);
-                
-                // Get current values
-                $rombelCol = "rombel_semester_{$semesterNumber}";
-                $bkCol = "bk_semester_{$semesterNumber}";
-                $waliCol = "guru_wali_sem_{$semesterNumber}";
-                
-                fputcsv($file, [
-                    $siswa->nama,
-                    $siswa->nisn,
-                    $tahunAktif,
-                    $semesterNumber,
-                    $siswa->$rombelCol ?? '',
-                    $siswa->$bkCol ?? '',
-                    $siswa->$waliCol ?? '',
-                ]);
-            }
-            
-            fclose($file);
-        };
+            $sheet->setCellValue('A' . $row, $siswa->nama);
+            $sheet->setCellValue('B' . $row, $siswa->nisn);
+            $sheet->setCellValue('C' . $row, $tahunAktif);
+            $sheet->setCellValue('D' . $row, $semesterNumber);
+            $sheet->setCellValue('E' . $row, $siswa->$rombelCol ?? '');
+            $sheet->setCellValue('F' . $row, $siswa->$bkCol ?? '');
+            $sheet->setCellValue('G' . $row, $siswa->$waliCol ?? '');
+            $row++;
+        }
         
-        return response()->stream($callback, 200, $headers);
+        // Generate file
+        $filename = 'template_data_periodik_' . date('Y-m-d') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+        
+        // Output to browser
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer->save('php://output');
+        exit;
     }
 
     /**
-     * Import periodic data (Rombel, Guru BK, Guru Wali)
+     * Import periodic data (Rombel, Guru BK, Guru Wali) from XLSX
      */
     public function importPeriodicData(Request $request)
     {
         $request->validate([
-            'file_periodic' => 'required|file|mimes:csv,txt|max:5120',
+            'file_periodic' => 'required|file|mimes:xlsx,xls|max:5120',
         ]);
 
         $file = $request->file('file_periodic');
@@ -549,10 +556,15 @@ class SiswaController extends Controller
         $skipped = 0;
         $errors = [];
 
-        if (($handle = fopen($path, 'r')) !== false) {
-            $header = fgetcsv($handle, 0, ',');
+        try {
+            $spreadsheet = IOFactory::load($path);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
             
-            while (($data = fgetcsv($handle, 0, ',')) !== false) {
+            // Skip header row
+            array_shift($rows);
+            
+            foreach ($rows as $index => $data) {
                 if (count($data) < 7) {
                     $skipped++;
                     continue;
@@ -576,7 +588,6 @@ class SiswaController extends Controller
                         continue;
                     }
                     
-                    // Update columns for the specified semester
                     $updateData = [];
                     
                     if (!empty($rombel)) {
@@ -596,10 +607,12 @@ class SiswaController extends Controller
                         $skipped++;
                     }
                 } catch (\Exception $e) {
-                    $errors[] = "Baris: " . ($updated + $skipped + 2) . " - " . $e->getMessage();
+                    $errors[] = "Baris " . ($index + 2) . ": " . $e->getMessage();
                 }
             }
-            fclose($handle);
+        } catch (\Exception $e) {
+            return redirect()->route('admin.siswa.import')
+                ->withErrors(['file_periodic' => 'Gagal membaca file: ' . $e->getMessage()]);
         }
 
         $message = "Import data periodik selesai: $updated data berhasil diupdate, $skipped data dilewati.";

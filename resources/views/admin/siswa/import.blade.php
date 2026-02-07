@@ -246,7 +246,7 @@
                     <p>Download data siswa aktif dengan kolom Rombel, Guru BK, Guru Wali</p>
                 </div>
                 <a href="{{ route('admin.siswa.import.periodic-template') }}" class="btn btn-light" style="color: #d97706;">
-                    <i class="fas fa-file-csv"></i> Download
+                    <i class="fas fa-file-excel"></i> Download
                 </a>
             </div>
 
@@ -256,15 +256,15 @@
                 <!-- Upload Zone for Periodic Data -->
                 <div class="upload-zone" id="dropZonePeriodic" onclick="document.getElementById('fileInputPeriodic').click()" style="border-color: #f59e0b;">
                     <i class="fas fa-cloud-upload-alt" style="color: #f59e0b;"></i>
-                    <h3>Drag & Drop file CSV Data Periodik</h3>
+                    <h3>Drag & Drop file Excel Data Periodik</h3>
                     <p>atau klik untuk memilih file</p>
-                    <p style="margin-top: 10px;"><strong>Format: .csv</strong> | Maksimal: 5MB</p>
+                    <p style="margin-top: 10px;"><strong>Format: .xlsx</strong> | Maksimal: 5MB</p>
                 </div>
-                <input type="file" name="file_periodic" id="fileInputPeriodic" accept=".csv" style="display: none;">
+                <input type="file" name="file_periodic" id="fileInputPeriodic" accept=".xlsx,.xls" style="display: none;">
 
                 <!-- File Info for Periodic -->
                 <div class="file-info" id="fileInfoPeriodic" style="background: #fef3c7;">
-                    <i class="fas fa-file-csv" style="color: #d97706;"></i>
+                    <i class="fas fa-file-excel" style="color: #d97706;"></i>
                     <div>
                         <div class="file-name" id="fileNamePeriodic" style="color: #92400e;">-</div>
                         <div class="file-size" id="fileSizePeriodic">-</div>
@@ -394,8 +394,8 @@
     });
 
     function showFileInfoPeriodic(file) {
-        if (!file.name.endsWith('.csv')) {
-            alert('Hanya file CSV yang diperbolehkan!');
+        if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+            alert('Hanya file Excel (.xlsx/.xls) yang diperbolehkan!');
             fileInputPeriodic.value = '';
             return;
         }
