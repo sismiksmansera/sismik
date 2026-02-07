@@ -91,8 +91,8 @@ class SiswaBimbinganController extends Controller
 
         // Stats
         $totalSiswa = $siswaList->count();
-        $totalLaki = $siswaList->where('jk', 'L')->count();
-        $totalPerempuan = $siswaList->where('jk', 'P')->count();
+        $totalLaki = $siswaList->where('jk', 'Laki-laki')->count();
+        $totalPerempuan = $siswaList->where('jk', 'Perempuan')->count();
 
         return view('guru.siswa-bimbingan', compact(
             'guru',

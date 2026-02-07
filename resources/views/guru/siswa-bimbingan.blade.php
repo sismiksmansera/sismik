@@ -397,8 +397,8 @@
                                             <div class="student-nisn">NISN: {{ $siswa->nisn }}</div>
                                             <div class="student-meta">
                                                 <span class="student-meta-item rombel">{{ $siswa->rombel ?? '-' }}</span>
-                                                <span class="student-meta-item {{ $siswa->jk == 'L' ? 'gender-l' : 'gender-p' }}">
-                                                    {{ $siswa->jk == 'L' ? 'Laki-laki' : 'Perempuan' }}
+                                                <span class="student-meta-item {{ $siswa->jk == 'Laki-laki' ? 'gender-l' : 'gender-p' }}">
+                                                    {{ $siswa->jk }}
                                                 </span>
                                             </div>
                                         </div>
