@@ -585,12 +585,8 @@
             <i class="fas fa-camera"></i> Upload Foto Profil Siswa
         </h3>
         
-        <form action="{{ route('admin.siswa.update', $siswa->id) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.siswa.photo', $siswa->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
-            @method('PUT')
-            
-            <input type="hidden" name="nisn" value="{{ $siswa->nisn }}">
-            <input type="hidden" name="nama" value="{{ $siswa->nama }}">
             
             <div style="text-align: center;">
                 <div class="dropzone" onclick="document.getElementById('fotoInput').click()" id="dropZone">
