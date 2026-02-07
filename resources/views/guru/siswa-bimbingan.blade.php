@@ -1,0 +1,423 @@
+@extends('layouts.app')
+
+@section('title', 'Siswa Bimbingan')
+
+@push('styles')
+<style>
+/* HEADER SECTION */
+.bimbingan-header {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 25px;
+    color: white;
+    text-align: center;
+}
+
+.bimbingan-header .header-icon-large {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 20px;
+}
+
+.bimbingan-header .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+}
+
+.bimbingan-header .header-subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.25);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+/* STATS GRID */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.stat-icon.blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.stat-icon.pink { background: linear-gradient(135deg, #ec4899, #db2777); }
+
+.stat-info { flex: 1; min-width: 0; }
+.stat-info h3 { margin: 0; font-size: 20px; font-weight: 700; color: #1f2937; }
+.stat-info p { margin: 4px 0 0 0; color: #6b7280; font-size: 12px; font-weight: 500; }
+
+/* ACTION BUTTONS */
+.action-buttons-header {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.btn-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-back {
+    background: white;
+    color: #374151;
+    border: 2px solid #d1d5db;
+}
+
+.btn-back:hover {
+    background: #f3f4f6;
+    transform: translateY(-2px);
+    color: #1f2937;
+}
+
+/* SECTION */
+.tingkat-section {
+    margin-bottom: 30px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.section-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.section-header h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.25rem;
+}
+
+/* STUDENT CARDS GRID */
+.student-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* STUDENT CARD */
+.student-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.student-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.student-card-body {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.student-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.student-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.student-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.student-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.student-nisn {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.student-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.student-meta-item {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.student-meta-item.rombel {
+    background: rgba(139, 92, 246, 0.1);
+    color: #7c3aed;
+}
+
+.student-meta-item.gender-l {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+}
+
+.student-meta-item.gender-p {
+    background: rgba(236, 72, 153, 0.1);
+    color: #db2777;
+}
+
+/* EMPTY STATE */
+.empty-state {
+    background: white;
+    border-radius: 16px;
+    padding: 60px 30px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.empty-icon-wrapper {
+    width: 100px;
+    height: 100px;
+    background: #f3f4f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+}
+
+.empty-icon-wrapper i {
+    font-size: 40px;
+    color: #9ca3af;
+}
+
+.empty-state h3 {
+    margin: 0 0 10px 0;
+    color: #1f2937;
+    font-size: 1.25rem;
+}
+
+.empty-state p {
+    margin: 0;
+    color: #6b7280;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .bimbingan-header { padding: 20px 15px; }
+    .bimbingan-header .header-icon-large {
+        width: 60px; height: 60px; font-size: 28px; margin-bottom: 15px;
+    }
+    .bimbingan-header .page-title { font-size: 20px; }
+    
+    .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-card {
+        flex-direction: column; text-align: center; padding: 12px 8px; gap: 8px;
+    }
+    .stat-icon { width: 35px; height: 35px; font-size: 14px; }
+    .stat-info h3 { font-size: 16px; }
+    .stat-info p { font-size: 10px; }
+    
+    .student-cards-grid { grid-template-columns: 1fr; gap: 12px; }
+    .student-card-body { padding: 15px; }
+    .student-photo { width: 50px; height: 50px; font-size: 20px; }
+}
+</style>
+@endpush
+
+@section('content')
+<div class="layout">
+    @include('layouts.partials.sidebar-guru')
+    
+    <div class="main-content">
+        <div class="siswa-bimbingan-page">
+            <!-- HEADER SECTION -->
+            <div class="bimbingan-header">
+                <div class="header-icon-large">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h1 class="page-title">Siswa Bimbingan</h1>
+                <p class="header-subtitle">Daftar siswa yang Anda bimbing sebagai Guru Wali</p>
+                <span class="header-badge">
+                    <i class="fas fa-calendar-alt"></i> {{ $tahunPelajaran }} - {{ ucfirst($semesterAktif) }}
+                </span>
+            </div>
+
+            <!-- STATS CARDS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ $totalSiswa }}</h3>
+                        <p>Total Siswa</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-mars"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ $totalLaki }}</h3>
+                        <p>Laki-laki</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pink">
+                        <i class="fas fa-venus"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ $totalPerempuan }}</h3>
+                        <p>Perempuan</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="action-buttons-header">
+                <a href="{{ route('guru.tugas-tambahan') }}" class="btn-modern btn-back">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+            </div>
+
+            @if($totalSiswa > 0)
+                @foreach($siswaByTingkat as $tingkat => $siswas)
+                    <div class="tingkat-section">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h2>Kelas {{ $tingkat }} ({{ count($siswas) }} Siswa)</h2>
+                        </div>
+                        
+                        <div class="student-cards-grid">
+                            @foreach($siswas as $siswa)
+                                <div class="student-card">
+                                    <div class="student-card-body">
+                                        <div class="student-photo">
+                                            @if($siswa->foto)
+                                                <img src="{{ asset('storage/siswa/' . $siswa->foto) }}" alt="{{ $siswa->nama }}">
+                                            @else
+                                                {{ strtoupper(substr($siswa->nama, 0, 1)) }}
+                                            @endif
+                                        </div>
+                                        <div class="student-info">
+                                            <h4>{{ $siswa->nama }}</h4>
+                                            <div class="student-nisn">NISN: {{ $siswa->nisn }}</div>
+                                            <div class="student-meta">
+                                                <span class="student-meta-item rombel">{{ $siswa->rombel ?? '-' }}</span>
+                                                <span class="student-meta-item {{ $siswa->jenis_kelamin == 'L' ? 'gender-l' : 'gender-p' }}">
+                                                    {{ $siswa->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+            @else
+                <div class="empty-state">
+                    <div class="empty-icon-wrapper">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3>Belum Ada Siswa Bimbingan</h3>
+                    <p>Anda belum memiliki siswa bimbingan untuk periode {{ $tahunPelajaran }} - {{ ucfirst($semesterAktif) }}</p>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+@endsection

@@ -252,6 +252,9 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     // Tugas Tambahan route
     Route::get('/tugas-tambahan', [\App\Http\Controllers\Guru\TugasTambahanController::class, 'index'])->name('tugas-tambahan');
     
+    // Siswa Bimbingan (Guru Wali) route
+    Route::get('/siswa-bimbingan', [\App\Http\Controllers\Guru\SiswaBimbinganController::class, 'index'])->name('siswa-bimbingan');
+    
     // Anggota Ekstrakurikuler routes
     Route::get('/anggota-ekstrakurikuler', [\App\Http\Controllers\Guru\AnggotaEkstrakurikulerController::class, 'index'])->name('anggota-ekstrakurikuler');
     Route::post('/anggota-ekstrakurikuler/tambah', [\App\Http\Controllers\Guru\AnggotaEkstrakurikulerController::class, 'tambahAnggota'])->name('anggota-ekstrakurikuler.tambah');

@@ -39,10 +39,12 @@
 /* STATS GRID */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     margin-bottom: 25px;
 }
+
+.stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
 
 .stat-card {
     background: white;
@@ -344,6 +346,15 @@
                     </div>
                 </div>
                 <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ $totalSiswaBimbingan }}</h3>
+                        <p>Siswa Bimbingan</p>
+                    </div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-icon warning">
                         <i class="fas fa-calendar-alt"></i>
                     </div>
@@ -457,6 +468,55 @@
                                 </div>
                             </div>
                         @endforeach
+                    </div>
+                @endif
+
+                <!-- GURU WALI (Siswa Bimbingan) -->
+                @if($totalSiswaBimbingan > 0)
+                    <div class="section-header">
+                        <div class="section-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h2>Guru Wali (Siswa Bimbingan)</h2>
+                    </div>
+                    
+                    <div class="task-cards-grid">
+                        <div class="task-card">
+                            <div class="task-card-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                                <div class="task-icon">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div class="task-info">
+                                    <h3>Siswa Bimbingan</h3>
+                                    <span class="task-badge">
+                                        <i class="fas fa-heart"></i> Guru Wali
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="task-card-body">
+                                <div class="task-stats-grid">
+                                    <a href="{{ route('guru.siswa-bimbingan') }}" class="task-stat-item clickable" style="grid-column: span 2;">
+                                        <div class="task-stat-value" style="color: #8b5cf6;">{{ $totalSiswaBimbingan }}</div>
+                                        <div class="task-stat-label">Total Siswa Bimbingan</div>
+                                    </a>
+                                    <div class="task-stat-item">
+                                        <div class="task-stat-value dark">{{ count($guruWaliData) }}</div>
+                                        <div class="task-stat-label">Tingkat</div>
+                                    </div>
+                                </div>
+                                @if(count($guruWaliData) > 0)
+                                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                        @foreach($guruWaliData as $wali)
+                                            <span style="background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: #374151;">
+                                                <strong>Kelas {{ $wali['tingkat'] }}</strong>: {{ $wali['jumlah'] }} siswa
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 @endif
             @else
