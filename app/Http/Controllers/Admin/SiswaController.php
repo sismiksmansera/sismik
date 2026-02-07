@@ -476,6 +476,142 @@ class SiswaController extends Controller
     }
 
     /**
+     * Download periodic data template (Excel CSV)
+     */
+    public function downloadPeriodicTemplate()
+    {
+        // Get active period
+        $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodeAktif->tahun_pelajaran ?? '';
+        $semesterAktif = $periodeAktif->semester ?? '';
+        
+        // Calculate semester number (1-6) for each student
+        $siswaList = Siswa::where('status_siswa', 'Aktif')
+            ->orderBy('nama')
+            ->get();
+        
+        // Create CSV content
+        $filename = 'template_data_periodik_' . date('Y-m-d') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+        
+        $callback = function() use ($siswaList, $tahunAktif, $semesterAktif) {
+            $file = fopen('php://output', 'w');
+            
+            // UTF-8 BOM for Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Header row
+            fputcsv($file, ['Nama', 'NISN', 'Tahun Pelajaran', 'Semester', 'Rombel', 'Guru BK', 'Guru Wali']);
+            
+            foreach ($siswaList as $siswa) {
+                // Calculate active semester for this student
+                $semesterNumber = $this->calculateActiveSemester($siswa->angkatan_masuk, $tahunAktif, $semesterAktif);
+                
+                // Get current values
+                $rombelCol = "rombel_semester_{$semesterNumber}";
+                $bkCol = "bk_semester_{$semesterNumber}";
+                $waliCol = "guru_wali_sem_{$semesterNumber}";
+                
+                fputcsv($file, [
+                    $siswa->nama,
+                    $siswa->nisn,
+                    $tahunAktif,
+                    $semesterNumber,
+                    $siswa->$rombelCol ?? '',
+                    $siswa->$bkCol ?? '',
+                    $siswa->$waliCol ?? '',
+                ]);
+            }
+            
+            fclose($file);
+        };
+        
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Import periodic data (Rombel, Guru BK, Guru Wali)
+     */
+    public function importPeriodicData(Request $request)
+    {
+        $request->validate([
+            'file_periodic' => 'required|file|mimes:csv,txt|max:5120',
+        ]);
+
+        $file = $request->file('file_periodic');
+        $path = $file->getRealPath();
+        
+        $updated = 0;
+        $skipped = 0;
+        $errors = [];
+
+        if (($handle = fopen($path, 'r')) !== false) {
+            $header = fgetcsv($handle, 0, ',');
+            
+            while (($data = fgetcsv($handle, 0, ',')) !== false) {
+                if (count($data) < 7) {
+                    $skipped++;
+                    continue;
+                }
+                
+                try {
+                    $nisn = trim($data[1] ?? '');
+                    $semester = intval(trim($data[3] ?? 0));
+                    $rombel = trim($data[4] ?? '');
+                    $guruBK = trim($data[5] ?? '');
+                    $guruWali = trim($data[6] ?? '');
+                    
+                    if (empty($nisn) || $semester < 1 || $semester > 6) {
+                        $skipped++;
+                        continue;
+                    }
+                    
+                    $siswa = Siswa::where('nisn', $nisn)->first();
+                    if (!$siswa) {
+                        $skipped++;
+                        continue;
+                    }
+                    
+                    // Update columns for the specified semester
+                    $updateData = [];
+                    
+                    if (!empty($rombel)) {
+                        $updateData["rombel_semester_{$semester}"] = $rombel;
+                    }
+                    if (!empty($guruBK)) {
+                        $updateData["bk_semester_{$semester}"] = $guruBK;
+                    }
+                    if (!empty($guruWali)) {
+                        $updateData["guru_wali_sem_{$semester}"] = $guruWali;
+                    }
+                    
+                    if (!empty($updateData)) {
+                        $siswa->update($updateData);
+                        $updated++;
+                    } else {
+                        $skipped++;
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = "Baris: " . ($updated + $skipped + 2) . " - " . $e->getMessage();
+                }
+            }
+            fclose($handle);
+        }
+
+        $message = "Import data periodik selesai: $updated data berhasil diupdate, $skipped data dilewati.";
+        if (!empty($errors)) {
+            $message .= " (" . count($errors) . " error)";
+        }
+
+        return redirect()->route('admin.siswa.import')
+            ->with('success', $message);
+    }
+
+    /**
      * Upload photo
      */
     public function uploadPhoto(Request $request, $id)

@@ -151,6 +151,13 @@
             </div>
         @endif
 
+        @if(session('success'))
+            <div class="alert alert-success" style="background: #d1fae5; border: 1px solid #10b981; color: #065f46; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                {{ session('success') }}
+            </div>
+        @endif
+
         <div class="import-card">
             <form action="{{ route('admin.siswa.import.process') }}" method="POST" enctype="multipart/form-data" id="importForm">
                 @csrf
@@ -222,6 +229,82 @@
                 </div>
             </form>
         </div>
+
+        <!-- Periodic Data Import Section -->
+        <div class="import-card" style="margin-top: 30px;">
+            <h2 style="margin-bottom: 20px; font-size: 20px; color: var(--gray-700);">
+                <i class="fas fa-sync-alt" style="color: #f59e0b;"></i> Import Data Periodik
+            </h2>
+            <p style="color: var(--gray-600); margin-bottom: 20px;">
+                Update data Rombel, Guru BK, dan Guru Wali untuk periode aktif saat ini.
+            </p>
+
+            <!-- Download Template -->
+            <div class="template-box" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                <div class="template-text">
+                    <h4><i class="fas fa-download"></i> Download Template Data Periodik</h4>
+                    <p>Download data siswa aktif dengan kolom Rombel, Guru BK, Guru Wali</p>
+                </div>
+                <a href="{{ route('admin.siswa.import.periodic-template') }}" class="btn btn-light" style="color: #d97706;">
+                    <i class="fas fa-file-csv"></i> Download
+                </a>
+            </div>
+
+            <form action="{{ route('admin.siswa.import.periodic') }}" method="POST" enctype="multipart/form-data" id="periodicImportForm">
+                @csrf
+
+                <!-- Upload Zone for Periodic Data -->
+                <div class="upload-zone" id="dropZonePeriodic" onclick="document.getElementById('fileInputPeriodic').click()" style="border-color: #f59e0b;">
+                    <i class="fas fa-cloud-upload-alt" style="color: #f59e0b;"></i>
+                    <h3>Drag & Drop file CSV Data Periodik</h3>
+                    <p>atau klik untuk memilih file</p>
+                    <p style="margin-top: 10px;"><strong>Format: .csv</strong> | Maksimal: 5MB</p>
+                </div>
+                <input type="file" name="file_periodic" id="fileInputPeriodic" accept=".csv" style="display: none;">
+
+                <!-- File Info for Periodic -->
+                <div class="file-info" id="fileInfoPeriodic" style="background: #fef3c7;">
+                    <i class="fas fa-file-csv" style="color: #d97706;"></i>
+                    <div>
+                        <div class="file-name" id="fileNamePeriodic" style="color: #92400e;">-</div>
+                        <div class="file-size" id="fileSizePeriodic">-</div>
+                    </div>
+                    <button type="button" onclick="removeFilePeriodic()" style="margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Format Kolom Template</h4>
+                    <ul>
+                        <li><strong>Kolom 1:</strong> Nama (hanya untuk referensi)</li>
+                        <li><strong>Kolom 2:</strong> NISN (wajib, untuk identifikasi)</li>
+                        <li><strong>Kolom 3:</strong> Tahun Pelajaran (hanya untuk referensi)</li>
+                        <li><strong>Kolom 4:</strong> Semester (1-6, menentukan kolom yang diupdate)</li>
+                        <li><strong>Kolom 5:</strong> Rombel (akan diupdate)</li>
+                        <li><strong>Kolom 6:</strong> Guru BK (akan diupdate)</li>
+                        <li><strong>Kolom 7:</strong> Guru Wali (akan diupdate)</li>
+                    </ul>
+                </div>
+
+                <div class="info-box" style="background: #dbeafe; border-left: 4px solid #3b82f6;">
+                    <h4 style="color: #1e40af;"><i class="fas fa-lightbulb" style="color: #3b82f6;"></i> Cara Penggunaan</h4>
+                    <ul style="color: #1e40af;">
+                        <li>Download template → Isi kolom Rombel, Guru BK, Guru Wali</li>
+                        <li>Jangan ubah kolom Nama, NISN, Tahun Pelajaran, Semester</li>
+                        <li>Upload kembali file yang sudah diisi</li>
+                        <li>Sistem akan mengupdate kolom sesuai semester yang tertera</li>
+                    </ul>
+                </div>
+
+                <div class="btn-group-action">
+                    <button type="submit" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;" id="submitBtnPeriodic" disabled>
+                        <i class="fas fa-upload"></i> Import Data Periodik
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection
@@ -276,6 +359,59 @@
         fileInfo.classList.remove('show');
         dropZone.style.display = 'block';
         submitBtn.disabled = true;
+    }
+
+    // ==========================================
+    // PERIODIC DATA IMPORT HANDLERS
+    // ==========================================
+    const dropZonePeriodic = document.getElementById('dropZonePeriodic');
+    const fileInputPeriodic = document.getElementById('fileInputPeriodic');
+    const fileInfoPeriodic = document.getElementById('fileInfoPeriodic');
+    const submitBtnPeriodic = document.getElementById('submitBtnPeriodic');
+
+    // Drag and drop for periodic
+    dropZonePeriodic.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZonePeriodic.classList.add('dragover');
+    });
+    dropZonePeriodic.addEventListener('dragleave', () => {
+        dropZonePeriodic.classList.remove('dragover');
+    });
+    dropZonePeriodic.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZonePeriodic.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInputPeriodic.files = e.dataTransfer.files;
+            showFileInfoPeriodic(e.dataTransfer.files[0]);
+        }
+    });
+
+    // File input change for periodic
+    fileInputPeriodic.addEventListener('change', function() {
+        if (this.files.length) {
+            showFileInfoPeriodic(this.files[0]);
+        }
+    });
+
+    function showFileInfoPeriodic(file) {
+        if (!file.name.endsWith('.csv')) {
+            alert('Hanya file CSV yang diperbolehkan!');
+            fileInputPeriodic.value = '';
+            return;
+        }
+
+        document.getElementById('fileNamePeriodic').textContent = file.name;
+        document.getElementById('fileSizePeriodic').textContent = (file.size / 1024).toFixed(2) + ' KB';
+        fileInfoPeriodic.classList.add('show');
+        dropZonePeriodic.style.display = 'none';
+        submitBtnPeriodic.disabled = false;
+    }
+
+    function removeFilePeriodic() {
+        fileInputPeriodic.value = '';
+        fileInfoPeriodic.classList.remove('show');
+        dropZonePeriodic.style.display = 'block';
+        submitBtnPeriodic.disabled = true;
     }
 </script>
 @endpush
