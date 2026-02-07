@@ -398,16 +398,15 @@
                                 @endif
                             @endforeach
                         </optgroup>
-                        <optgroup label="👨‍💼 Guru BK" id="optgroup_gurubk">
-                            @foreach($guruBkList as $gbk)
-                            <option value="{{ $gbk->nama }}" data-nip="{{ $gbk->nip }}">{{ $gbk->nama }}</option>
-                            @endforeach
+                        <optgroup label="👨‍💼 Guru BK Siswa" id="optgroup_gurubk">
+                            <!-- Populated dynamically based on student's assigned BK -->
                         </optgroup>
                         <optgroup label="👨‍🏫 Wali Kelas Siswa" id="optgroup_walikelas">
-                            <!-- Populated dynamically -->
+                            <!-- Populated dynamically based on student's rombel -->
                         </optgroup>
                     </select>
                 </div>
+
                 <div style="background: #fef3c7; padding: 12px; border: 1px solid #fbbf24; border-radius: 10px;">
                     <i class="fas fa-info-circle"></i>
                     <small>Pengaduan akan diteruskan dan penerima akan mendapat notifikasi.</small>
@@ -506,45 +505,46 @@ function teruskanPengaduan(id, nama, rombel, waliKelas, guruBk) {
     document.getElementById('teruskan_id').value = id;
     document.getElementById('teruskan_pelapor').textContent = nama;
     document.getElementById('teruskan_rombel').textContent = rombel || '-';
+    document.getElementById('teruskan_tujuan').value = '';
+    document.getElementById('teruskan_nip').value = '';
     
-    // Populate wali kelas option
+    // Populate Guru BK Siswa optgroup
+    const gbkGroup = document.getElementById('optgroup_gurubk');
+    gbkGroup.innerHTML = '';
+    if (guruBk && guruBk.trim() !== '') {
+        const opt = document.createElement('option');
+        opt.value = guruBk;
+        opt.textContent = guruBk + ' (Guru BK Siswa)';
+        opt.dataset.role = 'Guru BK';
+        gbkGroup.appendChild(opt);
+    } else {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.disabled = true;
+        opt.textContent = '(Belum ada Guru BK yang ditugaskan)';
+        gbkGroup.appendChild(opt);
+    }
+    
+    // Populate Wali Kelas optgroup
     const wkGroup = document.getElementById('optgroup_walikelas');
     wkGroup.innerHTML = '';
     if (waliKelas && waliKelas.trim() !== '') {
         const opt = document.createElement('option');
         opt.value = waliKelas;
-        opt.textContent = 'Wali Kelas ' + (rombel || '') + ': ' + waliKelas;
-        opt.dataset.role = 'wali_kelas';
+        opt.textContent = waliKelas + ' (Wali Kelas ' + (rombel || '') + ')';
+        opt.dataset.role = 'Wali Kelas';
         wkGroup.appendChild(opt);
     } else {
         const opt = document.createElement('option');
         opt.value = '';
         opt.disabled = true;
-        opt.textContent = '(Wali kelas tidak ditemukan)';
+        opt.textContent = '(Belum ada Wali Kelas)';
         wkGroup.appendChild(opt);
     }
     
-    // Highlight guru BK siswa if available
-    const gbkGroup = document.getElementById('optgroup_gurubk');
-    const gbkOptions = gbkGroup.querySelectorAll('option');
-    // Reset all highlighting
-    gbkOptions.forEach(opt => {
-        opt.textContent = opt.textContent.replace(' ★ (BK Siswa)', '');
-    });
-    // Add highlight for guru BK siswa
-    if (guruBk && guruBk.trim() !== '') {
-        gbkOptions.forEach(opt => {
-            if (opt.value === guruBk) {
-                opt.textContent = opt.value + ' ★ (BK Siswa)';
-            }
-        });
-    }
-    
-    // Reset select
-    document.getElementById('teruskan_tujuan').value = '';
-    
     openModal('modalTeruskan');
 }
+
 
 
 
