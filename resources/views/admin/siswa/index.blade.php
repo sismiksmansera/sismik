@@ -1105,18 +1105,9 @@ document.getElementById('saveBK')?.addEventListener('click', async function() {
     location.reload();
 });
 
-// Close modal on backdrop click - using closest() for reliable detection
-document.querySelectorAll('.modal').forEach(m => {
-    m.addEventListener('click', function(e) { 
-        // Check if click target is inside modal-dialog or modal content
-        const clickedInsideDialog = e.target.closest('.modal-dialog') || e.target.closest('[style*="position: relative"]');
-        
-        // Only close if NOT clicking inside the dialog content
-        if (!clickedInsideDialog) {
-            closeModal(this.id); 
-        }
-    });
-});
+// Modal closing is handled only by close buttons - no backdrop click
+// This prevents issues with dropdown selection inside modals
+
 
 // Foto Modal Functions
 function openFotoModal(nama, fotoUrl, siswaId) {
