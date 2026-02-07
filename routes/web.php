@@ -176,7 +176,15 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     // Leger (Cetak Leger Nilai & Katrol)
     Route::get('/leger/print-nilai', [\App\Http\Controllers\Admin\LegerController::class, 'printNilai'])->name('leger.print-nilai');
     Route::get('/leger/print-katrol', [\App\Http\Controllers\Admin\LegerController::class, 'printKatrol'])->name('leger.print-katrol');
+    
+    // Pengaduan Management
+    Route::get('/pengaduan', [\App\Http\Controllers\Admin\PengaduanController::class, 'index'])->name('pengaduan.index');
+    Route::post('/pengaduan/detail', [\App\Http\Controllers\Admin\PengaduanController::class, 'getDetail'])->name('pengaduan.detail');
+    Route::post('/pengaduan/update', [\App\Http\Controllers\Admin\PengaduanController::class, 'update'])->name('pengaduan.update');
+    Route::post('/pengaduan/teruskan', [\App\Http\Controllers\Admin\PengaduanController::class, 'teruskan'])->name('pengaduan.teruskan');
+    Route::post('/pengaduan/destroy', [\App\Http\Controllers\Admin\PengaduanController::class, 'destroy'])->name('pengaduan.destroy');
 });
+
 
 // Guru Routes
 Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function () {

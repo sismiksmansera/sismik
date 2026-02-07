@@ -38,8 +38,13 @@
             <i class="fas fa-user-graduate"></i>
             <span>Manajemen Guru BK</span>
         </a>
+        <a href="{{ route('admin.pengaduan.index') }}" class="menu-item {{ request()->routeIs('admin.pengaduan.*') ? 'active' : '' }}">
+            <i class="fas fa-bullhorn"></i>
+            <span>Kelola Pengaduan</span>
+        </a>
 
         <div class="menu-label">Akademik</div>
+
         <a href="{{ route('admin.jadwal-pelajaran.index') }}" class="menu-item {{ request()->routeIs('admin.jadwal-pelajaran.*') ? 'active' : '' }}">
             <i class="fas fa-calendar-alt"></i>
             <span>Jadwal Pelajaran</span>
