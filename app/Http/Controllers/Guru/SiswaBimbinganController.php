@@ -37,21 +37,21 @@ class SiswaBimbinganController extends Controller
             $kelas10 = DB::table('siswa')
                 ->where('angkatan_masuk', $tahunAwal)
                 ->where('guru_wali_sem_1', $guruNama)
-                ->select('*', DB::raw("'X' as tingkat"), DB::raw("1 as semester_siswa"), DB::raw("rombel_semester_1 as rombel"))
+                ->selectRaw("siswa.*, 'X' as tingkat, 1 as semester_siswa, rombel_semester_1 as rombel")
                 ->get();
             
             // Kelas XI - Semester 3
             $kelas11 = DB::table('siswa')
                 ->where('angkatan_masuk', $tahunAwalMinus1)
                 ->where('guru_wali_sem_3', $guruNama)
-                ->select('*', DB::raw("'XI' as tingkat"), DB::raw("3 as semester_siswa"), DB::raw("rombel_semester_3 as rombel"))
+                ->selectRaw("siswa.*, 'XI' as tingkat, 3 as semester_siswa, rombel_semester_3 as rombel")
                 ->get();
             
             // Kelas XII - Semester 5
             $kelas12 = DB::table('siswa')
                 ->where('angkatan_masuk', $tahunAwalMinus2)
                 ->where('guru_wali_sem_5', $guruNama)
-                ->select('*', DB::raw("'XII' as tingkat"), DB::raw("5 as semester_siswa"), DB::raw("rombel_semester_5 as rombel"))
+                ->selectRaw("siswa.*, 'XII' as tingkat, 5 as semester_siswa, rombel_semester_5 as rombel")
                 ->get();
 
             $siswaList = $kelas10->concat($kelas11)->concat($kelas12);
@@ -60,21 +60,21 @@ class SiswaBimbinganController extends Controller
             $kelas10 = DB::table('siswa')
                 ->where('angkatan_masuk', $tahunAwal)
                 ->where('guru_wali_sem_2', $guruNama)
-                ->select('*', DB::raw("'X' as tingkat"), DB::raw("2 as semester_siswa"), DB::raw("rombel_semester_2 as rombel"))
+                ->selectRaw("siswa.*, 'X' as tingkat, 2 as semester_siswa, rombel_semester_2 as rombel")
                 ->get();
             
             // Kelas XI - Semester 4
             $kelas11 = DB::table('siswa')
                 ->where('angkatan_masuk', $tahunAwalMinus1)
                 ->where('guru_wali_sem_4', $guruNama)
-                ->select('*', DB::raw("'XI' as tingkat"), DB::raw("4 as semester_siswa"), DB::raw("rombel_semester_4 as rombel"))
+                ->selectRaw("siswa.*, 'XI' as tingkat, 4 as semester_siswa, rombel_semester_4 as rombel")
                 ->get();
             
             // Kelas XII - Semester 6
             $kelas12 = DB::table('siswa')
                 ->where('angkatan_masuk', $tahunAwalMinus2)
                 ->where('guru_wali_sem_6', $guruNama)
-                ->select('*', DB::raw("'XII' as tingkat"), DB::raw("6 as semester_siswa"), DB::raw("rombel_semester_6 as rombel"))
+                ->selectRaw("siswa.*, 'XII' as tingkat, 6 as semester_siswa, rombel_semester_6 as rombel")
                 ->get();
 
             $siswaList = $kelas10->concat($kelas11)->concat($kelas12);
