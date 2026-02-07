@@ -372,12 +372,9 @@
             <a href="{{ route('admin.guru.create') }}" class="btn" style="background: var(--green-primary); color: white;">
                 <i class="fas fa-plus"></i> Tambah Guru
             </a>
-            <a href="{{ route('admin.guru.export') }}" class="btn btn-secondary" style="font-size: 12px;">
-                <i class="fas fa-file-excel"></i> Download Data
+            <a href="{{ route('admin.guru.import.show') }}" class="btn" style="background: #f59e0b; color: white; font-size: 12px;">
+                <i class="fas fa-file-import"></i> Import/Export Data
             </a>
-            <button onclick="openImportModal()" class="btn" style="background: #f59e0b; color: white; font-size: 12px;">
-                <i class="fas fa-file-upload"></i> Import Data
-            </button>
         </div>
 
         <!-- Table Section -->

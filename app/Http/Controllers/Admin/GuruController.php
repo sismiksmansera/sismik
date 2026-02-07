@@ -50,6 +50,14 @@ class GuruController extends Controller
     }
 
     /**
+     * Show the import form for guru
+     */
+    public function showImport()
+    {
+        return view('admin.guru.import');
+    }
+
+    /**
      * Show the form for creating a new guru
      */
     public function create()
