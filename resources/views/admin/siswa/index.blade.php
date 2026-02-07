@@ -547,7 +547,7 @@
                             <th class="text-center" style="background: linear-gradient(0deg, #f59e0b, #d97706); color: white;">Angkatan</th>
                             <th class="text-center" style="background: linear-gradient(0deg, #3b82f6, #1d4ed8); color: white;">Rombel Aktif</th>
                             <th class="text-center" style="background: linear-gradient(0deg, #10b981, #059669); color: white;">Guru BK</th>
-                            <th class="text-center" style="background: linear-gradient(0deg, #f59e0b, #d97706); color: white;">Wali Kelas</th>
+                            <th class="text-center" style="background: linear-gradient(0deg, #f59e0b, #d97706); color: white;">Guru Wali</th>
                         </tr>
                     </thead>
                     <tbody>
