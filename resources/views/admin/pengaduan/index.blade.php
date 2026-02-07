@@ -526,18 +526,18 @@ function teruskanPengaduan(id, nama, rombel, waliKelas, guruBk) {
     
     // Highlight guru BK siswa if available
     const gbkGroup = document.getElementById('optgroup_gurubk');
+    const gbkOptions = gbkGroup.querySelectorAll('option');
     // Reset all highlighting
-    for (let i = 0; i < gbkGroup.options.length; i++) {
-        gbkGroup.options[i].textContent = gbkGroup.options[i].textContent.replace(' ★ (BK Siswa)', '');
-    }
+    gbkOptions.forEach(opt => {
+        opt.textContent = opt.textContent.replace(' ★ (BK Siswa)', '');
+    });
     // Add highlight for guru BK siswa
     if (guruBk && guruBk.trim() !== '') {
-        for (let i = 0; i < gbkGroup.options.length; i++) {
-            if (gbkGroup.options[i].value === guruBk) {
-                gbkGroup.options[i].textContent = gbkGroup.options[i].value + ' ★ (BK Siswa)';
-                break;
+        gbkOptions.forEach(opt => {
+            if (opt.value === guruBk) {
+                opt.textContent = opt.value + ' ★ (BK Siswa)';
             }
-        }
+        });
     }
     
     // Reset select
@@ -545,6 +545,7 @@ function teruskanPengaduan(id, nama, rombel, waliKelas, guruBk) {
     
     openModal('modalTeruskan');
 }
+
 
 
 function updateNIP() {
