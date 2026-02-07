@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Services\NameCascadeService;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class GuruController extends Controller
 {
@@ -914,5 +917,127 @@ class GuruController extends Controller
         imagedestroy($image);
         @unlink($tempPath);
         return false;
+    }
+
+    /**
+     * Download Guru data as XLSX
+     */
+    public function downloadGuruData()
+    {
+        $guruList = Guru::orderBy('nama')->get();
+        
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Guru');
+        
+        // Headers
+        $headers = ['ID', 'NIP', 'Nama', 'Jenis Kelamin', 'No HP', 'Email', 'Alamat', 'Status Kepegawaian', 'Golongan', 'Status'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+            $col++;
+        }
+        
+        // Data rows
+        $row = 2;
+        foreach ($guruList as $guru) {
+            $sheet->setCellValue('A' . $row, $guru->id);
+            $sheet->setCellValue('B' . $row, $guru->nip ?? '');
+            $sheet->setCellValue('C' . $row, $guru->nama);
+            $sheet->setCellValue('D' . $row, $guru->jenis_kelamin ?? '');
+            $sheet->setCellValue('E' . $row, $guru->no_hp ?? '');
+            $sheet->setCellValue('F' . $row, $guru->email ?? '');
+            $sheet->setCellValue('G' . $row, $guru->alamat ?? '');
+            $sheet->setCellValue('H' . $row, $guru->status_kepegawaian ?? '');
+            $sheet->setCellValue('I' . $row, $guru->golongan ?? '');
+            $sheet->setCellValue('J' . $row, $guru->status ?? 'Aktif');
+            $row++;
+        }
+        
+        $filename = 'data_guru_' . date('Y-m-d') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer->save('php://output');
+        exit;
+    }
+
+    /**
+     * Import Guru data from XLSX (update existing only)
+     */
+    public function importGuruData(Request $request)
+    {
+        $request->validate([
+            'file_guru' => 'required|file|mimes:xlsx,xls|max:5120',
+        ]);
+
+        $file = $request->file('file_guru');
+        $path = $file->getRealPath();
+        
+        $updated = 0;
+        $skipped = 0;
+        $errors = [];
+
+        try {
+            $spreadsheet = IOFactory::load($path);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+            
+            // Skip header row
+            array_shift($rows);
+            
+            foreach ($rows as $index => $data) {
+                if (count($data) < 10) {
+                    $skipped++;
+                    continue;
+                }
+                
+                try {
+                    $id = intval(trim($data[0] ?? 0));
+                    
+                    if (empty($id)) {
+                        $skipped++;
+                        continue;
+                    }
+                    
+                    $guru = Guru::find($id);
+                    if (!$guru) {
+                        $skipped++;
+                        continue;
+                    }
+                    
+                    // Update fields (excluding ID and NIP)
+                    $guru->nama = trim($data[2] ?? $guru->nama);
+                    $guru->jenis_kelamin = trim($data[3] ?? $guru->jenis_kelamin);
+                    $guru->no_hp = trim($data[4] ?? $guru->no_hp);
+                    $guru->email = trim($data[5] ?? $guru->email);
+                    $guru->alamat = trim($data[6] ?? $guru->alamat);
+                    $guru->status_kepegawaian = trim($data[7] ?? $guru->status_kepegawaian);
+                    $guru->golongan = trim($data[8] ?? $guru->golongan);
+                    $guru->status = trim($data[9] ?? $guru->status);
+                    $guru->save();
+                    
+                    $updated++;
+                } catch (\Exception $e) {
+                    $errors[] = "Baris " . ($index + 2) . ": " . $e->getMessage();
+                }
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.guru.index')
+                ->withErrors(['file_guru' => 'Gagal membaca file: ' . $e->getMessage()]);
+        }
+
+        $message = "Import data guru selesai: $updated data berhasil diupdate, $skipped data dilewati.";
+        if (!empty($errors)) {
+            $message .= " (" . count($errors) . " error)";
+        }
+
+        return redirect()->route('admin.guru.index')
+            ->with('success', $message);
     }
 }

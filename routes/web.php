@@ -127,6 +127,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/guru/{id}/penugasan/check-jadwal', [GuruController::class, 'checkJadwalKonflik'])->name('guru.penugasan.check-jadwal');
     Route::post('/guru/{id}/penugasan', [GuruController::class, 'savePenugasan'])->name('guru.penugasan.save');
     Route::post('/guru/{id}/penugasan/delete', [GuruController::class, 'deletePenugasan'])->name('guru.penugasan.delete');
+    Route::get('/guru/export', [GuruController::class, 'downloadGuruData'])->name('guru.export');
+    Route::post('/guru/import', [GuruController::class, 'importGuruData'])->name('guru.import');
     
     // Guru BK Management
     Route::get('/guru-bk', [GuruBKController::class, 'index'])->name('guru-bk.index');

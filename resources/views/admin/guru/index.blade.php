@@ -338,6 +338,12 @@
                 <i class="fas fa-check-circle"></i> {{ session('success') }}
             </div>
         @endif
+        
+        @if($errors->any())
+            <div class="alert alert-danger" style="margin-bottom: 20px; background: #fef2f2; border: 1px solid #ef4444; color: #b91c1c; padding: 15px 20px; border-radius: 10px;">
+                <i class="fas fa-exclamation-circle"></i> {{ $errors->first() }}
+            </div>
+        @endif
 
         <!-- Stats Grid -->
         <div class="stats-grid">
@@ -366,9 +372,12 @@
             <a href="{{ route('admin.guru.create') }}" class="btn" style="background: var(--green-primary); color: white;">
                 <i class="fas fa-plus"></i> Tambah Guru
             </a>
-            <a href="#" class="btn btn-secondary" style="font-size: 12px;">
-                <i class="fas fa-file-export"></i> Export Data
+            <a href="{{ route('admin.guru.export') }}" class="btn btn-secondary" style="font-size: 12px;">
+                <i class="fas fa-file-excel"></i> Download Data
             </a>
+            <button onclick="openImportModal()" class="btn" style="background: #f59e0b; color: white; font-size: 12px;">
+                <i class="fas fa-file-upload"></i> Import Data
+            </button>
         </div>
 
         <!-- Table Section -->
@@ -580,6 +589,48 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Import -->
+<div id="modalImport" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+        <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 25px 20px; text-align: center;">
+            <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-file-upload" style="font-size: 32px; color: white;"></i>
+            </div>
+            <h3 style="margin: 0; color: white; font-size: 18px; font-weight: 700;">Import Data Guru</h3>
+            <p style="margin: 8px 0 0; color: rgba(255,255,255,0.8); font-size: 13px;">Upload file Excel (.xlsx) untuk update data guru</p>
+        </div>
+        <form action="{{ route('admin.guru.import') }}" method="POST" enctype="multipart/form-data" style="padding: 24px;">
+            @csrf
+            
+            <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 30px 20px; text-align: center; margin-bottom: 20px; cursor: pointer;" onclick="document.getElementById('fileGuruInput').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: #f59e0b; margin-bottom: 10px;"></i>
+                <h4 style="margin: 0 0 5px; color: var(--gray-700);">Pilih File Excel</h4>
+                <p style="margin: 0; color: var(--gray-500); font-size: 12px;">Format: .xlsx | Maksimal: 5MB</p>
+                <div id="selectedFileName" style="margin-top: 10px; color: #f59e0b; font-weight: 600; display: none;"></div>
+            </div>
+            <input type="file" name="file_guru" id="fileGuruInput" accept=".xlsx,.xls" style="display: none;" onchange="showSelectedFile(this)">
+            
+            <div style="background: #dbeafe; border: 1px solid #3b82f6; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                <h5 style="margin: 0 0 8px; color: #1d4ed8; font-size: 13px;"><i class="fas fa-info-circle"></i> Cara Penggunaan:</h5>
+                <ol style="margin: 0; padding-left: 18px; color: #1e40af; font-size: 12px; line-height: 1.6;">
+                    <li>Download data guru terlebih dahulu</li>
+                    <li>Edit data pada file Excel (jangan ubah ID)</li>
+                    <li>Upload kembali file yang sudah diedit</li>
+                </ol>
+            </div>
+            
+            <div style="display: flex; gap: 12px;">
+                <button type="button" onclick="closeImportModal()" style="flex: 1; background: #f1f5f9; color: #64748b; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                    Batal
+                </button>
+                <button type="submit" id="importSubmitBtn" style="flex: 1; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;" disabled>
+                    <i class="fas fa-upload"></i> Import
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -640,5 +691,27 @@ document.addEventListener('keydown', function(e) {
         document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
     }
 });
+
+// Import Modal
+function openImportModal() {
+    document.getElementById('modalImport').style.display = 'flex';
+}
+
+function closeImportModal() {
+    document.getElementById('modalImport').style.display = 'none';
+    document.getElementById('fileGuruInput').value = '';
+    document.getElementById('selectedFileName').style.display = 'none';
+    document.getElementById('importSubmitBtn').disabled = true;
+}
+
+function showSelectedFile(input) {
+    if (input.files && input.files[0]) {
+        const fileName = input.files[0].name;
+        const fileNameEl = document.getElementById('selectedFileName');
+        fileNameEl.textContent = '📄 ' + fileName;
+        fileNameEl.style.display = 'block';
+        document.getElementById('importSubmitBtn').disabled = false;
+    }
+}
 </script>
 @endpush
