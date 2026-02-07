@@ -62,6 +62,10 @@
             <i class="fas fa-trophy"></i>
             <span>Prestasi</span>
         </a>
+        <a href="{{ route('guru.pengaduan') }}" class="menu-item {{ request()->routeIs('guru.pengaduan*') ? 'active' : '' }}">
+            <i class="fas fa-bullhorn"></i>
+            <span>Pengaduan Siswa</span>
+        </a>
 
         <div class="menu-label">Akun</div>
         <a href="{{ route('guru.profil') }}" class="menu-item {{ request()->routeIs('guru.profil*') ? 'active' : '' }}">

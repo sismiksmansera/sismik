@@ -277,7 +277,13 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     // Leger routes
     Route::get('/leger/print-nilai', [\App\Http\Controllers\Admin\LegerController::class, 'printNilai'])->name('leger.print-nilai');
     Route::get('/leger/print-katrol', [\App\Http\Controllers\Admin\LegerController::class, 'printKatrol'])->name('leger.print-katrol');
+    
+    // Pengaduan routes
+    Route::get('/pengaduan', [\App\Http\Controllers\Guru\PengaduanController::class, 'index'])->name('pengaduan');
+    Route::post('/pengaduan/detail', [\App\Http\Controllers\Guru\PengaduanController::class, 'getDetail'])->name('pengaduan.detail');
+    Route::post('/pengaduan/update', [\App\Http\Controllers\Guru\PengaduanController::class, 'update'])->name('pengaduan.update');
 });
+
 
 
 // Guru BK Routes
