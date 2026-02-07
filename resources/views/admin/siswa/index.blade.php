@@ -414,6 +414,9 @@
         border: 1px solid var(--gray-300);
         border-radius: 6px;
         font-size: 12px;
+        cursor: pointer;
+        position: relative;
+        z-index: 100;
     }
     
     /* Warning Notice */
@@ -1102,10 +1105,19 @@ document.getElementById('saveBK')?.addEventListener('click', async function() {
     location.reload();
 });
 
-// Close modal on backdrop click
+// Close modal on backdrop click - but not when clicking inside modal-dialog
 document.querySelectorAll('.modal').forEach(m => {
-    m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+    m.addEventListener('click', e => { 
+        // Only close if clicking exactly on the modal backdrop
+        if (e.target === m) closeModal(m.id); 
+    });
+    // Prevent clicks inside modal-dialog from propagating to modal
+    const dialog = m.querySelector('.modal-dialog');
+    if (dialog) {
+        dialog.addEventListener('click', e => e.stopPropagation());
+    }
 });
+
 
 // Foto Modal Functions
 function openFotoModal(nama, fotoUrl, siswaId) {
