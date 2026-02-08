@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         * {
@@ -148,6 +149,17 @@
             display: inline-block;
         }
 
+        .btn-excel {
+            background: #059669;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-excel:hover {
+            background: #047857;
+        }
+
         @media print {
             .print-actions {
                 display: none;
@@ -178,6 +190,9 @@
         <button onclick="window.print()" class="btn-action btn-print">
             <i class="fas fa-print"></i> Cetak
         </button>
+        <a href="{{ route('admin.tamu.export-excel', request()->query()) }}" class="btn-action btn-excel">
+            <i class="fas fa-file-excel"></i> Download Excel
+        </a>
         <a href="{{ route('admin.tamu.index', request()->query()) }}" class="btn-action btn-back">
             ← Kembali
         </a>
