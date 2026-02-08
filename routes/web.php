@@ -32,6 +32,11 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Tamu (Guest) Routes - Public
+Route::get('/tamu', [\App\Http\Controllers\TamuController::class, 'create'])->name('tamu.form');
+Route::post('/tamu', [\App\Http\Controllers\TamuController::class, 'store'])->name('tamu.store');
+Route::get('/tamu/print/{id}', [\App\Http\Controllers\TamuController::class, 'print'])->name('tamu.print');
+
 // Admin Routes
 Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -151,6 +156,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::put('/panggilan-ortu/{id}', [PanggilanOrtuController::class, 'update'])->name('panggilan-ortu.update');
     Route::get('/panggilan-ortu/{id}/print', [PanggilanOrtuController::class, 'print'])->name('panggilan-ortu.print');
     Route::delete('/panggilan-ortu/{id}', [PanggilanOrtuController::class, 'destroy'])->name('panggilan-ortu.destroy');
+    
+    // Tamu (Guest) Management
+    Route::get('/tamu', [\App\Http\Controllers\Admin\TamuController::class, 'index'])->name('tamu.index');
+    Route::delete('/tamu/{id}', [\App\Http\Controllers\Admin\TamuController::class, 'destroy'])->name('tamu.destroy');
     
     // Ekstrakurikuler Management
     Route::get('/ekstrakurikuler', [\App\Http\Controllers\Admin\EkstrakurikulerController::class, 'index'])->name('ekstrakurikuler.index');

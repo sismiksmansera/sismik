@@ -67,6 +67,10 @@
             <i class="fas fa-print"></i>
             <span>Cetak Raport</span>
         </a>
+        <a href="{{ route('admin.tamu.index') }}" class="menu-item {{ request()->routeIs('admin.tamu.*') ? 'active' : '' }}">
+            <i class="fas fa-users"></i>
+            <span>Daftar Tamu</span>
+        </a>
 
         <div class="menu-label">Pengaturan</div>
         <a href="{{ route('admin.manajemen-sekolah') }}" class="menu-item {{ request()->routeIs('admin.manajemen-sekolah') ? 'active' : '' }}">

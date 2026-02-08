@@ -286,6 +286,55 @@
             40%, 80% { transform: translateX(5px); }
         }
 
+        /* Guest Section */
+        .guest-section {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .divider-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .divider-text::before,
+        .divider-text::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .divider-text::before { left: 0; }
+        .divider-text::after { right: 0; }
+
+        .btn-guest {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-guest:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
         .school-footer {
             text-align: center;
             margin-top: 30px;
@@ -377,6 +426,14 @@
                     <i class="fas fa-sign-in-alt"></i> Masuk
                 </button>
             </form>
+
+            <!-- Tamu Button -->
+            <div class="guest-section">
+                <p class="divider-text">atau</p>
+                <a href="{{ route('tamu.form') }}" class="btn-guest">
+                    <i class="fas fa-user-plus"></i> Form Tamu
+                </a>
+            </div>
 
             <div class="school-footer">
                 <p>© {{ date('Y') }} SISMIK - Sistem Informasi Manajemen Akademik</p>
