@@ -255,6 +255,14 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     // Siswa Bimbingan (Guru Wali) route
     Route::get('/siswa-bimbingan', [\App\Http\Controllers\Guru\SiswaBimbinganController::class, 'index'])->name('siswa-bimbingan');
     
+    // Catatan Guru Wali routes
+    Route::get('/catatan-guru-wali/{siswa_id}', [\App\Http\Controllers\Guru\CatatanGuruWaliController::class, 'index'])->name('catatan-guru-wali.index');
+    Route::get('/catatan-guru-wali/{siswa_id}/create', [\App\Http\Controllers\Guru\CatatanGuruWaliController::class, 'create'])->name('catatan-guru-wali.create');
+    Route::post('/catatan-guru-wali/{siswa_id}', [\App\Http\Controllers\Guru\CatatanGuruWaliController::class, 'store'])->name('catatan-guru-wali.store');
+    Route::get('/catatan-guru-wali/edit/{id}', [\App\Http\Controllers\Guru\CatatanGuruWaliController::class, 'edit'])->name('catatan-guru-wali.edit');
+    Route::put('/catatan-guru-wali/{id}', [\App\Http\Controllers\Guru\CatatanGuruWaliController::class, 'update'])->name('catatan-guru-wali.update');
+    Route::delete('/catatan-guru-wali/{id}', [\App\Http\Controllers\Guru\CatatanGuruWaliController::class, 'destroy'])->name('catatan-guru-wali.destroy');
+    
     // Anggota Ekstrakurikuler routes
     Route::get('/anggota-ekstrakurikuler', [\App\Http\Controllers\Guru\AnggotaEkstrakurikulerController::class, 'index'])->name('anggota-ekstrakurikuler');
     Route::post('/anggota-ekstrakurikuler/tambah', [\App\Http\Controllers\Guru\AnggotaEkstrakurikulerController::class, 'tambahAnggota'])->name('anggota-ekstrakurikuler.tambah');
@@ -342,6 +350,14 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     
     // Siswa Wali (guru wali) route
     Route::get('/siswa-wali', [\App\Http\Controllers\GuruBK\SiswaWaliController::class, 'index'])->name('siswa-wali');
+    
+    // Catatan Guru Wali routes
+    Route::get('/catatan-guru-wali/{siswa_id}', [\App\Http\Controllers\GuruBK\CatatanGuruWaliController::class, 'index'])->name('catatan-guru-wali.index');
+    Route::get('/catatan-guru-wali/{siswa_id}/create', [\App\Http\Controllers\GuruBK\CatatanGuruWaliController::class, 'create'])->name('catatan-guru-wali.create');
+    Route::post('/catatan-guru-wali/{siswa_id}', [\App\Http\Controllers\GuruBK\CatatanGuruWaliController::class, 'store'])->name('catatan-guru-wali.store');
+    Route::get('/catatan-guru-wali/edit/{id}', [\App\Http\Controllers\GuruBK\CatatanGuruWaliController::class, 'edit'])->name('catatan-guru-wali.edit');
+    Route::put('/catatan-guru-wali/{id}', [\App\Http\Controllers\GuruBK\CatatanGuruWaliController::class, 'update'])->name('catatan-guru-wali.update');
+    Route::delete('/catatan-guru-wali/{id}', [\App\Http\Controllers\GuruBK\CatatanGuruWaliController::class, 'destroy'])->name('catatan-guru-wali.destroy');
     
     // Anggota Ekstrakurikuler routes
     Route::get('/anggota-ekstrakurikuler/{id}', [\App\Http\Controllers\GuruBK\AnggotaEkstrakurikulerController::class, 'index'])->name('anggota-ekstra');

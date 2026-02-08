@@ -178,6 +178,39 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.12);
 }
 
+.student-card-actions {
+    padding: 12px 20px;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-catatan {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+}
+
+.btn-catatan:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
 .student-card-body {
     padding: 20px;
     display: flex;
@@ -468,6 +501,11 @@
                                                 </span>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="student-card-actions">
+                                        <a href="{{ route('guru.catatan-guru-wali.index', $siswa->id) }}" class="btn-action btn-catatan">
+                                            <i class="fas fa-sticky-note"></i> Catatan
+                                        </a>
                                     </div>
                                 </div>
                             @endforeach
