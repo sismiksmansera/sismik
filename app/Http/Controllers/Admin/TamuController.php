@@ -77,4 +77,43 @@ class TamuController extends Controller
         $tamu = Tamu::findOrFail($id);
         return view('admin.tamu.show', compact('tamu'));
     }
+    
+    /**
+     * Print guest list with filters
+     */
+    public function print(Request $request)
+    {
+        $query = Tamu::query();
+        
+        $tanggalDari = $request->tanggal_dari;
+        $tanggalSampai = $request->tanggal_sampai;
+        $kategori = $request->kategori;
+        
+        // Filter by date range
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('created_at', '>=', $tanggalDari);
+        }
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('created_at', '<=', $tanggalSampai);
+        }
+        
+        // Filter by kategori
+        if ($request->filled('kategori')) {
+            $query->where('datang_sebagai', $kategori);
+        }
+        
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('bertemu_dengan', 'like', "%{$search}%")
+                  ->orWhere('keperluan', 'like', "%{$search}%");
+            });
+        }
+        
+        $tamuList = $query->orderBy('created_at', 'desc')->get();
+        
+        return view('admin.tamu.print', compact('tamuList', 'tanggalDari', 'tanggalSampai', 'kategori'));
+    }
 }

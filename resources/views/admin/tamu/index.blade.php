@@ -190,6 +190,27 @@
     background: #e5e7eb;
 }
 
+.btn-print {
+    padding: 10px 16px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-print:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
 /* TABLE */
 .table-container {
     background: white;
@@ -420,6 +441,9 @@
                         </button>
                         <a href="{{ route('admin.tamu.index') }}" class="btn-reset">
                             <i class="fas fa-times"></i> Reset
+                        </a>
+                        <a href="{{ route('admin.tamu.print', request()->query()) }}" class="btn-print" target="_blank">
+                            <i class="fas fa-print"></i> Cetak
                         </a>
                     </div>
                 </div>

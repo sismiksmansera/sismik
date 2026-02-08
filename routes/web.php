@@ -159,6 +159,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     
     // Tamu (Guest) Management
     Route::get('/tamu', [\App\Http\Controllers\Admin\TamuController::class, 'index'])->name('tamu.index');
+    Route::get('/tamu/print', [\App\Http\Controllers\Admin\TamuController::class, 'print'])->name('tamu.print');
     Route::delete('/tamu/{id}', [\App\Http\Controllers\Admin\TamuController::class, 'destroy'])->name('tamu.destroy');
     
     // Ekstrakurikuler Management
