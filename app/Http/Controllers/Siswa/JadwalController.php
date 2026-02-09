@@ -4,18 +4,25 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\DataPeriodik;
 use App\Models\Rombel;
 use App\Models\JadwalPelajaran;
 use App\Models\Siswa;
-use App\Services\EffectiveDateService;
 
 class JadwalController extends Controller
 {
     public function index()
     {
         $siswa = Auth::guard('siswa')->user();
+        
+        // Get active period
         $periodik = DataPeriodik::aktif()->first();
+        
+        if (!$periodik) {
+            // Fallback to latest periodik
+            $periodik = DataPeriodik::orderBy('id', 'desc')->first();
+        }
         
         if (!$periodik) {
             return view('siswa.jadwal', [
@@ -25,14 +32,35 @@ class JadwalController extends Controller
                 'namaRombel' => null,
                 'totalMapel' => 0,
                 'hariList' => [],
+                'debug' => ['error' => 'Tidak ada periode aktif'],
             ]);
         }
         
         $tahunAktif = $periodik->tahun_pelajaran;
-        $semesterAktif = strtolower($periodik->semester);
+        $semesterJadwal = strtolower($periodik->semester); // 'genap' or 'ganjil'
         
-        // Find siswa's active rombel based on semester calculation
-        $namaRombel = $this->getRombelAktif($siswa, $periodik);
+        // Debug collection
+        $debug = [
+            'tahun_aktif' => $tahunAktif,
+            'semester_aktif' => $periodik->semester,
+            'semester_jadwal' => $semesterJadwal,
+        ];
+        
+        // CARI ROMBEL SISWA - exactly like PHP legacy (iterate semester 1-6)
+        $namaRombel = null;
+        $agamaSiswa = $siswa->agama ?? null;
+        
+        for ($i = 1; $i <= 6; $i++) {
+            $kolomRombel = "rombel_semester_{$i}";
+            if (!empty($siswa->$kolomRombel)) {
+                $namaRombel = $siswa->$kolomRombel;
+                $debug['found_in_semester'] = $i;
+                break;
+            }
+        }
+        
+        $debug['nama_rombel_siswa'] = $namaRombel;
+        $debug['agama_siswa'] = $agamaSiswa;
         
         if (!$namaRombel) {
             return view('siswa.jadwal', [
@@ -42,66 +70,117 @@ class JadwalController extends Controller
                 'namaRombel' => null,
                 'totalMapel' => 0,
                 'hariList' => [],
+                'debug' => array_merge($debug, ['error' => 'Rombel tidak ditemukan di data siswa']),
             ]);
         }
         
-        // Find rombel ID
-        $rombel = Rombel::where('nama_rombel', $namaRombel)
+        // CARI ID ROMBEL - exactly like PHP legacy
+        $idRombel = null;
+        
+        // First try: with tahun_pelajaran and semester
+        $rombel = DB::table('rombel')
+            ->where('nama_rombel', $namaRombel)
             ->where('tahun_pelajaran', $tahunAktif)
+            ->where('semester', $semesterJadwal)
             ->first();
         
+        $debug['rombel_query_1'] = $rombel ? "Found ID: {$rombel->id}" : "Not found";
+        
         if (!$rombel) {
-            // Try without semester filter
-            $rombel = Rombel::where('nama_rombel', $namaRombel)
+            // Second try: with tahun_pelajaran only
+            $rombel = DB::table('rombel')
+                ->where('nama_rombel', $namaRombel)
                 ->where('tahun_pelajaran', $tahunAktif)
                 ->first();
+            $debug['rombel_query_2'] = $rombel ? "Found ID: {$rombel->id}" : "Not found";
         }
         
+        if (!$rombel) {
+            // Third try: by name only
+            $rombel = DB::table('rombel')
+                ->where('nama_rombel', $namaRombel)
+                ->first();
+            $debug['rombel_query_3'] = $rombel ? "Found ID: {$rombel->id}" : "Not found";
+        }
+        
+        if ($rombel) {
+            $idRombel = $rombel->id;
+            $debug['rombel_id'] = $idRombel;
+            $debug['rombel_tahun'] = $rombel->tahun_pelajaran ?? 'N/A';
+            $debug['rombel_semester'] = $rombel->semester ?? 'N/A';
+        }
+        
+        // AMBIL DATA JADWAL PELAJARAN PER HARI
         $hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
         $jadwalPerHari = [];
         $totalMapelBerbeda = [];
         
-        if ($rombel) {
-            $agamaSiswa = $siswa->agama ?? null;
-            
+        if ($idRombel) {
             foreach ($hariList as $hari) {
+                // Initialize jadwal for 11 jam
                 $jadwalHari = array_fill(1, 11, null);
                 
-                $jadwals = JadwalPelajaran::where('jadwal_pelajaran.id_rombel', $rombel->id)
-                    ->where('jadwal_pelajaran.tahun_pelajaran', $tahunAktif)
-                    ->where('jadwal_pelajaran.semester', $semesterAktif)
-                    ->where('jadwal_pelajaran.hari', $hari)
-                    ->join('mata_pelajaran', 'jadwal_pelajaran.id_mapel', '=', 'mata_pelajaran.id')
-                    ->select('jadwal_pelajaran.*', 'mata_pelajaran.nama_mapel')
-                    ->orderBy('jadwal_pelajaran.jam_ke', 'asc')
+                // Query jadwal - exactly like PHP legacy
+                $jadwals = DB::table('jadwal_pelajaran as jp')
+                    ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
+                    ->where('jp.id_rombel', $idRombel)
+                    ->where('jp.tahun_pelajaran', $tahunAktif)
+                    ->where('jp.semester', $semesterJadwal)
+                    ->where('jp.hari', $hari)
+                    ->where(function($query) use ($agamaSiswa) {
+                        // Filter agama - show non-agama subjects OR matching agama subject
+                        $query->where('mp.nama_mapel', 'NOT LIKE', 'Pendidikan Agama%')
+                              ->orWhere(function($q) use ($agamaSiswa) {
+                                  $q->where('mp.nama_mapel', 'LIKE', 'Pendidikan Agama%')
+                                    ->where('mp.nama_mapel', $this->getAgamaMapelName($agamaSiswa));
+                              });
+                    })
+                    ->select('jp.jam_ke', 'jp.nama_guru', 'mp.nama_mapel', 'jp.hari')
+                    ->orderBy('jp.jam_ke', 'asc')
                     ->get();
                 
+                // Debug first day
+                if ($hari === 'Senin') {
+                    $debug['jadwal_senin_count'] = $jadwals->count();
+                    
+                    // Also check without filters to debug
+                    $jadwalSeninsAll = DB::table('jadwal_pelajaran')
+                        ->where('id_rombel', $idRombel)
+                        ->where('hari', 'Senin')
+                        ->count();
+                    $debug['jadwal_senin_all_count'] = $jadwalSeninsAll;
+                    
+                    // Check what data is in jadwal_pelajaran for this rombel
+                    $sampleJadwal = DB::table('jadwal_pelajaran')
+                        ->where('id_rombel', $idRombel)
+                        ->limit(3)
+                        ->get();
+                    $debug['sample_jadwal'] = $sampleJadwal->map(fn($j) => [
+                        'hari' => $j->hari,
+                        'jam_ke' => $j->jam_ke,
+                        'tahun' => $j->tahun_pelajaran ?? 'N/A',
+                        'semester' => $j->semester ?? 'N/A',
+                    ])->toArray();
+                }
+                
                 foreach ($jadwals as $jadwal) {
-                    $namaMapel = $jadwal->nama_mapel;
-                    
-                    // Filter agama - skip non-matching religion subjects
-                    if (str_contains($namaMapel, 'Pendidikan Agama')) {
-                        $mapelAgama = $this->getAgamaMapelName($agamaSiswa);
-                        if ($namaMapel !== $mapelAgama) {
-                            continue;
-                        }
-                    }
-                    
                     $jamKe = $jadwal->jam_ke;
                     if ($jamKe >= 1 && $jamKe <= 11) {
                         $jadwalHari[$jamKe] = [
-                            'mapel' => $namaMapel,
+                            'mapel' => $jadwal->nama_mapel,
                             'guru' => $jadwal->nama_guru,
                         ];
                         
-                        if (!in_array($namaMapel, $totalMapelBerbeda)) {
-                            $totalMapelBerbeda[] = $namaMapel;
+                        if (!in_array($jadwal->nama_mapel, $totalMapelBerbeda)) {
+                            $totalMapelBerbeda[] = $jadwal->nama_mapel;
                         }
                     }
                 }
                 
                 $jadwalPerHari[$hari] = $jadwalHari;
             }
+        } else {
+            $debug['error'] = 'Rombel tidak ditemukan di tabel rombel';
         }
         
         return view('siswa.jadwal', [
@@ -111,6 +190,7 @@ class JadwalController extends Controller
             'namaRombel' => $namaRombel,
             'totalMapel' => count($totalMapelBerbeda),
             'hariList' => $hariList,
+            'debug' => $debug,
         ]);
     }
     
@@ -127,44 +207,4 @@ class JadwalController extends Controller
         
         return $mapping[$agama] ?? 'Pendidikan Agama Islam';
     }
-    
-    private function getRombelAktif($siswa, $periodik)
-    {
-        if (!$periodik) return null;
-        
-        // Method 1: Calculate based on angkatan (preferred for accurate semester tracking)
-        $tahunAjaran = explode('/', $periodik->tahun_pelajaran ?? '2025/2026');
-        $tahunAwal = intval($tahunAjaran[0] ?? 2025);
-        $angkatan = intval($siswa->angkatan_masuk ?? 2023);
-        $semesterNama = $periodik->semester ?? 'Ganjil';
-        
-        $tahunSelisih = $tahunAwal - $angkatan;
-        if ($semesterNama === 'Ganjil') {
-            $semesterKe = ($tahunSelisih * 2) + 1;
-        } else {
-            $semesterKe = ($tahunSelisih * 2) + 2;
-        }
-        
-        // Clamp to valid range
-        $semesterKe = max(1, min(6, $semesterKe));
-        
-        $kolomRombel = "rombel_semester_{$semesterKe}";
-        $rombelCalculated = $siswa->$kolomRombel ?? null;
-        
-        if (!empty($rombelCalculated)) {
-            return $rombelCalculated;
-        }
-        
-        // Method 2: Fallback - iterate through all semesters to find any assigned rombel
-        // This matches the legacy PHP approach that iterates through semester 1-6
-        for ($i = 1; $i <= 6; $i++) {
-            $kolomRombel = "rombel_semester_{$i}";
-            if (!empty($siswa->$kolomRombel)) {
-                return $siswa->$kolomRombel;
-            }
-        }
-        
-        return null;
-    }
 }
-
