@@ -328,14 +328,6 @@
                 <span class="badge">{{ $totalMapel }} Mapel</span>
             </div>
 
-            {{-- Debug Panel - Remove after fixing --}}
-            @if(isset($debug) && config('app.debug'))
-            <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; margin: 15px; border-radius: 8px; font-size: 12px;">
-                <strong style="color: #b45309;"><i class="fas fa-bug"></i> Debug Info:</strong>
-                <pre style="margin: 10px 0 0 0; background: white; padding: 10px; border-radius: 4px; overflow-x: auto;">{{ json_encode($debug, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
-            </div>
-            @endif
-
             @if(!empty($jadwalPerHari) && $namaRombel)
                 <div class="jadwal-cards-grid">
                     @foreach($hariList as $hari)
