@@ -132,6 +132,7 @@ class JadwalController extends Controller
     {
         if (!$periodik) return null;
         
+        // Method 1: Calculate based on angkatan (preferred for accurate semester tracking)
         $tahunAjaran = explode('/', $periodik->tahun_pelajaran ?? '2025/2026');
         $tahunAwal = intval($tahunAjaran[0] ?? 2025);
         $angkatan = intval($siswa->angkatan_masuk ?? 2023);
@@ -148,7 +149,22 @@ class JadwalController extends Controller
         $semesterKe = max(1, min(6, $semesterKe));
         
         $kolomRombel = "rombel_semester_{$semesterKe}";
-        return $siswa->$kolomRombel ?? null;
+        $rombelCalculated = $siswa->$kolomRombel ?? null;
+        
+        if (!empty($rombelCalculated)) {
+            return $rombelCalculated;
+        }
+        
+        // Method 2: Fallback - iterate through all semesters to find any assigned rombel
+        // This matches the legacy PHP approach that iterates through semester 1-6
+        for ($i = 1; $i <= 6; $i++) {
+            $kolomRombel = "rombel_semester_{$i}";
+            if (!empty($siswa->$kolomRombel)) {
+                return $siswa->$kolomRombel;
+            }
+        }
+        
+        return null;
     }
 }
 
