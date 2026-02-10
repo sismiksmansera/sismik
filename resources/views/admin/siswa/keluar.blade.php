@@ -158,7 +158,10 @@
     }
     .form-group select {
         width: 100%; padding: 12px 14px; border: 2px solid var(--gray-200);
-        border-radius: 10px; font-size: 14px;
+        border-radius: 10px; font-size: 14px; background: white;
+        appearance: menulist; -webkit-appearance: menulist; -moz-appearance: menulist;
+        cursor: pointer; position: relative; z-index: 10;
+        box-sizing: border-box;
     }
     .form-group select:focus { outline: none; border-color: #10b981; }
 
