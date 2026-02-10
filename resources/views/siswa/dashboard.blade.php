@@ -121,6 +121,9 @@
                         $presensi = $jadwal['presensi_status'];
                         $nilai = $jadwal['nilai'];
                         $izin = $jadwal['izin_guru'];
+                        $firstJam = min($jadwal['jam_list']);
+                        $recordId = $jadwal['presensi_record_id'] ?? null;
+                        $kehadiranGuru = $jadwal['kehadiran_guru'] ?? null;
                         
                         $cardClass = 'jadwal-card';
                         if ($izin) {
@@ -205,6 +208,32 @@
                                     <span class="izin-label"><i class="fas fa-tasks"></i> Tugas yang Harus Dikerjakan:</span>
                                     <div class="tugas-content">{!! nl2br(e($izin->uraian_tugas)) !!}</div>
                                 </div>
+                                @endif
+                            </div>
+                            @endif
+
+                            {{-- Kehadiran Guru Section --}}
+                            @if($presensi && !$izin)
+                            <div class="kehadiran-guru-section" id="kehadiran-section-{{ $firstJam }}-{{ $loop->index }}">
+                                @if($kehadiranGuru)
+                                    @php
+                                        $kgMap = [
+                                            'Tepat Waktu' => ['class' => 'kg-tepat', 'icon' => 'fa-check-circle'],
+                                            'Terlambat' => ['class' => 'kg-terlambat', 'icon' => 'fa-clock'],
+                                            'Tidak Hadir' => ['class' => 'kg-tidak', 'icon' => 'fa-times-circle'],
+                                        ];
+                                        $kgInfo = $kgMap[$kehadiranGuru] ?? ['class' => 'kg-tepat', 'icon' => 'fa-question-circle'];
+                                    @endphp
+                                    <div class="kg-result {{ $kgInfo['class'] }}">
+                                        <i class="fas {{ $kgInfo['icon'] }}"></i>
+                                        <span>Guru: {{ $kehadiranGuru }}</span>
+                                    </div>
+                                @else
+                                    <button class="btn-konfirmasi-guru" 
+                                            onclick="openKehadiranModal({{ $recordId }}, {{ $firstJam }}, {{ $loop->index }}, '{{ addslashes($jadwal['nama_guru']) }}')">
+                                        <i class="fas fa-user-check"></i>
+                                        <span>Konfirmasi Kehadiran Guru</span>
+                                    </button>
                                 @endif
                             </div>
                             @endif
@@ -842,9 +871,283 @@
         font-size: 8px !important;
     }
 }
+
+/* Kehadiran Guru Section */
+.kehadiran-guru-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #e5e7eb;
+}
+
+.btn-konfirmasi-guru {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-konfirmasi-guru:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-konfirmasi-guru:active {
+    transform: translateY(0);
+}
+
+.kg-result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.kg-result.kg-tepat {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.kg-result.kg-terlambat {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.kg-result.kg-tidak {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Kehadiran Guru Modal */
+.kg-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.kg-modal-overlay.show {
+    display: flex;
+}
+
+.kg-modal-box {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 380px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: kgSlideUp 0.3s ease;
+}
+
+@keyframes kgSlideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.kg-modal-header {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kg-modal-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.kg-modal-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kg-modal-body {
+    padding: 20px;
+}
+
+.kg-guru-info {
+    text-align: center;
+    margin-bottom: 16px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.kg-guru-info strong {
+    color: #1f2937;
+}
+
+.kg-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kg-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.kg-option-btn:hover {
+    transform: translateX(4px);
+}
+
+.kg-option-btn.tepat:hover {
+    border-color: #10b981;
+    background: #ecfdf5;
+    color: #065f46;
+}
+
+.kg-option-btn.terlambat:hover {
+    border-color: #f59e0b;
+    background: #fffbeb;
+    color: #92400e;
+}
+
+.kg-option-btn.tidak:hover {
+    border-color: #ef4444;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.kg-option-btn .kg-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.kg-option-btn.tepat .kg-icon {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.kg-option-btn.terlambat .kg-icon {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.kg-option-btn.tidak .kg-icon {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Toast Notification */
+.kg-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: 12px 24px;
+    border-radius: 12px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 99999;
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kg-toast.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.kg-toast.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.kg-toast.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
 </style>
 
+<!-- Kehadiran Guru Modal -->
+<div class="kg-modal-overlay" id="kgModal">
+    <div class="kg-modal-box">
+        <div class="kg-modal-header">
+            <h4><i class="fas fa-user-check" style="margin-right: 8px;"></i>Kehadiran Guru</h4>
+            <button class="kg-modal-close" onclick="closeKehadiranModal()">&times;</button>
+        </div>
+        <div class="kg-modal-body">
+            <div class="kg-guru-info">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <strong id="kgGuruNama">-</strong>
+            </div>
+            <div class="kg-options">
+                <button class="kg-option-btn tepat" onclick="selectKehadiran('Tepat Waktu')">
+                    <div class="kg-icon"><i class="fas fa-check-circle"></i></div>
+                    <span>Guru Hadir Tepat Waktu</span>
+                </button>
+                <button class="kg-option-btn terlambat" onclick="selectKehadiran('Terlambat')">
+                    <div class="kg-icon"><i class="fas fa-clock"></i></div>
+                    <span>Guru Hadir Terlambat</span>
+                </button>
+                <button class="kg-option-btn tidak" onclick="selectKehadiran('Tidak Hadir')">
+                    <div class="kg-icon"><i class="fas fa-times-circle"></i></div>
+                    <span>Guru Tidak Hadir</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="kg-toast" id="kgToast"></div>
+
 <script>
+let _kgPresensiId = null;
+let _kgJamKe = null;
+let _kgLoopIndex = null;
+
 function openPhotoModal() {
     const modal = document.getElementById('photoModal');
     modal.style.display = 'flex';
@@ -857,14 +1160,89 @@ function closePhotoModal() {
     document.body.style.overflow = 'auto';
 }
 
-// Close modal when clicking outside
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('photoModal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closePhotoModal();
+function openKehadiranModal(presensiId, jamKe, loopIndex, namaGuru) {
+    _kgPresensiId = presensiId;
+    _kgJamKe = jamKe;
+    _kgLoopIndex = loopIndex;
+    document.getElementById('kgGuruNama').textContent = namaGuru;
+    document.getElementById('kgModal').classList.add('show');
+    document.getElementById('kgModal').style.display = 'flex';
+}
+
+function closeKehadiranModal() {
+    document.getElementById('kgModal').classList.remove('show');
+    document.getElementById('kgModal').style.display = 'none';
+}
+
+function selectKehadiran(status) {
+    closeKehadiranModal();
+
+    // Disable the button immediately
+    const section = document.getElementById('kehadiran-section-' + _kgJamKe + '-' + _kgLoopIndex);
+    if (section) {
+        section.innerHTML = '<div style="text-align:center;padding:8px;"><i class="fas fa-spinner fa-spin" style="color:#3b82f6;"></i> Menyimpan...</div>';
+    }
+
+    fetch('{{ route("siswa.save-kehadiran-guru") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            presensi_id: _kgPresensiId,
+            jam_ke: _kgJamKe,
+            status: status
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showKgToast(data.message, 'success');
+            // Update card inline
+            if (section) {
+                const map = {
+                    'Tepat Waktu': { cls: 'kg-tepat', icon: 'fa-check-circle' },
+                    'Terlambat': { cls: 'kg-terlambat', icon: 'fa-clock' },
+                    'Tidak Hadir': { cls: 'kg-tidak', icon: 'fa-times-circle' }
+                };
+                const info = map[status] || map['Tepat Waktu'];
+                section.innerHTML = `<div class="kg-result ${info.cls}"><i class="fas ${info.icon}"></i><span>Guru: ${status}</span></div>`;
             }
+        } else {
+            showKgToast(data.message || 'Gagal menyimpan', 'error');
+            if (section) {
+                section.innerHTML = '<button class="btn-konfirmasi-guru" onclick="openKehadiranModal(' + _kgPresensiId + ',' + _kgJamKe + ',' + _kgLoopIndex + ',\'' + document.getElementById('kgGuruNama').textContent + '\')"><i class="fas fa-user-check"></i><span>Konfirmasi Kehadiran Guru</span></button>';
+            }
+        }
+    })
+    .catch(err => {
+        showKgToast('Terjadi kesalahan jaringan', 'error');
+        console.error(err);
+    });
+}
+
+function showKgToast(message, type) {
+    const toast = document.getElementById('kgToast');
+    toast.className = 'kg-toast ' + type;
+    toast.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle') + '"></i> ' + message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Close modals on backdrop click
+document.addEventListener('DOMContentLoaded', function() {
+    const photoModal = document.getElementById('photoModal');
+    if (photoModal) {
+        photoModal.addEventListener('click', function(e) {
+            if (e.target === photoModal) closePhotoModal();
+        });
+    }
+    const kgModal = document.getElementById('kgModal');
+    if (kgModal) {
+        kgModal.addEventListener('click', function(e) {
+            if (e.target === kgModal) closeKehadiranModal();
         });
     }
 });

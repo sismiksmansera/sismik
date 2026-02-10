@@ -392,6 +392,7 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
 Route::prefix('siswa')->name('siswa.')->middleware('check.siswa')->group(function () {
     Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
     Route::get('/stop-impersonate', [SiswaDashboardController::class, 'stopImpersonate'])->name('stop-impersonate');
+    Route::post('/save-kehadiran-guru', [SiswaDashboardController::class, 'saveKehadiranGuru'])->name('save-kehadiran-guru');
     
     // Profile routes
     Route::get('/profil', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('profil');

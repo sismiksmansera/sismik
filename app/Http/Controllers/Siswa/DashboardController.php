@@ -148,8 +148,14 @@ class DashboardController extends Controller
                         ->first();
                     
                     $presensiStatus = null;
+                    $kehadiranGuruStatus = null;
+                    $presensiRecordId = null;
                     if ($presensiRecord) {
                         $presensiStatus = $presensiRecord->$jamColumn;
+                        $presensiRecordId = $presensiRecord->id;
+                        // Get kehadiran guru for this jam
+                        $kehadiranGuruColumn = "kehadiran_guru_{$firstJam}";
+                        $kehadiranGuruStatus = $presensiRecord->$kehadiranGuruColumn ?? null;
                     }
                     
                     // Check penilaian for this specific jam range
@@ -177,6 +183,8 @@ class DashboardController extends Controller
                         'nama_guru' => $data['nama_guru'],
                         'jam_list' => $range,
                         'presensi_status' => $presensiStatus,
+                        'presensi_record_id' => $presensiRecordId,
+                        'kehadiran_guru' => $kehadiranGuruStatus,
                         'nilai' => $nilaiRecord,
                         'izin_guru' => $izinRecord,
                     ];
@@ -241,6 +249,50 @@ class DashboardController extends Controller
         $end = $jamList[$count - 1];
         
         return $start . '-' . $end;
+    }
+
+    /**
+     * Save kehadiran guru confirmation from student
+     */
+    public function saveKehadiranGuru(Request $request)
+    {
+        $siswa = Auth::guard('siswa')->user();
+        
+        $presensiId = $request->input('presensi_id');
+        $jamKe = intval($request->input('jam_ke'));
+        $status = $request->input('status'); // Tepat Waktu, Terlambat, Tidak Hadir
+        
+        if (!$presensiId || !$jamKe || !$status) {
+            return response()->json(['success' => false, 'message' => 'Data tidak lengkap']);
+        }
+        
+        if ($jamKe < 1 || $jamKe > 11) {
+            return response()->json(['success' => false, 'message' => 'Jam ke tidak valid']);
+        }
+        
+        $allowedStatuses = ['Tepat Waktu', 'Terlambat', 'Tidak Hadir'];
+        if (!in_array($status, $allowedStatuses)) {
+            return response()->json(['success' => false, 'message' => 'Status tidak valid']);
+        }
+        
+        // Find presensi record belonging to this student
+        $record = PresensiSiswa::where('id', $presensiId)
+            ->where('nisn', $siswa->nisn)
+            ->first();
+        
+        if (!$record) {
+            return response()->json(['success' => false, 'message' => 'Data presensi tidak ditemukan']);
+        }
+        
+        $column = "kehadiran_guru_{$jamKe}";
+        $record->$column = $status;
+        $record->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Konfirmasi kehadiran guru berhasil disimpan',
+            'status' => $status
+        ]);
     }
 
     /**
