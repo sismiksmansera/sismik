@@ -56,6 +56,7 @@
                             <th style="padding: 12px 15px; text-align: left; font-weight: 600; color: #374151;">Nama Siswa</th>
                             <th style="padding: 12px 15px; text-align: left; font-weight: 600; color: #374151;">NISN</th>
                             <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151;">Presensi</th>
+                            <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151;">Konfirmasi Kehadiran Guru</th>
                             <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151;">Nilai</th>
                             <th style="padding: 12px 15px; text-align: left; font-weight: 600; color: #374151;">Keterangan Nilai</th>
                         </tr>
@@ -83,6 +84,26 @@
                                     <span style="color: #9ca3af;">-</span>
                                     @endif
                                 </td>
+                                <td style="padding: 12px 15px; text-align: center;">
+                                    @php $kgStatus = $presensi ? ($presensi['kehadiran_guru'] ?? null) : null; @endphp
+                                    @if($kgStatus)
+                                        @if($kgStatus === 'Tepat Waktu')
+                                        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #d1fae5; color: #065f46;">
+                                            <i class="fas fa-check-circle"></i> Tepat Waktu
+                                        </span>
+                                        @elseif($kgStatus === 'Terlambat')
+                                        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #fef3c7; color: #92400e;">
+                                            <i class="fas fa-clock"></i> Terlambat
+                                        </span>
+                                        @elseif($kgStatus === 'Tidak Hadir')
+                                        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #fee2e2; color: #991b1b;">
+                                            <i class="fas fa-times-circle"></i> Tidak Hadir
+                                        </span>
+                                        @endif
+                                    @else
+                                        <span style="color: #9ca3af;">-</span>
+                                    @endif
+                                </td>
                                 <td style="padding: 12px 15px; text-align: center; font-weight: 700;">
                                     @if($nilai)
                                     <span style="background: {{ $nilai->nilai >= 75 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' }}; color: {{ $nilai->nilai >= 75 ? '#10b981' : '#ef4444' }}; padding: 4px 12px; border-radius: 6px;">
@@ -99,7 +120,7 @@
                             @endforeach
                         @else
                         <tr>
-                            <td colspan="6" style="padding: 40px; text-align: center;">
+                            <td colspan="7" style="padding: 40px; text-align: center;">
                                 <i class="fas fa-users-slash" style="font-size: 48px; color: #d1d5db; margin-bottom: 15px; display: block;"></i>
                                 <span style="color: #6b7280;">Tidak ada data siswa ditemukan</span>
                             </td>

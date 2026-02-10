@@ -378,9 +378,11 @@ class DashboardController extends Controller
             ->get();
         
         foreach ($presensiRecords as $p) {
+            $kehadiranGuruColumn = "kehadiran_guru_{$firstJam}";
             // Use the specific jam column value
             $presensiData[$p->nisn] = [
                 'presensi' => $p->$jamColumn ?? null,
+                'kehadiran_guru' => $p->$kehadiranGuruColumn ?? null,
                 'record' => $p
             ];
         }
