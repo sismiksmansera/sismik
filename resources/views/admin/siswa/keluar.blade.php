@@ -111,29 +111,29 @@
     .empty-state h3 { font-size: 1.2rem; color: var(--gray-600); margin-bottom: 8px; }
 
     /* Modal */
-    .modal {
+    .sk-modal {
         display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.5); z-index: 9999;
         justify-content: center; align-items: center;
     }
-    .modal.show { display: flex; }
-    .modal-dialog {
+    .sk-modal.show { display: flex; }
+    .sk-modal-dialog {
         background: white; border-radius: 16px; width: 90%;
         max-width: 700px; max-height: 90vh; overflow-y: auto;
         box-shadow: 0 25px 50px rgba(0,0,0,0.15);
     }
-    .modal-header {
+    .sk-modal-header {
         padding: 20px 24px; border-radius: 16px 16px 0 0; color: white;
         display: flex; justify-content: space-between; align-items: center;
     }
-    .modal-header h3 { margin: 0; font-size: 1.1rem; }
-    .modal-close {
+    .sk-modal-header h3 { margin: 0; font-size: 1.1rem; }
+    .sk-modal-close {
         background: rgba(255,255,255,0.2); border: none; color: white;
         width: 32px; height: 32px; border-radius: 50%; font-size: 18px;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
-    .modal-body { padding: 24px; }
-    .modal-footer {
+    .sk-modal-body { padding: 24px; }
+    .sk-modal-footer {
         padding: 16px 24px; border-top: 1px solid var(--gray-200);
         display: flex; gap: 10px; justify-content: flex-end;
     }
@@ -314,14 +314,14 @@
 </div>
 
 <!-- Modal Detail -->
-<div class="modal" id="modalDetail">
-    <div class="modal-dialog">
-        <div class="modal-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+<div class="sk-modal" id="modalDetail">
+    <div class="sk-modal-dialog">
+        <div class="sk-modal-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
             <h3><i class="fas fa-user"></i> Detail Siswa Keluar</h3>
-            <button class="modal-close" onclick="closeModal('modalDetail')">&times;</button>
+            <button class="sk-modal-close" onclick="closeModal('modalDetail')">&times;</button>
         </div>
-        <div class="modal-body" id="modalDetailContent"></div>
-        <div class="modal-footer">
+        <div class="sk-modal-body" id="modalDetailContent"></div>
+        <div class="sk-modal-footer">
             <button class="btn btn-secondary" onclick="closeModal('modalDetail')">
                 <i class="fas fa-times"></i> Tutup
             </button>
@@ -330,13 +330,13 @@
 </div>
 
 <!-- Modal Kembalikan -->
-<div class="modal" id="modalRestore">
-    <div class="modal-dialog" style="max-width: 480px;">
-        <div class="modal-header" style="background: linear-gradient(135deg, #10b981, #059669);">
+<div class="sk-modal" id="modalRestore">
+    <div class="sk-modal-dialog" style="max-width: 480px;">
+        <div class="sk-modal-header" style="background: linear-gradient(135deg, #10b981, #059669);">
             <h3><i class="fas fa-undo"></i> Kembalikan Siswa</h3>
-            <button class="modal-close" onclick="closeModal('modalRestore')">&times;</button>
+            <button class="sk-modal-close" onclick="closeModal('modalRestore')">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="sk-modal-body">
             <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
                 <p style="margin: 0; font-weight: 600; color: #166534;">
                     <i class="fas fa-user"></i> <span id="restoreNama"></span>
@@ -363,7 +363,7 @@
 
             <input type="hidden" id="restoreId">
         </div>
-        <div class="modal-footer">
+        <div class="sk-modal-footer">
             <button class="btn btn-secondary" onclick="closeModal('modalRestore')">Batal</button>
             <button class="btn btn-success" id="confirmRestore">
                 <i class="fas fa-check"></i> Kembalikan Siswa
@@ -386,8 +386,14 @@ const csrfToken = '{{ csrf_token() }}';
 const siswaData = @json($siswaKeluarList->keyBy('id'));
 
 // Modal functions
-function openModal(id) { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('show'); el.style.display = 'flex'; }
+}
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('show'); el.style.display = 'none'; }
+}
 
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
@@ -506,14 +512,14 @@ document.getElementById('confirmRestore')?.addEventListener('click', async funct
 });
 
 // Close modals on backdrop click only
-document.querySelectorAll('.modal').forEach(modal => {
+document.querySelectorAll('.sk-modal').forEach(modal => {
     modal.addEventListener('click', function(e) {
         if (e.target === this) closeModal(this.id);
     });
 });
 
 // Prevent clicks inside modal-dialog from bubbling to backdrop
-document.querySelectorAll('.modal .modal-dialog').forEach(dialog => {
+document.querySelectorAll('.sk-modal .sk-modal-dialog').forEach(dialog => {
     dialog.addEventListener('click', function(e) {
         e.stopPropagation();
     });
