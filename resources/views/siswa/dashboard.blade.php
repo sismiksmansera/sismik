@@ -212,8 +212,8 @@
                             </div>
                             @endif
 
-                            {{-- Kehadiran Guru Section --}}
-                            @if($presensi && !$izin)
+                            {{-- Kehadiran Guru Section: only show when Hadir or Belum Presensi --}}
+                            @if(($presensi === 'H' || !$presensi) && !$izin)
                             <div class="kehadiran-guru-section" id="kehadiran-section-{{ $firstJam }}-{{ $loop->index }}">
                                 @if($kehadiranGuru)
                                     @php
