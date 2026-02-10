@@ -29,7 +29,15 @@ class RiwayatAkademikController extends Controller
             $rombel = DB::table('rombel')
                 ->where('nama_rombel', $namaRombel)
                 ->where('tahun_pelajaran', $tahunAktif)
+                ->where('semester', $semesterJadwal)
                 ->first();
+            
+            if (!$rombel) {
+                $rombel = DB::table('rombel')
+                    ->where('nama_rombel', $namaRombel)
+                    ->where('tahun_pelajaran', $tahunAktif)
+                    ->first();
+            }
             
             if (!$rombel) {
                 $rombel = DB::table('rombel')
