@@ -556,6 +556,9 @@
             <a href="{{ route('admin.siswa.import') }}" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">
                 <i class="fas fa-file-import"></i> Import Data
             </a>
+            <a href="{{ route('admin.siswa-keluar.index') }}" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
+                <i class="fas fa-user-graduate"></i> Siswa Keluar
+            </a>
         </div>
 
         <!-- Content Section -->

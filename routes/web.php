@@ -108,6 +108,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/siswa/update-wali-semester', [SiswaController::class, 'updateWaliSemester'])->name('siswa.update-wali');
     Route::post('/siswa/get-rombel', [SiswaController::class, 'getRombelBySemester'])->name('siswa.get-rombel');
     Route::post('/siswa/keluarkan', [SiswaController::class, 'keluarkan'])->name('siswa.keluarkan');
+    Route::get('/siswa-keluar', [SiswaController::class, 'siswaKeluarIndex'])->name('siswa-keluar.index');
+    Route::post('/siswa-keluar/kembalikan', [SiswaController::class, 'kembalikanSiswa'])->name('siswa-keluar.kembalikan');
     
     // Siswa Import
     Route::get('/siswa/import', [SiswaController::class, 'showImport'])->name('siswa.import');

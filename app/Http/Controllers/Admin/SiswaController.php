@@ -745,6 +745,156 @@ class SiswaController extends Controller
     }
 
     /**
+     * Siswa Keluar - List page
+     */
+    public function siswaKeluarIndex(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+
+        // Filters
+        $filterJenis = $request->get('jenis', '');
+        $filterTahun = $request->get('tahun', '');
+        $search = $request->get('search', '');
+
+        $query = SiswaKeluar::query();
+
+        if (!empty($filterJenis)) {
+            $query->where('jenis_keluar', $filterJenis);
+        }
+        if (!empty($filterTahun)) {
+            $query->whereYear('tanggal_keluar', $filterTahun);
+        }
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        $siswaKeluarList = $query->orderBy('tanggal_keluar', 'desc')
+            ->orderBy('nama', 'asc')
+            ->get();
+
+        // Stats
+        $stats = [
+            'Mutasi' => SiswaKeluar::where('jenis_keluar', 'Mutasi')->count(),
+            'Dikeluarkan' => SiswaKeluar::where('jenis_keluar', 'Dikeluarkan')->count(),
+            'Lulus' => SiswaKeluar::where('jenis_keluar', 'Lulus')->count(),
+        ];
+        $totalKeluar = array_sum($stats);
+
+        // Tahun list for filter
+        $tahunList = SiswaKeluar::selectRaw('DISTINCT YEAR(tanggal_keluar) as tahun')
+            ->whereNotNull('tanggal_keluar')
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun');
+
+        // Rombel list for restore
+        $rombelList = Rombel::select('nama_rombel')
+            ->distinct()
+            ->orderBy('nama_rombel')
+            ->pluck('nama_rombel');
+
+        return view('admin.siswa.keluar', compact(
+            'admin',
+            'siswaKeluarList',
+            'stats',
+            'totalKeluar',
+            'tahunList',
+            'rombelList',
+            'filterJenis',
+            'filterTahun',
+            'search'
+        ));
+    }
+
+    /**
+     * Kembalikan Siswa (AJAX) - Restore from siswa_keluar back to siswa
+     */
+    public function kembalikanSiswa(Request $request)
+    {
+        $siswaKeluarId = intval($request->input('siswa_keluar_id', 0));
+        $rombelKembali = $request->input('rombel_kembali', '');
+
+        if (empty($siswaKeluarId)) {
+            return response()->json(['success' => false, 'message' => 'ID siswa tidak valid']);
+        }
+
+        $sk = SiswaKeluar::find($siswaKeluarId);
+        if (!$sk) {
+            return response()->json(['success' => false, 'message' => 'Data siswa tidak ditemukan']);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Handle invalid date
+            $tglLahir = ($sk->tgl_lahir === '0000-00-00' || empty($sk->tgl_lahir)) ? null : $sk->tgl_lahir;
+
+            // Rombel semester 1 override if rombel_kembali provided
+            $rombel1 = !empty($rombelKembali) ? $rombelKembali : $sk->rombel_semester_1;
+
+            // Insert back to siswa
+            Siswa::create([
+                'nisn' => $sk->nisn,
+                'nis' => $sk->nis,
+                'nama' => $sk->nama,
+                'jk' => $sk->jk,
+                'agama' => $sk->agama,
+                'tempat_lahir' => $sk->tempat_lahir,
+                'tgl_lahir' => $tglLahir,
+                'nohp_siswa' => $sk->nohp_siswa,
+                'email' => $sk->email,
+                'provinsi' => $sk->provinsi,
+                'kota' => $sk->kota,
+                'kecamatan' => $sk->kecamatan,
+                'kelurahan' => $sk->kelurahan,
+                'nama_bapak' => $sk->nama_bapak,
+                'pekerjaan_bapak' => $sk->pekerjaan_bapak,
+                'nohp_bapak' => $sk->nohp_bapak,
+                'nama_ibu' => $sk->nama_ibu,
+                'pekerjaan_ibu' => $sk->pekerjaan_ibu,
+                'nohp_ibu' => $sk->nohp_ibu,
+                'jml_saudara' => $sk->jml_saudara,
+                'anak_ke' => $sk->anak_ke,
+                'asal_sekolah' => $sk->asal_sekolah,
+                'nilai_skl' => $sk->nilai_skl,
+                'cita_cita' => $sk->cita_cita,
+                'mapel_fav1' => $sk->mapel_fav1,
+                'mapel_fav2' => $sk->mapel_fav2,
+                'harapan' => $sk->harapan,
+                'angkatan_masuk' => $sk->angkatan_masuk,
+                'password' => Hash::make($sk->nisn), // Default password = NISN
+                'rombel_semester_1' => $rombel1,
+                'rombel_semester_2' => $sk->rombel_semester_2,
+                'rombel_semester_3' => $sk->rombel_semester_3,
+                'rombel_semester_4' => $sk->rombel_semester_4,
+                'rombel_semester_5' => $sk->rombel_semester_5,
+                'rombel_semester_6' => $sk->rombel_semester_6,
+                'bk_semester_1' => $sk->bk_semester_1,
+                'bk_semester_2' => $sk->bk_semester_2,
+                'bk_semester_3' => $sk->bk_semester_3,
+                'bk_semester_4' => $sk->bk_semester_4,
+                'bk_semester_5' => $sk->bk_semester_5,
+                'bk_semester_6' => $sk->bk_semester_6,
+            ]);
+
+            // Delete from siswa_keluar
+            $sk->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Siswa ' . $sk->nama . ' berhasil dikembalikan ke data siswa aktif'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Gagal: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
      * Impersonate a student (Login as Siswa)
      */
     public function impersonate($nisn)
