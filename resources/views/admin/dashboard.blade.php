@@ -247,13 +247,13 @@
                                         @elseif($kehadiranStatus === 'terkonfirmasi' && $kehadiranGuruData)
                                             <div style="font-size: 11px; line-height: 1.6; text-align: left; display: inline-block;">
                                                 @if($kehadiranGuruData['tepat_waktu'] > 0)
-                                                <div style="color: #059669;"><i class="fas fa-check-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tepat_waktu'] }}% Hadir Tepat Waktu</div>
+                                                <div style="color: #059669;"><i class="fas fa-check-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tepat_waktu'] }}% Terkonfirmasi Tepat Waktu</div>
                                                 @endif
                                                 @if($kehadiranGuruData['terlambat'] > 0)
-                                                <div style="color: #d97706;"><i class="fas fa-clock" style="width: 14px;"></i> {{ $kehadiranGuruData['terlambat'] }}% Hadir Terlambat</div>
+                                                <div style="color: #d97706;"><i class="fas fa-clock" style="width: 14px;"></i> {{ $kehadiranGuruData['terlambat'] }}% Terkonfirmasi Terlambat</div>
                                                 @endif
                                                 @if($kehadiranGuruData['tidak_hadir'] > 0)
-                                                <div style="color: #dc2626;"><i class="fas fa-times-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tidak_hadir'] }}% Tidak Hadir</div>
+                                                <div style="color: #dc2626;"><i class="fas fa-times-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tidak_hadir'] }}% Terkonfirmasi Tidak Hadir</div>
                                                 @endif
                                             </div>
                                         @endif
