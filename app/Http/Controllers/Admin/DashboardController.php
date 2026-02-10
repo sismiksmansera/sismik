@@ -166,12 +166,67 @@ class DashboardController extends Controller
                                 ->exists();
                         }
                         
-                        // Determine kehadiran status
-                        $kehadiranStatus = 'belum';
-                        if ($sudahPresensi) {
-                            $kehadiranStatus = 'hadir';
-                        } elseif ($hasIzin) {
+                        // Determine kehadiran status based on student confirmations
+                        $kehadiranStatus = 'belum'; // Belum Hadir
+                        $kehadiranGuruData = null;
+                        if ($hasIzin) {
                             $kehadiranStatus = 'izin';
+                        } elseif ($sudahPresensi) {
+                            $kehadiranGuruColumn = "kehadiran_guru_{$firstJam}";
+                            
+                            // Count students who have presensi 'H' (Hadir) for this jam
+                            $totalSiswaHadir = DB::table('presensi_siswa')
+                                ->where('tanggal_presensi', $tanggalHariIni)
+                                ->where('id_rombel', $data['id_rombel'])
+                                ->where('mata_pelajaran', $data['nama_mapel'])
+                                ->where($jamColumn, 'H')
+                                ->count();
+                            
+                            if ($totalSiswaHadir > 0) {
+                                // Count each kehadiran guru status
+                                $tepatWaktu = DB::table('presensi_siswa')
+                                    ->where('tanggal_presensi', $tanggalHariIni)
+                                    ->where('id_rombel', $data['id_rombel'])
+                                    ->where('mata_pelajaran', $data['nama_mapel'])
+                                    ->where($jamColumn, 'H')
+                                    ->where($kehadiranGuruColumn, 'Tepat Waktu')
+                                    ->count();
+                                
+                                $terlambat = DB::table('presensi_siswa')
+                                    ->where('tanggal_presensi', $tanggalHariIni)
+                                    ->where('id_rombel', $data['id_rombel'])
+                                    ->where('mata_pelajaran', $data['nama_mapel'])
+                                    ->where($jamColumn, 'H')
+                                    ->where($kehadiranGuruColumn, 'Terlambat')
+                                    ->count();
+                                
+                                $tidakHadir = DB::table('presensi_siswa')
+                                    ->where('tanggal_presensi', $tanggalHariIni)
+                                    ->where('id_rombel', $data['id_rombel'])
+                                    ->where('mata_pelajaran', $data['nama_mapel'])
+                                    ->where($jamColumn, 'H')
+                                    ->where($kehadiranGuruColumn, 'Tidak Hadir')
+                                    ->count();
+                                
+                                $belumKonfirmasi = $totalSiswaHadir - $tepatWaktu - $terlambat - $tidakHadir;
+                                
+                                $totalConfirmed = $tepatWaktu + $terlambat + $tidakHadir;
+                                
+                                if ($totalConfirmed > 0) {
+                                    $kehadiranStatus = 'terkonfirmasi';
+                                    $kehadiranGuruData = [
+                                        'total' => $totalSiswaHadir,
+                                        'tepat_waktu' => round(($tepatWaktu / $totalSiswaHadir) * 100),
+                                        'terlambat' => round(($terlambat / $totalSiswaHadir) * 100),
+                                        'tidak_hadir' => round(($tidakHadir / $totalSiswaHadir) * 100),
+                                        'belum_konfirmasi' => round(($belumKonfirmasi / $totalSiswaHadir) * 100),
+                                    ];
+                                } else {
+                                    $kehadiranStatus = 'belum_terkonfirmasi';
+                                }
+                            } else {
+                                $kehadiranStatus = 'belum_terkonfirmasi';
+                            }
                         }
                         
                         // Calculate presensi siswa percentage for this jam slot
@@ -210,6 +265,7 @@ class DashboardController extends Controller
                             'nama_guru' => $data['nama_guru'],
                             'jam_list' => $range,
                             'kehadiran_status' => $kehadiranStatus,
+                            'kehadiran_guru_data' => $kehadiranGuruData,
                             'presensi_persen' => $presensiPersen,
                             'has_penilaian' => $hasPenilaian,
                         ];

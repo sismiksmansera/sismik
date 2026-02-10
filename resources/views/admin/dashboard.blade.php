@@ -206,19 +206,7 @@
                                     
                                     // Kehadiran guru styling
                                     $kehadiranStatus = $jadwal['kehadiran_status'];
-                                    if ($kehadiranStatus === 'hadir') {
-                                        $kehadiranStyle = 'background: rgba(16,185,129,0.1); color: #10b981;';
-                                        $kehadiranIcon = 'fa-check-circle';
-                                        $kehadiranText = 'Hadir';
-                                    } elseif ($kehadiranStatus === 'izin') {
-                                        $kehadiranStyle = 'background: rgba(245,158,11,0.1); color: #f59e0b;';
-                                        $kehadiranIcon = 'fa-clock';
-                                        $kehadiranText = 'Izin';
-                                    } else {
-                                        $kehadiranStyle = 'background: rgba(156,163,175,0.1); color: #6b7280;';
-                                        $kehadiranIcon = 'fa-minus-circle';
-                                        $kehadiranText = 'Belum Hadir';
-                                    }
+                                    $kehadiranGuruData = $jadwal['kehadiran_guru_data'] ?? null;
                                     
                                     // Presensi styling
                                     $presensiPersen = $jadwal['presensi_persen'];
@@ -241,10 +229,37 @@
                                         <small style="color: #6b7280;">Guru: {{ $jadwal['nama_guru'] ?? '-' }}</small>
                                     </td>
                                     <td style="padding: 12px 15px; text-align: center;">
-                                        <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; {{ $kehadiranStyle }}">
-                                            <i class="fas {{ $kehadiranIcon }}"></i>
-                                            {{ $kehadiranText }}
-                                        </span>
+                                        @if($kehadiranStatus === 'belum')
+                                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(156,163,175,0.1); color: #6b7280;">
+                                                <i class="fas fa-minus-circle"></i>
+                                                Belum Hadir
+                                            </span>
+                                        @elseif($kehadiranStatus === 'izin')
+                                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(245,158,11,0.1); color: #f59e0b;">
+                                                <i class="fas fa-clock"></i>
+                                                Izin
+                                            </span>
+                                        @elseif($kehadiranStatus === 'belum_terkonfirmasi')
+                                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(245,158,11,0.1); color: #f59e0b;">
+                                                <i class="fas fa-question-circle"></i>
+                                                Belum Terkonfirmasi
+                                            </span>
+                                        @elseif($kehadiranStatus === 'terkonfirmasi' && $kehadiranGuruData)
+                                            <div style="font-size: 11px; line-height: 1.6; text-align: left; display: inline-block;">
+                                                @if($kehadiranGuruData['tepat_waktu'] > 0)
+                                                <div style="color: #059669;"><i class="fas fa-check-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tepat_waktu'] }}% Hadir Tepat Waktu</div>
+                                                @endif
+                                                @if($kehadiranGuruData['terlambat'] > 0)
+                                                <div style="color: #d97706;"><i class="fas fa-clock" style="width: 14px;"></i> {{ $kehadiranGuruData['terlambat'] }}% Hadir Terlambat</div>
+                                                @endif
+                                                @if($kehadiranGuruData['tidak_hadir'] > 0)
+                                                <div style="color: #dc2626;"><i class="fas fa-times-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tidak_hadir'] }}% Tidak Hadir</div>
+                                                @endif
+                                                @if($kehadiranGuruData['belum_konfirmasi'] > 0)
+                                                <div style="color: #9ca3af;"><i class="fas fa-minus-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['belum_konfirmasi'] }}% Belum Konfirmasi</div>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </td>
                                     <td style="padding: 12px 15px; text-align: center;">
                                         @if($presensiPersen !== null)
