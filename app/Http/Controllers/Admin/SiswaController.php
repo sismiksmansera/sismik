@@ -8,10 +8,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Siswa;
+use App\Models\SiswaKeluar;
 use App\Models\Rombel;
 use App\Models\GuruBK;
 use App\Models\Guru;
 use App\Models\DataPeriodik;
+use Illuminate\Support\Facades\DB;
 use App\Services\NameCascadeService;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -647,6 +649,99 @@ class SiswaController extends Controller
         $siswa->update(['foto' => $filename]);
 
         return back()->with('success', 'Foto berhasil diupload!');
+    }
+
+    /**
+     * Keluarkan Siswa (AJAX) - Move to siswa_keluar table then delete
+     */
+    public function keluarkan(Request $request)
+    {
+        $siswaId = intval($request->input('siswa_id', 0));
+        $tanggalKeluar = $request->input('tanggal_keluar', '');
+        $jenisKeluar = $request->input('jenis_keluar', '');
+        $keterangan = $request->input('keterangan', '');
+
+        if (empty($siswaId) || empty($tanggalKeluar) || empty($jenisKeluar)) {
+            return response()->json(['success' => false, 'message' => 'Data tidak lengkap']);
+        }
+
+        // Validate jenis_keluar
+        $validJenis = ['Mutasi', 'Dikeluarkan', 'Lulus'];
+        if (!in_array($jenisKeluar, $validJenis)) {
+            return response()->json(['success' => false, 'message' => 'Jenis keluar tidak valid']);
+        }
+
+        $siswa = Siswa::find($siswaId);
+        if (!$siswa) {
+            return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan']);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Handle null/invalid date
+            $tglLahir = ($siswa->tgl_lahir === '0000-00-00' || empty($siswa->tgl_lahir)) ? null : $siswa->tgl_lahir;
+
+            // Insert into siswa_keluar
+            SiswaKeluar::create([
+                'siswa_id' => $siswa->id,
+                'nisn' => $siswa->nisn,
+                'nis' => $siswa->nis,
+                'nama' => $siswa->nama,
+                'jk' => $siswa->jk,
+                'agama' => $siswa->agama,
+                'tempat_lahir' => $siswa->tempat_lahir,
+                'tgl_lahir' => $tglLahir,
+                'nohp_siswa' => $siswa->nohp_siswa,
+                'email' => $siswa->email,
+                'provinsi' => $siswa->provinsi,
+                'kota' => $siswa->kota,
+                'kecamatan' => $siswa->kecamatan,
+                'kelurahan' => $siswa->kelurahan,
+                'nama_bapak' => $siswa->nama_bapak,
+                'pekerjaan_bapak' => $siswa->pekerjaan_bapak,
+                'nohp_bapak' => $siswa->nohp_bapak,
+                'nama_ibu' => $siswa->nama_ibu,
+                'pekerjaan_ibu' => $siswa->pekerjaan_ibu,
+                'nohp_ibu' => $siswa->nohp_ibu,
+                'jml_saudara' => $siswa->jml_saudara,
+                'anak_ke' => $siswa->anak_ke,
+                'asal_sekolah' => $siswa->asal_sekolah,
+                'nilai_skl' => $siswa->nilai_skl,
+                'cita_cita' => $siswa->cita_cita,
+                'mapel_fav1' => $siswa->mapel_fav1,
+                'mapel_fav2' => $siswa->mapel_fav2,
+                'harapan' => $siswa->harapan,
+                'angkatan_masuk' => $siswa->angkatan_masuk,
+                'rombel_semester_1' => $siswa->rombel_semester_1,
+                'rombel_semester_2' => $siswa->rombel_semester_2,
+                'rombel_semester_3' => $siswa->rombel_semester_3,
+                'rombel_semester_4' => $siswa->rombel_semester_4,
+                'rombel_semester_5' => $siswa->rombel_semester_5,
+                'rombel_semester_6' => $siswa->rombel_semester_6,
+                'bk_semester_1' => $siswa->bk_semester_1,
+                'bk_semester_2' => $siswa->bk_semester_2,
+                'bk_semester_3' => $siswa->bk_semester_3,
+                'bk_semester_4' => $siswa->bk_semester_4,
+                'bk_semester_5' => $siswa->bk_semester_5,
+                'bk_semester_6' => $siswa->bk_semester_6,
+                'tanggal_keluar' => $tanggalKeluar,
+                'jenis_keluar' => $jenisKeluar,
+                'keterangan' => $keterangan,
+            ]);
+
+            // Delete from siswa table
+            $siswa->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Siswa ' . $siswa->nama . ' berhasil dikeluarkan dengan status ' . $jenisKeluar
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Gagal: ' . $e->getMessage()]);
+        }
     }
 
     /**

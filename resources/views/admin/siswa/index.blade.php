@@ -202,6 +202,63 @@
     .btn-action:hover { transform: translateY(-2px); }
     .btn-warning { background: linear-gradient(135deg, #F59E0B, #D97706); }
     .btn-danger { background: linear-gradient(135deg, #EF4444, #DC2626); }
+
+    /* Keluarkan Modal Form */
+    .keluarkan-form-group {
+        margin-bottom: 16px;
+    }
+    .keluarkan-form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--gray-600);
+        margin-bottom: 6px;
+    }
+    .keluarkan-form-group select,
+    .keluarkan-form-group input,
+    .keluarkan-form-group textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid var(--gray-200);
+        border-radius: 10px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+        font-family: inherit;
+    }
+    .keluarkan-form-group select:focus,
+    .keluarkan-form-group input:focus,
+    .keluarkan-form-group textarea:focus {
+        outline: none;
+        border-color: #ef4444;
+    }
+    .keluarkan-form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    .jenis-keluar-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .jenis-option {
+        padding: 12px;
+        border: 2px solid var(--gray-200);
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .jenis-option:hover {
+        border-color: #ef4444;
+        background: #fef2f2;
+    }
+    .jenis-option.selected {
+        border-color: #ef4444;
+        background: #ef4444;
+        color: white;
+    }
+    .jenis-option i { font-size: 20px; display: block; margin-bottom: 6px; }
+    .jenis-option span { font-size: 12px; font-weight: 600; }
     
     .empty-state {
         padding: 60px 20px;
@@ -538,7 +595,7 @@
                             <th class="text-center" width="40">
                                 <input type="checkbox" id="selectAll">
                             </th>
-                            <th class="text-center" width="70">Aksi</th>
+                            <th class="text-center" width="100">Aksi</th>
                             <th class="text-center" width="40">No</th>
                             <th>Nama Siswa</th>
                             <th class="text-center">NIS</th>
@@ -608,6 +665,13 @@
                                         <a href="#" class="btn-action btn-info-outline" title="Riwayat Akademik">
                                             <i class="fas fa-book-open"></i>
                                         </a>
+                                        <button type="button" class="btn-action btn-danger btn-keluarkan" 
+                                            data-id="{{ $siswa->id }}" 
+                                            data-nama="{{ $siswa->nama }}" 
+                                            data-nisn="{{ $siswa->nisn }}" 
+                                            title="Keluarkan Siswa">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </button>
                                     </div>
                                 </td>
                                 <td class="text-center">{{ $siswaList->firstItem() + $index }}</td>
@@ -946,6 +1010,73 @@
     </div>
 </div>
 
+<!-- Modal Keluarkan Siswa -->
+<div class="modal" id="modalKeluarkan">
+    <div class="modal-dialog" style="max-width: 480px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            <h3><i class="fas fa-sign-out-alt"></i> Keluarkan Siswa</h3>
+            <button class="modal-close" onclick="closeModal('modalKeluarkan')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="student-info-card">
+                <div class="student-info-row">
+                    <div class="info-item">
+                        <span class="info-label">Nama Siswa</span>
+                        <span class="info-value" id="keluarkanNama">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">NISN</span>
+                        <span class="info-value" id="keluarkanNISN">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" id="keluarkanSiswaId">
+
+            <div class="keluarkan-form-group">
+                <label><i class="fas fa-tag"></i> Jenis Keluar</label>
+                <div class="jenis-keluar-grid" id="jenisKeluarGrid">
+                    <div class="jenis-option" data-value="Mutasi" onclick="selectJenisKeluar(this)">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Mutasi</span>
+                    </div>
+                    <div class="jenis-option" data-value="Dikeluarkan" onclick="selectJenisKeluar(this)">
+                        <i class="fas fa-user-times"></i>
+                        <span>Dikeluarkan</span>
+                    </div>
+                    <div class="jenis-option" data-value="Lulus" onclick="selectJenisKeluar(this)">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Lulus</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="keluarkan-form-group">
+                <label><i class="fas fa-calendar"></i> Tanggal Keluar</label>
+                <input type="date" id="keluarkanTanggal" value="{{ date('Y-m-d') }}">
+            </div>
+
+            <div class="keluarkan-form-group">
+                <label><i class="fas fa-comment-alt"></i> Keterangan (Opsional)</label>
+                <textarea id="keluarkanKeterangan" placeholder="Keterangan tambahan..."></textarea>
+            </div>
+
+            <div class="warning-notice" style="background: #fef2f2; border-color: #ef4444;">
+                <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                <div class="text" style="color: #991b1b;">
+                    <strong>Peringatan:</strong> Data siswa akan dipindahkan ke tabel siswa keluar dan dihapus dari data aktif. Tindakan ini tidak dapat dibatalkan.
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modalKeluarkan')">Batal</button>
+            <button class="btn btn-danger" id="confirmKeluarkan" style="background: linear-gradient(135deg, #ef4444, #dc2626); border: none; color: white;">
+                <i class="fas fa-sign-out-alt"></i> Keluarkan
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 @endsection
@@ -1263,5 +1394,108 @@ function openFotoModal(nama, fotoUrl, siswaId) {
     
     openModal('modalFoto');
 }
+
+// ====================================
+// KELUARKAN SISWA Functions
+// ====================================
+let selectedJenisKeluar = '';
+
+// Open Keluarkan Modal
+document.querySelectorAll('.btn-keluarkan').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const id = this.dataset.id;
+        const nama = this.dataset.nama;
+        const nisn = this.dataset.nisn;
+        
+        document.getElementById('keluarkanSiswaId').value = id;
+        document.getElementById('keluarkanNama').textContent = nama;
+        document.getElementById('keluarkanNISN').textContent = nisn;
+        document.getElementById('keluarkanTanggal').value = new Date().toISOString().split('T')[0];
+        document.getElementById('keluarkanKeterangan').value = '';
+        
+        // Reset jenis selection
+        selectedJenisKeluar = '';
+        document.querySelectorAll('#jenisKeluarGrid .jenis-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        
+        openModal('modalKeluarkan');
+    });
+});
+
+function selectJenisKeluar(el) {
+    document.querySelectorAll('#jenisKeluarGrid .jenis-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    el.classList.add('selected');
+    selectedJenisKeluar = el.dataset.value;
+}
+
+// Confirm Keluarkan
+document.getElementById('confirmKeluarkan')?.addEventListener('click', async function() {
+    const siswaId = document.getElementById('keluarkanSiswaId').value;
+    const tanggalKeluar = document.getElementById('keluarkanTanggal').value;
+    const keterangan = document.getElementById('keluarkanKeterangan').value;
+    const namaSiswa = document.getElementById('keluarkanNama').textContent;
+    
+    if (!selectedJenisKeluar) {
+        showToast('Pilih jenis keluar terlebih dahulu!', 'error');
+        return;
+    }
+    
+    if (!tanggalKeluar) {
+        showToast('Tanggal keluar harus diisi!', 'error');
+        return;
+    }
+    
+    if (!confirm(`Apakah Anda yakin ingin mengeluarkan siswa "${namaSiswa}" dengan status "${selectedJenisKeluar}"?\n\nTindakan ini tidak dapat dibatalkan!`)) {
+        return;
+    }
+    
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    this.disabled = true;
+    
+    try {
+        const response = await fetch('{{ route("admin.siswa.keluarkan") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                siswa_id: siswaId,
+                tanggal_keluar: tanggalKeluar,
+                jenis_keluar: selectedJenisKeluar,
+                keterangan: keterangan
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(data.message);
+            closeModal('modalKeluarkan');
+            // Remove the row from table
+            const row = document.querySelector(`tr[data-id="${siswaId}"]`);
+            if (row) {
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(50px)';
+                setTimeout(() => row.remove(), 300);
+            }
+        } else {
+            showToast(data.message || 'Gagal mengeluarkan siswa', 'error');
+        }
+    } catch (err) {
+        showToast('Terjadi kesalahan: ' + err.message, 'error');
+    }
+    
+    this.innerHTML = '<i class="fas fa-sign-out-alt"></i> Keluarkan';
+    this.disabled = false;
+});
+
 </script>
 @endpush
