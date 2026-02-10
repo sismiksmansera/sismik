@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('title', 'Data Siswa Keluar')
 
@@ -181,6 +181,10 @@
 @endpush
 
 @section('content')
+<div class="layout">
+    @include('layouts.partials.sidebar-admin')
+
+    <div class="main-content">
 <div style="padding: 20px; max-width: 1400px; margin: 0 auto;">
     <!-- Header -->
     <div class="page-header">
@@ -367,6 +371,8 @@
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
