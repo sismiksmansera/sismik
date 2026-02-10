@@ -212,8 +212,8 @@
                             </div>
                             @endif
 
-                            {{-- Kehadiran Guru Section: only show when Hadir or Belum Presensi --}}
-                            @if(($presensi === 'H' || !$presensi) && !$izin)
+                            {{-- Kehadiran Guru Section: only show when presensi Hadir --}}
+                            @if($presensi === 'H' && !$izin)
                             <div class="kehadiran-guru-section" id="kehadiran-section-{{ $firstJam }}-{{ $loop->index }}">
                                 @if($kehadiranGuru)
                                     @php
@@ -224,9 +224,12 @@
                                         ];
                                         $kgInfo = $kgMap[$kehadiranGuru] ?? ['class' => 'kg-tepat', 'icon' => 'fa-question-circle'];
                                     @endphp
-                                    <div class="kg-result {{ $kgInfo['class'] }}">
+                                    <div class="kg-result {{ $kgInfo['class'] }} kg-clickable" 
+                                         onclick="openKehadiranModal({{ $recordId }}, {{ $firstJam }}, {{ $loop->index }}, '{{ addslashes($jadwal['nama_guru']) }}')"
+                                         title="Klik untuk mengubah">
                                         <i class="fas {{ $kgInfo['icon'] }}"></i>
                                         <span>Guru: {{ $kehadiranGuru }}</span>
+                                        <i class="fas fa-pen" style="font-size: 10px; margin-left: 4px; opacity: 0.6;"></i>
                                     </div>
                                 @else
                                     <button class="btn-konfirmasi-guru" 
@@ -917,6 +920,16 @@
     font-weight: 600;
 }
 
+.kg-result.kg-clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.kg-result.kg-clickable:hover {
+    opacity: 0.85;
+    transform: scale(0.98);
+}
+
 .kg-result.kg-tepat {
     background: #d1fae5;
     color: #065f46;
@@ -1208,7 +1221,7 @@ function selectKehadiran(status) {
                     'Tidak Hadir': { cls: 'kg-tidak', icon: 'fa-times-circle' }
                 };
                 const info = map[status] || map['Tepat Waktu'];
-                section.innerHTML = `<div class="kg-result ${info.cls}"><i class="fas ${info.icon}"></i><span>Guru: ${status}</span></div>`;
+                section.innerHTML = `<div class="kg-result ${info.cls} kg-clickable" onclick="openKehadiranModal(${_kgPresensiId}, ${_kgJamKe}, ${_kgLoopIndex}, '${document.getElementById('kgGuruNama').textContent}')" title="Klik untuk mengubah"><i class="fas ${info.icon}"></i><span>Guru: ${status}</span><i class="fas fa-pen" style="font-size:10px;margin-left:4px;opacity:0.6;"></i></div>`;
             }
         } else {
             showKgToast(data.message || 'Gagal menyimpan', 'error');
