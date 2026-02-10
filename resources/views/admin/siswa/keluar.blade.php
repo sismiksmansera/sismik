@@ -505,9 +505,9 @@ document.getElementById('confirmRestore')?.addEventListener('click', async funct
     this.disabled = false;
 });
 
-// Close modals on backdrop click
+// Close modals on backdrop click (not mousedown, to avoid conflict with select dropdowns)
 document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('mousedown', function(e) {
+    modal.addEventListener('click', function(e) {
         if (e.target === this) closeModal(this.id);
     });
 });
