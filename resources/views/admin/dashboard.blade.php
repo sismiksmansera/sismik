@@ -255,9 +255,6 @@
                                                 @if($kehadiranGuruData['tidak_hadir'] > 0)
                                                 <div style="color: #dc2626;"><i class="fas fa-times-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tidak_hadir'] }}% Tidak Hadir</div>
                                                 @endif
-                                                @if($kehadiranGuruData['belum_konfirmasi'] > 0)
-                                                <div style="color: #9ca3af;"><i class="fas fa-minus-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['belum_konfirmasi'] }}% Belum Konfirmasi</div>
-                                                @endif
                                             </div>
                                         @endif
                                     </td>

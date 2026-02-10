@@ -215,11 +215,10 @@ class DashboardController extends Controller
                                 if ($totalConfirmed > 0) {
                                     $kehadiranStatus = 'terkonfirmasi';
                                     $kehadiranGuruData = [
-                                        'total' => $totalSiswaHadir,
-                                        'tepat_waktu' => round(($tepatWaktu / $totalSiswaHadir) * 100),
-                                        'terlambat' => round(($terlambat / $totalSiswaHadir) * 100),
-                                        'tidak_hadir' => round(($tidakHadir / $totalSiswaHadir) * 100),
-                                        'belum_konfirmasi' => round(($belumKonfirmasi / $totalSiswaHadir) * 100),
+                                        'total' => $totalConfirmed,
+                                        'tepat_waktu' => round(($tepatWaktu / $totalConfirmed) * 100),
+                                        'terlambat' => round(($terlambat / $totalConfirmed) * 100),
+                                        'tidak_hadir' => round(($tidakHadir / $totalConfirmed) * 100),
                                     ];
                                 } else {
                                     $kehadiranStatus = 'belum_terkonfirmasi';
