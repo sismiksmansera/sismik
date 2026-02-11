@@ -138,6 +138,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/guru/import', [GuruController::class, 'showImport'])->name('guru.import.show');
     Route::get('/guru/export', [GuruController::class, 'downloadGuruData'])->name('guru.export');
     Route::post('/guru/import', [GuruController::class, 'importGuruData'])->name('guru.import');
+    Route::get('/guru/import-jadwal', [GuruController::class, 'showImportJadwal'])->name('guru.import-jadwal.show');
+    Route::get('/guru/import-jadwal/download', [GuruController::class, 'downloadBlangkoJadwal'])->name('guru.import-jadwal.download');
+    Route::post('/guru/import-jadwal', [GuruController::class, 'importJadwalData'])->name('guru.import-jadwal.import');
     
     // Guru BK Management
     Route::get('/guru-bk', [GuruBKController::class, 'index'])->name('guru-bk.index');

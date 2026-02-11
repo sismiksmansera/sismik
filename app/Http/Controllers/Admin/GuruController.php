@@ -1057,4 +1057,284 @@ class GuruController extends Controller
         return redirect()->route('admin.guru.index')
             ->with('success', $message);
     }
+
+    /**
+     * Show the import jadwal form
+     */
+    public function showImportJadwal()
+    {
+        $periodik = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodik->tahun_pelajaran ?? (date('Y') . '/' . (date('Y') + 1));
+        $semesterAktif = $periodik->semester ?? 'Ganjil';
+
+        return view('admin.guru.import-jadwal', compact('tahunAktif', 'semesterAktif'));
+    }
+
+    /**
+     * Download blangko/template XLSX for jadwal import
+     */
+    public function downloadBlangkoJadwal(Request $request)
+    {
+        $periodik = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodik->tahun_pelajaran ?? (date('Y') . '/' . (date('Y') + 1));
+        $semesterAktif = strtolower($periodik->semester ?? 'Ganjil');
+
+        $spreadsheet = new Spreadsheet();
+
+        // ===== Sheet 1: Data Penugasan =====
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Penugasan');
+
+        $headers = ['Nama Guru', 'Mata Pelajaran', 'Rombel', 'Hari', 'Jam Ke'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet->getStyle($col . '1')->getFill()
+                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('4CAF50');
+            $sheet->getStyle($col . '1')->getFont()->getColor()->setRGB('FFFFFF');
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+            $col++;
+        }
+
+        // Info row
+        $sheet->setCellValue('A2', "Tahun Pelajaran: {$tahunAktif} | Semester: " . ucfirst($semesterAktif));
+        $sheet->mergeCells('A2:E2');
+        $sheet->getStyle('A2')->getFont()->setItalic(true)->getColor()->setRGB('666666');
+
+        // Example data row
+        $sheet->setCellValue('A3', 'CONTOH GURU');
+        $sheet->setCellValue('B3', 'Bahasa Indonesia');
+        $sheet->setCellValue('C3', 'X.1');
+        $sheet->setCellValue('D3', 'Senin');
+        $sheet->setCellValue('E3', '1');
+        $sheet->getStyle('A3:E3')->getFont()->getColor()->setRGB('999999');
+
+        // Note
+        $sheet->setCellValue('A4', '--- Hapus baris contoh di atas, lalu isi data mulai baris ini ---');
+        $sheet->mergeCells('A4:E4');
+        $sheet->getStyle('A4')->getFont()->setItalic(true)->getColor()->setRGB('FF0000');
+
+        // ===== Sheet 2: Referensi =====
+        $refSheet = $spreadsheet->createSheet();
+        $refSheet->setTitle('Referensi');
+
+        // Guru list
+        $refSheet->setCellValue('A1', 'Daftar Guru');
+        $refSheet->getStyle('A1')->getFont()->setBold(true);
+        $guruList = Guru::where('status', 'Aktif')->orderBy('nama')->pluck('nama');
+        $row = 2;
+        foreach ($guruList as $nama) {
+            $refSheet->setCellValue('A' . $row, $nama);
+            $row++;
+        }
+
+        // Mapel list
+        $refSheet->setCellValue('C1', 'Daftar Mata Pelajaran');
+        $refSheet->getStyle('C1')->getFont()->setBold(true);
+        $mapelList = \DB::table('mata_pelajaran')->orderBy('nama_mapel')->pluck('nama_mapel');
+        $row = 2;
+        foreach ($mapelList as $mapel) {
+            $refSheet->setCellValue('C' . $row, $mapel);
+            $row++;
+        }
+
+        // Rombel list (semester aktif)
+        $refSheet->setCellValue('E1', 'Daftar Rombel (' . ucfirst($semesterAktif) . ')');
+        $refSheet->getStyle('E1')->getFont()->setBold(true);
+        $rombelList = \DB::table('rombel')
+            ->where('tahun_pelajaran', $tahunAktif)
+            ->where('semester', $semesterAktif)
+            ->orderBy('nama_rombel')
+            ->pluck('nama_rombel');
+        $row = 2;
+        foreach ($rombelList as $rombel) {
+            $refSheet->setCellValue('E' . $row, $rombel);
+            $row++;
+        }
+
+        // Hari list
+        $refSheet->setCellValue('G1', 'Daftar Hari');
+        $refSheet->getStyle('G1')->getFont()->setBold(true);
+        $hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        $row = 2;
+        foreach ($hariList as $hari) {
+            $refSheet->setCellValue('G' . $row, $hari);
+            $row++;
+        }
+
+        // Auto size columns
+        foreach (['A', 'C', 'E', 'G'] as $c) {
+            $refSheet->getColumnDimension($c)->setAutoSize(true);
+        }
+
+        // Set active sheet back to first
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $filename = 'blangko_penugasan_guru_' . str_replace('/', '-', $tahunAktif) . '_' . $semesterAktif . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    /**
+     * Import jadwal data from XLSX (insert new or update existing)
+     */
+    public function importJadwalData(Request $request)
+    {
+        $request->validate([
+            'file_jadwal' => 'required|file|mimes:xlsx,xls|max:5120',
+        ]);
+
+        $periodik = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodik->tahun_pelajaran ?? '';
+        $semesterAktif = strtolower($periodik->semester ?? 'ganjil');
+
+        $file = $request->file('file_jadwal');
+        $path = $file->getRealPath();
+
+        $inserted = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = [];
+
+        try {
+            $spreadsheet = IOFactory::load($path);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            // Skip header row (row 1), info row (row 2), example row (row 3), note row (row 4)
+            // Data starts at row 5 (index 4)
+            $dataStartIndex = 4;
+
+            // Preload lookup maps
+            $mapelMap = [];
+            $mapelRecords = \DB::table('mata_pelajaran')->get();
+            foreach ($mapelRecords as $m) {
+                $mapelMap[strtolower(trim($m->nama_mapel))] = $m->id;
+            }
+
+            $rombelMap = [];
+            $rombelRecords = \DB::table('rombel')
+                ->where('tahun_pelajaran', $tahunAktif)
+                ->where('semester', $semesterAktif)
+                ->get();
+            foreach ($rombelRecords as $r) {
+                $rombelMap[strtolower(trim($r->nama_rombel))] = $r->id;
+            }
+
+            $validHari = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+
+            for ($i = $dataStartIndex; $i < count($rows); $i++) {
+                $data = $rows[$i];
+
+                // Skip empty rows
+                if (empty(trim($data[0] ?? '')) && empty(trim($data[1] ?? ''))) {
+                    continue;
+                }
+
+                // Skip rows starting with "---"
+                if (str_starts_with(trim($data[0] ?? ''), '---')) {
+                    continue;
+                }
+
+                try {
+                    $namaGuru = strtoupper(trim($data[0] ?? ''));
+                    $namaMapel = trim($data[1] ?? '');
+                    $namaRombel = trim($data[2] ?? '');
+                    $hari = ucfirst(strtolower(trim($data[3] ?? '')));
+                    $jamKe = trim($data[4] ?? '');
+
+                    // Validate required fields
+                    if (empty($namaGuru) || empty($namaMapel) || empty($namaRombel) || empty($hari) || empty($jamKe)) {
+                        $errors[] = "Baris " . ($i + 1) . ": Data tidak lengkap";
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Lookup mapel
+                    $idMapel = $mapelMap[strtolower($namaMapel)] ?? null;
+                    if (!$idMapel) {
+                        $errors[] = "Baris " . ($i + 1) . ": Mata pelajaran '$namaMapel' tidak ditemukan";
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Lookup rombel
+                    $idRombel = $rombelMap[strtolower($namaRombel)] ?? null;
+                    if (!$idRombel) {
+                        $errors[] = "Baris " . ($i + 1) . ": Rombel '$namaRombel' tidak ditemukan (semester $semesterAktif)";
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Validate hari
+                    if (!in_array(strtolower($hari), $validHari)) {
+                        $errors[] = "Baris " . ($i + 1) . ": Hari '$hari' tidak valid";
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Validate jam_ke
+                    if (!is_numeric($jamKe) || intval($jamKe) < 1 || intval($jamKe) > 10) {
+                        $errors[] = "Baris " . ($i + 1) . ": Jam ke '$jamKe' tidak valid (harus 1-10)";
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Check existing record
+                    $existing = \DB::table('jadwal_pelajaran')
+                        ->where('id_mapel', $idMapel)
+                        ->where('id_rombel', $idRombel)
+                        ->where('hari', $hari)
+                        ->where('jam_ke', intval($jamKe))
+                        ->where('tahun_pelajaran', $tahunAktif)
+                        ->where('semester', $semesterAktif)
+                        ->first();
+
+                    if ($existing) {
+                        // Update nama_guru
+                        \DB::table('jadwal_pelajaran')
+                            ->where('id', $existing->id)
+                            ->update(['nama_guru' => $namaGuru]);
+                        $updated++;
+                    } else {
+                        // Insert new
+                        \DB::table('jadwal_pelajaran')->insert([
+                            'id_mapel' => $idMapel,
+                            'nama_guru' => $namaGuru,
+                            'hari' => $hari,
+                            'jam_ke' => intval($jamKe),
+                            'id_rombel' => $idRombel,
+                            'tahun_pelajaran' => $tahunAktif,
+                            'semester' => $semesterAktif,
+                            'created_at' => now(),
+                        ]);
+                        $inserted++;
+                    }
+
+                } catch (\Exception $e) {
+                    $errors[] = "Baris " . ($i + 1) . ": " . $e->getMessage();
+                }
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.guru.import-jadwal.show')
+                ->withErrors(['file_jadwal' => 'Gagal membaca file: ' . $e->getMessage()]);
+        }
+
+        $message = "Import selesai: $inserted data baru ditambahkan, $updated data diupdate, $skipped data dilewati.";
+        if (!empty($errors)) {
+            $message .= " (" . count($errors) . " error)";
+        }
+
+        return redirect()->route('admin.guru.import-jadwal.show')
+            ->with('success', $message)
+            ->with('import_errors', $errors);
+    }
 }

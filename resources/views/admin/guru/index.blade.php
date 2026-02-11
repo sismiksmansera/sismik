@@ -375,6 +375,9 @@
             <a href="{{ route('admin.guru.import.show') }}" class="btn" style="background: #f59e0b; color: white; font-size: 12px;">
                 <i class="fas fa-file-import"></i> Import/Export Data
             </a>
+            <a href="{{ route('admin.guru.import-jadwal.show') }}" class="btn" style="background: #3b82f6; color: white; font-size: 12px;">
+                <i class="fas fa-calendar-plus"></i> Import Jadwal
+            </a>
         </div>
 
         <!-- Table Section -->
