@@ -444,7 +444,7 @@
                     @endif
                 </div>
                 <h2>SISMIK</h2>
-                <p class="subtitle">Sistem Informasi Manajemen Akademik</p>
+                <p class="subtitle">Sistem Informasi Akademik</p>
             </div>
 
 
@@ -487,7 +487,7 @@
 
 
             <div class="school-footer">
-                <p>© {{ date('Y') }} SISMIK - Sistem Informasi Manajemen Akademik</p>
+                <p>© {{ date('Y') }} SISMIK - Sistem Informasi Akademik</p>
             </div>
         </div>
     </div>

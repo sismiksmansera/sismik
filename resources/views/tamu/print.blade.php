@@ -373,7 +373,7 @@
             </div>
 
             <div class="receipt-footer">
-                <p class="school-name">SISMIK - Sistem Informasi Manajemen Akademik</p>
+                <p class="school-name">SISMIK - Sistem Informasi Akademik</p>
                 <p>Terima kasih atas kunjungan Anda</p>
             </div>
         </div>

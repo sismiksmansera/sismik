@@ -201,7 +201,7 @@
     <!-- Header -->
     <div class="print-header">
         <h1>DAFTAR KUNJUNGAN TAMU</h1>
-        <p>SISMIK - Sistem Informasi Manajemen Akademik</p>
+        <p>SISMIK - Sistem Informasi Akademik</p>
     </div>
 
     <!-- Info -->
