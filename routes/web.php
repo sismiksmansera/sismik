@@ -78,6 +78,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     // Database Backup
     Route::get('/backup-database', [ManajemenSekolahController::class, 'backupDatabase'])->name('backup-database');
     Route::get('/backup-storage', [ManajemenSekolahController::class, 'backupStorage'])->name('backup-storage');
+    Route::post('/restore-storage', [ManajemenSekolahController::class, 'restoreStorage'])->name('restore-storage');
     
     // Rombel (Rombongan Belajar) Management
     Route::get('/rombel', [RombelController::class, 'index'])->name('rombel.index');

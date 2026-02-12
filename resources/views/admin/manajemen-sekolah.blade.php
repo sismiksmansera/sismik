@@ -570,7 +570,13 @@
                 </div>
             @endif
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            @if(session('success'))
+                <div class="alert alert-success" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;">
+                    <i class="fas fa-check-circle"></i> {{ session('success') }}
+                </div>
+            @endif
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
                 <!-- Database Backup Card -->
                 <div style="background: #f8fafc; border-radius: 12px; padding: 24px;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
@@ -583,13 +589,13 @@
                         </div>
                     </div>
                     <p style="color: var(--gray-500); font-size: 13px; margin: 0 0 16px 0;">
-                        <i class="fas fa-info-circle"></i> Seluruh data database termasuk struktur tabel, data, trigger, dan routines dalam format <strong>.sql</strong>
+                        <i class="fas fa-info-circle"></i> Seluruh data database dalam format <strong>.sql</strong>
                     </p>
                     <a href="{{ route('admin.backup-database') }}" 
                        onclick="return confirm('Download backup database sekarang?')"
                        class="btn" 
                        style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; text-decoration: none; width: 100%;">
-                        <i class="fas fa-download"></i> Download Database (.sql)
+                        <i class="fas fa-download"></i> Download (.sql)
                     </a>
                 </div>
 
@@ -600,19 +606,46 @@
                             <i class="fas fa-folder-open" style="color: white; font-size: 20px;"></i>
                         </div>
                         <div>
-                            <h4 style="margin: 0; color: var(--dark);">Backup File Upload</h4>
-                            <p style="margin: 0; color: var(--gray-500); font-size: 13px;">storage/app/public</p>
+                            <h4 style="margin: 0; color: var(--dark);">Backup Storage</h4>
+                            <p style="margin: 0; color: var(--gray-500); font-size: 13px;">Foto & file upload</p>
                         </div>
                     </div>
                     <p style="color: var(--gray-500); font-size: 13px; margin: 0 0 16px 0;">
-                        <i class="fas fa-info-circle"></i> Semua file upload: foto guru, foto siswa, logo, background login, dan dokumen lainnya dalam format <strong>.zip</strong>
+                        <i class="fas fa-info-circle"></i> Foto guru, siswa, logo, dan dokumen dalam format <strong>.zip</strong>
                     </p>
                     <a href="{{ route('admin.backup-storage') }}" 
-                       onclick="return confirm('Download backup file upload sekarang? Proses ini mungkin memakan waktu beberapa saat.')"
+                       onclick="return confirm('Download backup file upload sekarang?')"
                        class="btn" 
                        style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 12px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; text-decoration: none; width: 100%;">
-                        <i class="fas fa-download"></i> Download Storage (.zip)
+                        <i class="fas fa-download"></i> Download (.zip)
                     </a>
+                </div>
+
+                <!-- Restore Storage Card -->
+                <div style="background: #f8fafc; border-radius: 12px; padding: 24px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-upload" style="color: white; font-size: 20px;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; color: var(--dark);">Restore Storage</h4>
+                            <p style="margin: 0; color: var(--gray-500); font-size: 13px;">Upload file .zip</p>
+                        </div>
+                    </div>
+                    <form action="{{ route('admin.restore-storage') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirmRestore(this)">
+                        @csrf
+                        <input type="file" name="storage_zip" id="restoreZipInput" accept=".zip" style="display: none;" onchange="updateRestoreFileName(this)">
+                        <div onclick="document.getElementById('restoreZipInput').click()" 
+                             style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; margin-bottom: 12px; transition: all 0.3s;"
+                             onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='#cbd5e1'">
+                            <i class="fas fa-file-archive" style="font-size: 20px; color: #64748b;"></i>
+                            <p id="restoreFileName" style="margin: 8px 0 0; color: #64748b; font-size: 12px;">Klik untuk pilih file .zip</p>
+                        </div>
+                        <button type="submit" class="btn" id="restoreBtn" disabled
+                            style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 12px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; width: 100%; border: none; cursor: pointer; opacity: 0.5;">
+                            <i class="fas fa-upload"></i> Restore Storage
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1230,6 +1263,35 @@
                 alert('Error: ' + result.message);
             }
         });
+    }
+
+    // ========== RESTORE STORAGE FUNCTIONS ==========
+    function updateRestoreFileName(input) {
+        const label = document.getElementById('restoreFileName');
+        const btn = document.getElementById('restoreBtn');
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+            label.innerHTML = '<strong>' + file.name + '</strong> (' + sizeMB + ' MB)';
+            label.style.color = '#059669';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        } else {
+            label.textContent = 'Klik untuk pilih file .zip';
+            label.style.color = '#64748b';
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        }
+    }
+
+    function confirmRestore(form) {
+        if (!confirm('Yakin ingin restore file upload? File yang sama akan ditimpa.')) {
+            return false;
+        }
+        const btn = document.getElementById('restoreBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+        btn.disabled = true;
+        return true;
     }
 </script>
 @endpush

@@ -575,4 +575,78 @@ class ManajemenSekolahController extends Controller
             }
         }
     }
+
+    /**
+     * Restore storage files from ZIP upload
+     */
+    public function restoreStorage(Request $request)
+    {
+        set_time_limit(300);
+
+        if (!$request->hasFile('storage_zip')) {
+            return back()->withErrors(['backup' => 'Tidak ada file ZIP yang diupload.']);
+        }
+
+        $file = $request->file('storage_zip');
+
+        // Validate file
+        if ($file->getClientOriginalExtension() !== 'zip') {
+            return back()->withErrors(['backup' => 'File harus berformat .zip']);
+        }
+
+        if ($file->getSize() > 200 * 1024 * 1024) { // 200MB max
+            return back()->withErrors(['backup' => 'Ukuran file terlalu besar. Maksimal 200MB.']);
+        }
+
+        $zip = new \ZipArchive();
+        $tempPath = $file->getRealPath();
+
+        if ($zip->open($tempPath) !== true) {
+            return back()->withErrors(['backup' => 'Gagal membuka file ZIP. File mungkin rusak.']);
+        }
+
+        $storagePath = storage_path('app/public');
+        $extractedCount = 0;
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entryName = $zip->getNameIndex($i);
+
+            // Remove the 'storage/' prefix from our backup format
+            $relativePath = $entryName;
+            if (strpos($entryName, 'storage/') === 0) {
+                $relativePath = substr($entryName, strlen('storage/'));
+            }
+
+            // Skip empty paths, .gitignore, and directory traversal attempts
+            if (empty($relativePath) || $relativePath === '.gitignore') continue;
+            if (strpos($relativePath, '..') !== false) continue;
+
+            $targetPath = $storagePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+
+            // If it's a directory entry, create it
+            if (substr($entryName, -1) === '/') {
+                if (!is_dir($targetPath)) {
+                    mkdir($targetPath, 0755, true);
+                }
+                continue;
+            }
+
+            // Ensure parent directory exists
+            $parentDir = dirname($targetPath);
+            if (!is_dir($parentDir)) {
+                mkdir($parentDir, 0755, true);
+            }
+
+            // Extract the file
+            $content = $zip->getFromIndex($i);
+            if ($content !== false) {
+                file_put_contents($targetPath, $content);
+                $extractedCount++;
+            }
+        }
+
+        $zip->close();
+
+        return back()->with('success', "Restore berhasil! {$extractedCount} file telah dipulihkan.");
+    }
 }
