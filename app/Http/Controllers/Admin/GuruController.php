@@ -210,22 +210,14 @@ class GuruController extends Controller
     }
 
     /**
-     * Reset all guru passwords to their NIP/username
+     * Reset all guru passwords to 'guru123'
      */
     public function resetAllPasswords()
     {
-        $guruList = Guru::all();
-        $count = 0;
+        $count = Guru::count();
+        Guru::query()->update(['password' => Hash::make('guru123')]);
 
-        foreach ($guruList as $guru) {
-            $defaultPassword = $guru->nip ?: $guru->username;
-            if ($defaultPassword) {
-                $guru->update(['password' => Hash::make($defaultPassword)]);
-                $count++;
-            }
-        }
-
-        return redirect()->route('admin.guru.index')->with('success', "Password {$count} guru berhasil direset ke NIP/Username masing-masing!");
+        return redirect()->route('admin.guru.index')->with('success', "Password {$count} guru berhasil direset ke 'guru123'!");
     }
 
     /**

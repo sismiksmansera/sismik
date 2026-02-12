@@ -378,7 +378,7 @@
             <a href="{{ route('admin.guru.import-jadwal.show') }}" class="btn" style="background: #3b82f6; color: white; font-size: 12px;">
                 <i class="fas fa-calendar-plus"></i> Import Jadwal
             </a>
-            <form action="{{ route('admin.guru.reset-all-passwords') }}" method="POST" style="margin: 0;" onsubmit="return confirm('PERHATIAN: Semua password guru akan direset ke NIP/Username masing-masing.\n\nGuru yang sudah mengganti password akan kehilangan password lama mereka.\n\nYakin ingin melanjutkan?')">
+            <form action="{{ route('admin.guru.reset-all-passwords') }}" method="POST" style="margin: 0;" onsubmit="return confirm('PERHATIAN: Semua password guru akan direset ke guru123.\n\nGuru yang sudah mengganti password akan kehilangan password lama mereka.\n\nYakin ingin melanjutkan?')">
                 @csrf
                 <button type="submit" class="btn" style="background: #ef4444; color: white; font-size: 12px;">
                     <i class="fas fa-key"></i> Reset Password Semua
