@@ -83,6 +83,10 @@ class SetupController extends Controller
      */
     public function install(Request $request)
     {
+        // Increase time limit for large SQL imports
+        set_time_limit(300);
+        ini_set('max_execution_time', '300');
+
         $request->validate([
             'db_host' => 'required|string',
             'db_port' => 'required|numeric',
@@ -166,11 +170,17 @@ class SetupController extends Controller
             return back()->withErrors(['env' => 'Database terinstall tapi gagal update .env: ' . $e->getMessage()])->withInput();
         }
 
-        // Step 5: Clear caches
+        // Step 5: Clear config cache manually (avoid Artisan::call which can kill the process)
         try {
-            Artisan::call('config:clear');
-            Artisan::call('cache:clear');
-            Artisan::call('view:clear');
+            $cachedConfigPath = base_path('bootstrap/cache/config.php');
+            if (file_exists($cachedConfigPath)) {
+                @unlink($cachedConfigPath);
+            }
+            // Clear file-based cache
+            $cachePath = storage_path('framework/cache/data');
+            if (is_dir($cachePath)) {
+                array_map('unlink', glob($cachePath . '/*') ?: []);
+            }
         } catch (\Exception $e) {
             // Non-critical, continue
         }
