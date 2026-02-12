@@ -514,4 +514,65 @@ class ManajemenSekolahController extends Controller
 
         return null;
     }
+
+    /**
+     * Backup storage/upload files as ZIP download
+     */
+    public function backupStorage()
+    {
+        set_time_limit(300);
+
+        $storagePath = storage_path('app/public');
+
+        if (!is_dir($storagePath)) {
+            return back()->withErrors(['backup' => 'Folder storage/app/public tidak ditemukan.']);
+        }
+
+        $filename = 'sismik_storage_backup_' . date('Y-m-d_H-i-s') . '.zip';
+        $tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
+
+        $zip = new \ZipArchive();
+        if ($zip->open($tempPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return back()->withErrors(['backup' => 'Gagal membuat file ZIP.']);
+        }
+
+        $this->addDirectoryToZip($zip, $storagePath, 'storage');
+
+        $zip->close();
+
+        if (!file_exists($tempPath) || filesize($tempPath) === 0) {
+            @unlink($tempPath);
+            return back()->withErrors(['backup' => 'File ZIP kosong atau gagal dibuat.']);
+        }
+
+        return response()->download($tempPath, $filename, [
+            'Content-Type' => 'application/zip',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Recursively add directory contents to ZIP
+     */
+    private function addDirectoryToZip(\ZipArchive $zip, $dirPath, $zipBasePath)
+    {
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dirPath, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($files as $file) {
+            $filePath = $file->getRealPath();
+            $relativePath = $zipBasePath . '/' . substr($filePath, strlen($dirPath) + 1);
+            // Normalize path separators for ZIP
+            $relativePath = str_replace('\\', '/', $relativePath);
+
+            if ($file->isDir()) {
+                $zip->addEmptyDir($relativePath);
+            } else {
+                // Skip .gitignore
+                if ($file->getFilename() === '.gitignore') continue;
+                $zip->addFile($filePath, $relativePath);
+            }
+        }
+    }
 }

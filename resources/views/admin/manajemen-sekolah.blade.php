@@ -558,10 +558,10 @@
             </div>
         </div>
 
-        <!-- Backup Database Section -->
+        <!-- Backup Section -->
         <div class="content-section">
             <div class="section-header">
-                <h2><i class="fas fa-database"></i> Backup Database</h2>
+                <h2><i class="fas fa-shield-alt"></i> Backup & Restore</h2>
             </div>
 
             @if($errors->has('backup'))
@@ -570,30 +570,49 @@
                 </div>
             @endif
 
-            <div style="background: #f8fafc; border-radius: 12px; padding: 24px;">
-                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 200px;">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-hdd" style="color: white; font-size: 20px;"></i>
-                            </div>
-                            <div>
-                                <h4 style="margin: 0; color: var(--dark);">{{ config('database.connections.mysql.database') }}</h4>
-                                <p style="margin: 0; color: var(--gray-500); font-size: 13px;">Database aktif saat ini</p>
-                            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Database Backup Card -->
+                <div style="background: #f8fafc; border-radius: 12px; padding: 24px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-database" style="color: white; font-size: 20px;"></i>
                         </div>
-                        <p style="color: var(--gray-500); font-size: 13px; margin: 0;">
-                            <i class="fas fa-info-circle"></i> Backup akan mengunduh seluruh data database dalam format <strong>.sql</strong> termasuk struktur tabel, data, trigger, dan routines.
-                        </p>
+                        <div>
+                            <h4 style="margin: 0; color: var(--dark);">Backup Database</h4>
+                            <p style="margin: 0; color: var(--gray-500); font-size: 13px;">{{ config('database.connections.mysql.database') }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <a href="{{ route('admin.backup-database') }}" 
-                           onclick="return confirm('Download backup database sekarang?')"
-                           class="btn" 
-                           style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 28px; border-radius: 12px; display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none;">
-                            <i class="fas fa-download"></i> Download Backup
-                        </a>
+                    <p style="color: var(--gray-500); font-size: 13px; margin: 0 0 16px 0;">
+                        <i class="fas fa-info-circle"></i> Seluruh data database termasuk struktur tabel, data, trigger, dan routines dalam format <strong>.sql</strong>
+                    </p>
+                    <a href="{{ route('admin.backup-database') }}" 
+                       onclick="return confirm('Download backup database sekarang?')"
+                       class="btn" 
+                       style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; text-decoration: none; width: 100%;">
+                        <i class="fas fa-download"></i> Download Database (.sql)
+                    </a>
+                </div>
+
+                <!-- Storage Backup Card -->
+                <div style="background: #f8fafc; border-radius: 12px; padding: 24px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-folder-open" style="color: white; font-size: 20px;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; color: var(--dark);">Backup File Upload</h4>
+                            <p style="margin: 0; color: var(--gray-500); font-size: 13px;">storage/app/public</p>
+                        </div>
                     </div>
+                    <p style="color: var(--gray-500); font-size: 13px; margin: 0 0 16px 0;">
+                        <i class="fas fa-info-circle"></i> Semua file upload: foto guru, foto siswa, logo, background login, dan dokumen lainnya dalam format <strong>.zip</strong>
+                    </p>
+                    <a href="{{ route('admin.backup-storage') }}" 
+                       onclick="return confirm('Download backup file upload sekarang? Proses ini mungkin memakan waktu beberapa saat.')"
+                       class="btn" 
+                       style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 12px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; text-decoration: none; width: 100%;">
+                        <i class="fas fa-download"></i> Download Storage (.zip)
+                    </a>
                 </div>
             </div>
         </div>
