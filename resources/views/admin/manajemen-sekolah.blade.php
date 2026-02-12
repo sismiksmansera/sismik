@@ -557,6 +557,46 @@
                 </div>
             </div>
         </div>
+
+        <!-- Backup Database Section -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-database"></i> Backup Database</h2>
+            </div>
+
+            @if($errors->has('backup'))
+                <div class="alert alert-danger" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;">
+                    <i class="fas fa-exclamation-circle"></i> {{ $errors->first('backup') }}
+                </div>
+            @endif
+
+            <div style="background: #f8fafc; border-radius: 12px; padding: 24px;">
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-hdd" style="color: white; font-size: 20px;"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; color: var(--dark);">{{ config('database.connections.mysql.database') }}</h4>
+                                <p style="margin: 0; color: var(--gray-500); font-size: 13px;">Database aktif saat ini</p>
+                            </div>
+                        </div>
+                        <p style="color: var(--gray-500); font-size: 13px; margin: 0;">
+                            <i class="fas fa-info-circle"></i> Backup akan mengunduh seluruh data database dalam format <strong>.sql</strong> termasuk struktur tabel, data, trigger, dan routines.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="{{ route('admin.backup-database') }}" 
+                           onclick="return confirm('Download backup database sekarang?')"
+                           class="btn" 
+                           style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 28px; border-radius: 12px; display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none;">
+                            <i class="fas fa-download"></i> Download Backup
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

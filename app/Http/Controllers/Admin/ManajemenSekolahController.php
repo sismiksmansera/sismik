@@ -436,4 +436,82 @@ class ManajemenSekolahController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Pengaturan testing date berhasil disimpan!']);
     }
+
+    /**
+     * Backup database as .sql file download
+     */
+    public function backupDatabase()
+    {
+        set_time_limit(300);
+
+        $host = config('database.connections.mysql.host');
+        $port = config('database.connections.mysql.port');
+        $database = config('database.connections.mysql.database');
+        $username = config('database.connections.mysql.username');
+        $password = config('database.connections.mysql.password');
+
+        // Find mysqldump binary
+        $mysqldumpBin = $this->findMysqldumpBinary();
+
+        if (!$mysqldumpBin) {
+            return back()->withErrors(['backup' => 'mysqldump tidak ditemukan. Pastikan MySQL sudah terinstall.']);
+        }
+
+        $filename = $database . '_backup_' . date('Y-m-d_H-i-s') . '.sql';
+        $tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
+
+        // Build mysqldump command
+        $passwordArg = !empty($password) ? "-p\"{$password}\"" : '';
+        $cmd = "\"{$mysqldumpBin}\" -h {$host} -P {$port} -u {$username} {$passwordArg} --single-transaction --routines --triggers {$database} > \"{$tempPath}\" 2>&1";
+
+        exec($cmd, $output, $returnCode);
+
+        if ($returnCode !== 0 || !file_exists($tempPath) || filesize($tempPath) === 0) {
+            @unlink($tempPath);
+            $errorMsg = implode("\n", $output);
+            return back()->withErrors(['backup' => 'Gagal backup database: ' . $errorMsg]);
+        }
+
+        return response()->download($tempPath, $filename, [
+            'Content-Type' => 'application/sql',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Find mysqldump binary path
+     */
+    private function findMysqldumpBinary()
+    {
+        $paths = [];
+
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // Scan Laragon mysql directories dynamically
+            $laragonMysqlDir = 'C:\\laragon\\bin\\mysql';
+            if (is_dir($laragonMysqlDir)) {
+                $dirs = glob($laragonMysqlDir . '\\mysql-*', GLOB_ONLYDIR);
+                foreach ($dirs as $dir) {
+                    $paths[] = $dir . '\\bin\\mysqldump.exe';
+                }
+            }
+            $paths[] = 'C:\\xampp\\mysql\\bin\\mysqldump.exe';
+            $paths[] = 'mysqldump';
+        } else {
+            $paths = [
+                '/usr/bin/mysqldump',
+                '/usr/local/bin/mysqldump',
+                'mysqldump',
+            ];
+        }
+
+        foreach ($paths as $path) {
+            if ($path === 'mysqldump') {
+                exec('which mysqldump 2>/dev/null || where mysqldump 2>nul', $out, $code);
+                if ($code === 0) return 'mysqldump';
+            } elseif (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
 }

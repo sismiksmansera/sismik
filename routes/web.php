@@ -75,6 +75,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/testing-date', [ManajemenSekolahController::class, 'getTestingDate'])->name('testing-date.get');
     Route::post('/testing-date', [ManajemenSekolahController::class, 'saveTestingDate'])->name('testing-date.save');
     
+    // Database Backup
+    Route::get('/backup-database', [ManajemenSekolahController::class, 'backupDatabase'])->name('backup-database');
+    
     // Rombel (Rombongan Belajar) Management
     Route::get('/rombel', [RombelController::class, 'index'])->name('rombel.index');
     Route::get('/rombel/create', [RombelController::class, 'create'])->name('rombel.create');
