@@ -266,24 +266,85 @@
             left: 100%;
         }
 
-        .error-msg {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            color: #b91c1c;
-            padding: 14px 18px;
-            border-radius: 12px;
-            font-size: 14px;
-            margin-bottom: 20px;
-            border-left: 4px solid #dc2626;
-            display: flex;
+        /* Error Modal */
+        .error-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
             align-items: center;
-            gap: 10px;
-            animation: shake 0.5s ease;
+            justify-content: center;
+        }
+        .error-modal-overlay.active { display: flex; }
+
+        .error-modal {
+            background: white;
+            border-radius: 20px;
+            width: 380px;
+            max-width: 90%;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            animation: errorModalIn 0.4s ease;
+            text-align: center;
+        }
+
+        @keyframes errorModalIn {
+            from { transform: scale(0.8) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .error-modal-icon {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            padding: 30px;
+        }
+        .error-modal-icon i {
+            font-size: 48px;
+            color: #dc2626;
+            animation: shake 0.6s ease;
         }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .error-modal-body {
+            padding: 28px 24px;
+        }
+        .error-modal-body h3 {
+            color: #1e293b;
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 8px;
+        }
+        .error-modal-body p {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0 0 24px;
+            line-height: 1.5;
+        }
+        .error-modal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .error-modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220,38,38,0.3);
         }
 
         /* Guest Section */
@@ -386,12 +447,7 @@
                 <p class="subtitle">Sistem Informasi Manajemen Akademik</p>
             </div>
 
-            @if ($errors->any())
-                <div class="error-msg">
-                    <i class="fas fa-exclamation-circle"></i>
-                    {{ $errors->first() }}
-                </div>
-            @endif
+
 
             @if (session('success'))
                 <div style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
@@ -441,6 +497,23 @@
         </div>
     </div>
 
+    @if ($errors->any())
+    <div class="error-modal-overlay active" id="errorModal">
+        <div class="error-modal">
+            <div class="error-modal-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="error-modal-body">
+                <h3>Login Gagal</h3>
+                <p>{{ $errors->first() }}</p>
+                <button class="error-modal-btn" onclick="document.getElementById('errorModal').classList.remove('active')">
+                    <i class="fas fa-redo"></i> Coba Lagi
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <script>
         function togglePassword() {
             const passwordInput = document.getElementById('password');
@@ -455,6 +528,14 @@
                 toggleIcon.classList.remove('fa-eye-slash');
                 toggleIcon.classList.add('fa-eye');
             }
+        }
+
+        // Close modal on overlay click
+        const errorModal = document.getElementById('errorModal');
+        if (errorModal) {
+            errorModal.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('active');
+            });
         }
     </script>
 </body>
