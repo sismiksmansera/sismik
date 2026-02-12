@@ -201,19 +201,20 @@ class SetupController extends Controller
      */
     private function findMysqlBinary()
     {
-        // Common paths
         $paths = [];
 
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            // Windows / Laragon
-            $paths = [
-                'C:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysql.exe',
-                'C:\\laragon\\bin\\mysql\\mysql-5.7.33-winx64\\bin\\mysql.exe',
-                'C:\\xampp\\mysql\\bin\\mysql.exe',
-                'mysql', // If in PATH
-            ];
+            // Scan Laragon mysql directories dynamically
+            $laragonMysqlDir = 'C:\\laragon\\bin\\mysql';
+            if (is_dir($laragonMysqlDir)) {
+                $dirs = glob($laragonMysqlDir . '\\mysql-*', GLOB_ONLYDIR);
+                foreach ($dirs as $dir) {
+                    $paths[] = $dir . '\\bin\\mysql.exe';
+                }
+            }
+            $paths[] = 'C:\\xampp\\mysql\\bin\\mysql.exe';
+            $paths[] = 'mysql';
         } else {
-            // Linux
             $paths = [
                 '/usr/bin/mysql',
                 '/usr/local/bin/mysql',
@@ -223,8 +224,7 @@ class SetupController extends Controller
 
         foreach ($paths as $path) {
             if ($path === 'mysql') {
-                // Check if mysql is in PATH
-                exec('which mysql 2>/dev/null || where mysql 2>nul', $output, $code);
+                exec('which mysql 2>/dev/null || where mysql 2>nul', $out, $code);
                 if ($code === 0) return 'mysql';
             } elseif (file_exists($path)) {
                 return $path;
@@ -235,36 +235,138 @@ class SetupController extends Controller
     }
 
     /**
-     * Import SQL via PDO (fallback)
+     * Import SQL via PDO (fallback) - robust parser
      */
     private function importViaPdo($pdo, $sqlContent, $database)
     {
         $pdo->exec("USE `{$database}`");
-        
-        // Remove comments and split by semicolons
-        // Handle delimiter changes for triggers/procedures
-        $sqlContent = preg_replace('/\/\*.*?\*\//s', '', $sqlContent);
-        
-        // Split by semicolons (simple approach)
-        $statements = array_filter(
-            array_map('trim', explode(";\n", $sqlContent)),
-            function ($s) { return !empty($s) && $s !== ';'; }
-        );
+        $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+        $pdo->exec("SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO'");
+        $pdo->exec("SET NAMES utf8mb4");
 
-        foreach ($statements as $statement) {
-            $statement = trim($statement);
-            if (empty($statement) || $statement === ';') continue;
-            
-            // Skip comment-only lines
-            if (preg_match('/^--/', $statement) || preg_match('/^#/', $statement)) continue;
+        $length = strlen($sqlContent);
+        $statement = '';
+        $inString = false;
+        $stringChar = '';
+        $escaped = false;
+        $inLineComment = false;
+        $inBlockComment = false;
+        $importedCount = 0;
+        $errorCount = 0;
 
+        for ($i = 0; $i < $length; $i++) {
+            $char = $sqlContent[$i];
+            $nextChar = ($i + 1 < $length) ? $sqlContent[$i + 1] : '';
+
+            // Handle escape characters inside strings
+            if ($escaped) {
+                $statement .= $char;
+                $escaped = false;
+                continue;
+            }
+
+            // Handle line comments (-- or #)
+            if (!$inString && !$inBlockComment) {
+                if ($char === '-' && $nextChar === '-') {
+                    $inLineComment = true;
+                    $i++; // skip next char
+                    continue;
+                }
+                if ($char === '#') {
+                    $inLineComment = true;
+                    continue;
+                }
+            }
+
+            if ($inLineComment) {
+                if ($char === "\n") {
+                    $inLineComment = false;
+                }
+                continue;
+            }
+
+            // Handle block comments /* */
+            if (!$inString && $char === '/' && $nextChar === '*') {
+                // Keep /*!40101 ... */ conditional comments as they are MySQL-specific
+                if (($i + 2 < $length) && $sqlContent[$i + 2] === '!') {
+                    // This is a conditional comment, include it
+                    $statement .= $char;
+                    continue;
+                }
+                $inBlockComment = true;
+                $i++; // skip *
+                continue;
+            }
+
+            if ($inBlockComment) {
+                if ($char === '*' && $nextChar === '/') {
+                    $inBlockComment = false;
+                    $i++; // skip /
+                }
+                continue;
+            }
+
+            // Handle string literals
+            if (!$inString && ($char === "'" || $char === '"')) {
+                $inString = true;
+                $stringChar = $char;
+                $statement .= $char;
+                continue;
+            }
+
+            if ($inString) {
+                if ($char === '\\') {
+                    $escaped = true;
+                    $statement .= $char;
+                    continue;
+                }
+                if ($char === $stringChar) {
+                    // Check for escaped quote (double quote like '')
+                    if ($nextChar === $stringChar) {
+                        $statement .= $char . $nextChar;
+                        $i++;
+                        continue;
+                    }
+                    $inString = false;
+                }
+                $statement .= $char;
+                continue;
+            }
+
+            // Statement terminator
+            if ($char === ';') {
+                $trimmed = trim($statement);
+                if (!empty($trimmed)) {
+                    try {
+                        $pdo->exec($trimmed);
+                        $importedCount++;
+                    } catch (\Exception $e) {
+                        $errorCount++;
+                        \Log::warning("SQL import error (statement #{$importedCount}): " . $e->getMessage());
+                    }
+                }
+                $statement = '';
+                continue;
+            }
+
+            $statement .= $char;
+        }
+
+        // Execute any remaining statement
+        $trimmed = trim($statement);
+        if (!empty($trimmed) && $trimmed !== ';') {
             try {
-                $pdo->exec($statement);
+                $pdo->exec($trimmed);
+                $importedCount++;
             } catch (\Exception $e) {
-                // Log but continue (some statements may fail if tables exist)
-                \Log::warning('SQL import statement failed: ' . $e->getMessage());
+                $errorCount++;
+                \Log::warning("SQL import final statement error: " . $e->getMessage());
             }
         }
+
+        $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+
+        \Log::info("SQL import via PDO completed: {$importedCount} statements, {$errorCount} errors");
     }
 
     /**
