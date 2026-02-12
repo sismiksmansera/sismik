@@ -22,6 +22,12 @@ use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 |--------------------------------------------------------------------------
 */
 
+// Setup/Installer Routes (no auth required)
+Route::get('/setup', [\App\Http\Controllers\SetupController::class, 'index'])->name('setup');
+Route::post('/setup/test-connection', [\App\Http\Controllers\SetupController::class, 'testConnection']);
+Route::post('/setup/install', [\App\Http\Controllers\SetupController::class, 'install']);
+Route::get('/setup/success', [\App\Http\Controllers\SetupController::class, 'success']);
+
 // Home redirect to login
 Route::get('/', function () {
     return redirect()->route('login');

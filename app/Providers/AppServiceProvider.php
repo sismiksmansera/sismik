@@ -24,11 +24,16 @@ class AppServiceProvider extends ServiceProvider
     {
         // Share login settings (logo) with all sidebar partials
         // Using cache to reduce database queries - cache for 1 hour
+        // Wrapped in try-catch to handle case when DB is not yet configured (setup mode)
         View::composer('layouts.partials.*', function ($view) {
-            $loginSettings = Cache::remember('login_settings', 3600, function () {
-                return LoginSettings::first();
-            });
-            $view->with('loginSettings', $loginSettings);
+            try {
+                $loginSettings = Cache::remember('login_settings', 3600, function () {
+                    return LoginSettings::first();
+                });
+                $view->with('loginSettings', $loginSettings);
+            } catch (\Exception $e) {
+                $view->with('loginSettings', null);
+            }
         });
     }
 
