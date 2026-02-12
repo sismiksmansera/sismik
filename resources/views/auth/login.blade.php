@@ -483,13 +483,8 @@
                 </button>
             </form>
 
-            <!-- Tamu Button -->
-            <div class="guest-section">
-                <p class="divider-text">atau</p>
-                <a href="{{ route('tamu.form') }}" class="btn-guest">
-                    <i class="fas fa-user-plus"></i> Form Tamu
-                </a>
-            </div>
+
+
 
             <div class="school-footer">
                 <p>© {{ date('Y') }} SISMIK - Sistem Informasi Manajemen Akademik</p>
