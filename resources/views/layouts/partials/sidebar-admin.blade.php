@@ -85,7 +85,7 @@
             <i class="fas fa-shield-alt"></i>
             <span>Keamanan</span>
         </a>
-        <a href="#" class="menu-item">
+        <a href="{{ route('admin.backup-restore') }}" class="menu-item {{ request()->routeIs('admin.backup-restore') || request()->routeIs('admin.backup.*') ? 'active' : '' }}">
             <i class="fas fa-database"></i>
             <span>Backup & Restore</span>
         </a>

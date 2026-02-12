@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\GuruBKController;
 use App\Http\Controllers\Admin\PrestasiController;
 use App\Http\Controllers\Admin\JadwalPelajaranController;
 use App\Http\Controllers\Admin\PanggilanOrtuController;
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\GuruBK\DashboardController as GuruBKDashboardController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
@@ -75,10 +76,11 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/testing-date', [ManajemenSekolahController::class, 'getTestingDate'])->name('testing-date.get');
     Route::post('/testing-date', [ManajemenSekolahController::class, 'saveTestingDate'])->name('testing-date.save');
     
-    // Database Backup
-    Route::get('/backup-database', [ManajemenSekolahController::class, 'backupDatabase'])->name('backup-database');
-    Route::get('/backup-storage', [ManajemenSekolahController::class, 'backupStorage'])->name('backup-storage');
-    Route::post('/restore-storage', [ManajemenSekolahController::class, 'restoreStorage'])->name('restore-storage');
+    // Backup & Restore
+    Route::get('/backup-restore', [BackupController::class, 'index'])->name('backup-restore');
+    Route::get('/backup/database', [BackupController::class, 'backupDatabase'])->name('backup.database');
+    Route::get('/backup/storage', [BackupController::class, 'backupStorage'])->name('backup.storage');
+    Route::post('/backup/restore-storage', [BackupController::class, 'restoreStorage'])->name('backup.restore-storage');
     
     // Rombel (Rombongan Belajar) Management
     Route::get('/rombel', [RombelController::class, 'index'])->name('rombel.index');
