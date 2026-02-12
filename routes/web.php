@@ -141,6 +141,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::put('/guru/{id}', [GuruController::class, 'update'])->name('guru.update');
     Route::delete('/guru/{id}', [GuruController::class, 'destroy'])->name('guru.destroy');
     Route::post('/guru/{id}/reset-password', [GuruController::class, 'resetPassword'])->name('guru.reset-password');
+    Route::post('/guru/reset-all-passwords', [GuruController::class, 'resetAllPasswords'])->name('guru.reset-all-passwords');
     Route::get('/impersonate/guru/{id}', [GuruController::class, 'impersonate'])->name('guru.impersonate');
     Route::post('/guru/delete-ajax', [GuruController::class, 'deleteAjax'])->name('guru.delete-ajax');
     Route::get('/guru/{id}/tugas-mengajar', [GuruController::class, 'tugasMengajar'])->name('guru.tugas-mengajar');

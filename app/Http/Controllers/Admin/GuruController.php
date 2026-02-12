@@ -210,6 +210,25 @@ class GuruController extends Controller
     }
 
     /**
+     * Reset all guru passwords to their NIP/username
+     */
+    public function resetAllPasswords()
+    {
+        $guruList = Guru::all();
+        $count = 0;
+
+        foreach ($guruList as $guru) {
+            $defaultPassword = $guru->nip ?: $guru->username;
+            if ($defaultPassword) {
+                $guru->update(['password' => Hash::make($defaultPassword)]);
+                $count++;
+            }
+        }
+
+        return redirect()->route('admin.guru.index')->with('success', "Password {$count} guru berhasil direset ke NIP/Username masing-masing!");
+    }
+
+    /**
      * Impersonate a guru (Login as Guru)
      */
     public function impersonate($id)
