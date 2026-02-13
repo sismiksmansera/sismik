@@ -312,11 +312,11 @@
     .header-icon-large { width: 56px; height: 56px; font-size: 26px; border-radius: 14px; margin-bottom: 12px; }
     .page-header-center h1 { font-size: 20px; }
     .btn-create-new { padding: 10px 18px; font-size: 12px; width: 100%; justify-content: center; }
-    .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
-    .stat-card { padding: 8px 6px; flex-direction: column; gap: 4px; text-align: center; }
-    .stat-icon { width: 30px; height: 30px; font-size: 12px; border-radius: 8px; }
-    .stat-info h3 { font-size: 16px; }
-    .stat-info p { font-size: 9px; }
+    .stats-grid { display: flex; gap: 6px; }
+    .stat-card { flex: 1; min-width: 0; padding: 8px 4px; flex-direction: column; gap: 2px; text-align: center; }
+    .stat-icon { width: 28px; height: 28px; font-size: 11px; border-radius: 7px; margin: 0 auto; }
+    .stat-info h3 { font-size: 15px; }
+    .stat-info p { font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .container-header { padding: 12px 14px; }
     .panggilan-cards { padding: 10px; gap: 10px; }
     .panggilan-card { padding: 12px; }
