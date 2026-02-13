@@ -10,9 +10,18 @@
         .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 15mm 20mm; }
 
         /* Kop Surat */
-        .kop-surat { text-align: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .kop-nama-sekolah { font-size: 16pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
-        .kop-alamat { font-size: 10pt; margin-bottom: 2px; }
+        .kop-surat {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-bottom: 8px; border-bottom: 3px solid #000; margin-bottom: 3px;
+        }
+        .kop-border { border-bottom: 1px solid #000; margin-bottom: 15px; }
+        .header-logo { width: 60px; text-align: center; }
+        .header-logo img { width: 55px; height: 55px; object-fit: contain; }
+        .header-text { flex: 1; text-align: center; padding: 0 10px; line-height: 1.1; }
+        .header-text .gov { font-size: 10pt; font-weight: bold; }
+        .header-text .school { font-size: 14pt; font-weight: bold; margin: 1px 0; }
+        .header-text .codes { font-size: 8pt; }
+        .header-text .address { font-size: 8pt; }
 
         /* Title */
         .judul { text-align: center; margin-bottom: 20px; }
@@ -77,10 +86,26 @@
 <div class="page">
     {{-- Kop Surat --}}
     <div class="kop-surat">
-        <div class="kop-nama-sekolah">{{ $sekolah->nama_sekolah ?? 'NAMA SEKOLAH' }}</div>
-        <div class="kop-alamat">{{ $sekolah->alamat ?? '' }} {{ $sekolah->telepon ? '| Telp. ' . $sekolah->telepon : '' }}</div>
-        <div class="kop-alamat">{{ $sekolah->email ?? '' }} {{ $sekolah->website ? '| ' . $sekolah->website : '' }}</div>
+        <div class="header-logo">
+            <img src="{{ asset('assets/images/logo-lampung.png') }}" alt="Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="header-text">
+            <p class="gov">PEMERINTAH PROVINSI LAMPUNG</p>
+            <p class="gov">DINAS PENDIDIKAN DAN KEBUDAYAAN</p>
+            <p class="school">{{ $sekolah->nama ?? 'SMA NEGERI 1 SEPUTIH RAMAN' }}</p>
+            <p class="codes">
+                <span style="color: #dc2626; font-weight: bold;">NSS. {{ $sekolah->nss ?? '301120207036' }}</span> –
+                <span style="color: #2563eb; font-weight: bold;">NPSN {{ $sekolah->npsn ?? '10802068' }}</span> –
+                <span style="color: #dc2626; font-weight: bold;">AKREDITASI "{{ $sekolah->akreditasi ?? 'A' }}"</span>
+            </p>
+            <p class="address">Alamat : {{ $sekolah->alamat ?? 'JL. Raya Seputih Raman Kec. Seputih Raman Kab. Lampung Tengah' }}</p>
+            <p class="address">Website : {{ $sekolah->website ?? 'www.sman1seputihraman.sch.id' }}</p>
+        </div>
+        <div class="header-logo">
+            <img src="{{ asset('assets/images/logo-sekolah.png') }}" alt="Logo Sekolah" onerror="this.style.display='none'">
+        </div>
     </div>
+    <div class="kop-border"></div>
 
     {{-- Judul --}}
     <div class="judul">
