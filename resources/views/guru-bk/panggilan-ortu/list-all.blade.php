@@ -72,6 +72,7 @@
                         <div class="siswa-info">
                             <div class="siswa-nama">{{ $item->nama_siswa ?? 'Siswa tidak ditemukan' }}</div>
                             <div class="siswa-meta">{{ $item->nama_rombel ?? '-' }} · NISN: {{ $item->nisn }}</div>
+                            <div class="guru-bk-badge"><i class="fas fa-user-shield"></i> {{ $item->nama_guru_bk ?? '-' }}</div>
                         </div>
                     </div>
                     <div class="status-badge status-{{ strtolower(str_replace(' ', '-', $item->status)) }}">
@@ -244,6 +245,12 @@
 .siswa-info { min-width: 0; }
 .siswa-nama { font-weight: 600; font-size: 14px; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .siswa-meta { font-size: 11px; color: #6b7280; }
+.guru-bk-badge {
+    display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;
+    font-size: 10px; font-weight: 600; color: #7c3aed;
+    background: rgba(124,58,237,0.08); padding: 2px 8px; border-radius: 6px;
+}
+.guru-bk-badge i { font-size: 9px; }
 
 .status-badge {
     display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;

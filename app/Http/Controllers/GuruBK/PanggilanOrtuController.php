@@ -31,7 +31,6 @@ class PanggilanOrtuController extends Controller
                 's.nama_rombel',
                 'g.nama as nama_guru_bk'
             )
-            ->where('p.guru_bk_id', $guruBK->id)
             ->orderBy('p.tanggal_surat', 'desc')
             ->orderBy('p.created_at', 'desc')
             ->get();
@@ -73,7 +72,6 @@ class PanggilanOrtuController extends Controller
             ->leftJoin('guru_bk as g', 'p.guru_bk_id', '=', 'g.id')
             ->select('p.*', 'g.nama as nama_guru_bk')
             ->where('p.nisn', $nisn)
-            ->where('p.guru_bk_id', $guruBK->id)
             ->orderBy('p.tanggal_surat', 'desc')
             ->get();
 
