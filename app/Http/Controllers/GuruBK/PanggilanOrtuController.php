@@ -135,6 +135,92 @@ class PanggilanOrtuController extends Controller
     }
 
     /**
+     * Show form to create panggilan ortu for multiple students (batch)
+     */
+    public function createBatch(Request $request)
+    {
+        $guruBK = Auth::guard('guru_bk')->user();
+        
+        if (!$guruBK) {
+            return redirect()->route('login')->with('error', 'Silakan login sebagai Guru BK.');
+        }
+
+        $nisnList = $request->input('nisn_list', '');
+        $nisnArray = array_filter(explode(',', $nisnList));
+
+        if (empty($nisnArray)) {
+            return redirect()->route('guru_bk.pelanggaran')->with('error', 'Tidak ada siswa yang dipilih.');
+        }
+
+        $siswaList = DB::table('siswa')
+            ->whereIn('nisn', $nisnArray)
+            ->get();
+
+        if ($siswaList->isEmpty()) {
+            return redirect()->route('guru_bk.pelanggaran')->with('error', 'Data siswa tidak ditemukan.');
+        }
+
+        return view('guru-bk.panggilan-ortu.create-batch', compact('siswaList', 'guruBK'));
+    }
+
+    /**
+     * Store panggilan ortu for multiple students (batch)
+     */
+    public function storeBatch(Request $request)
+    {
+        $guruBK = Auth::guard('guru_bk')->user();
+        
+        if (!$guruBK) {
+            return redirect()->route('login')->with('error', 'Silakan login sebagai Guru BK.');
+        }
+
+        $request->validate([
+            'tanggal_surat' => 'required|date',
+            'perihal' => 'required|string|max:255',
+            'tanggal_panggilan' => 'required|date',
+            'nisn_list' => 'required|string',
+        ]);
+
+        $nisnArray = array_filter(explode(',', $request->nisn_list));
+
+        if (empty($nisnArray)) {
+            return back()->with('error', 'Tidak ada siswa yang dipilih.')->withInput();
+        }
+
+        try {
+            $insertData = [];
+            foreach ($nisnArray as $nisn) {
+                $insertData[] = [
+                    'nisn' => trim($nisn),
+                    'guru_bk_id' => $guruBK->id,
+                    'tanggal_surat' => $request->tanggal_surat,
+                    'no_surat' => $request->no_surat ?? '',
+                    'perihal' => $request->perihal,
+                    'alasan' => $request->alasan ?? '',
+                    'menghadap_ke' => $request->menghadap_ke ?? 'Guru BK',
+                    'tanggal_panggilan' => $request->tanggal_panggilan,
+                    'jam_panggilan' => $request->jam_panggilan ?? null,
+                    'tempat' => $request->tempat ?? 'Ruang BK',
+                    'status' => 'Menunggu',
+                    'catatan' => '',
+                    'created_at' => now(),
+                ];
+            }
+
+            DB::table('panggilan_ortu')->insert($insertData);
+
+            $jumlah = count($nisnArray);
+            return redirect()->route('guru_bk.panggilan-ortu.list')
+                ->with('success', "Surat panggilan orang tua berhasil dibuat untuk {$jumlah} siswa.");
+
+        } catch (\Exception $e) {
+            Log::error("Error storing batch panggilan ortu: " . $e->getMessage());
+            return back()->with('error', 'Gagal menyimpan data: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    /**
      * Store new panggilan ortu
      */
     public function store(Request $request, $nisn)

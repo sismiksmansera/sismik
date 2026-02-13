@@ -997,12 +997,8 @@ function navigatePanggilan() {
         if (nisn) nisnList.push(nisn);
     });
     if (nisnList.length === 0) return;
-    // Navigate to first student's create page, pass rest as query params
-    const firstNisn = nisnList[0];
-    let url = '{{ url("guru-bk/panggilan-ortu/create") }}/' + firstNisn;
-    if (nisnList.length > 1) {
-        url += '?siswa_lain=' + encodeURIComponent(nisnList.join(','));
-    }
+    // Navigate to batch create page with all selected NISNs
+    let url = '{{ route("guru_bk.panggilan-ortu.create-batch") }}?nisn_list=' + encodeURIComponent(nisnList.join(','));
     window.location.href = url;
 }
 
