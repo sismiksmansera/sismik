@@ -22,13 +22,13 @@
         </a>
 
         <div class="menu-label">Bimbingan</div>
-        <a href="{{ route('guru_bk.semua-catatan') }}" class="menu-item {{ request()->routeIs('guru_bk.semua-catatan*') ? 'active' : '' }}">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Catatan Bimbingan</span>
-        </a>
         <a href="{{ route('guru_bk.siswa-bimbingan') }}" class="menu-item {{ request()->routeIs('guru_bk.siswa-bimbingan*') ? 'active' : '' }}">
             <i class="fas fa-users"></i>
             <span>Siswa Bimbingan</span>
+        </a>
+        <a href="{{ route('guru_bk.semua-catatan') }}" class="menu-item {{ request()->routeIs('guru_bk.semua-catatan*') ? 'active' : '' }}">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Catatan Bimbingan</span>
         </a>
         <a href="{{ route('guru_bk.panggilan-ortu.list') }}" class="menu-item {{ request()->routeIs('guru_bk.panggilan-ortu*') ? 'active' : '' }}">
             <i class="fas fa-phone"></i>
