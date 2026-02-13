@@ -22,7 +22,7 @@ class PanggilanOrtuController extends Controller
         }
 
         $panggilan_list = DB::table('panggilan_ortu as p')
-            ->leftJoin('siswa as s', 'p.nisn', '=', 's.nisn')
+            ->leftJoin('siswa as s', DB::raw('p.nisn COLLATE utf8mb4_general_ci'), '=', 's.nisn')
             ->leftJoin('guru_bk as g', 'p.guru_bk_id', '=', 'g.id')
             ->select(
                 'p.*',
