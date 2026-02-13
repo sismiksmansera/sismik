@@ -84,29 +84,38 @@ class PelanggaranController extends Controller
     }
 
     /**
-     * AJAX: Search students by name
+     * AJAX: Search students by name/nisn/nis
      */
     public function searchSiswa(Request $request)
     {
         $query = $request->input('q', '');
 
-        $siswa = Siswa::where('nama', 'like', "%{$query}%")
-            ->orWhere('nisn', 'like', "%{$query}%")
-            ->orWhere('nis', 'like', "%{$query}%")
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $siswa = Siswa::where(function($q) use ($query) {
+                $q->where('nama', 'like', "%{$query}%")
+                  ->orWhere('nisn', 'like', "%{$query}%")
+                  ->orWhere('nis', 'like', "%{$query}%");
+            })
             ->select('id', 'nama', 'nisn', 'nis', 'jk', 'nama_rombel')
             ->orderBy('nama')
             ->limit(50)
             ->get();
 
-        // Get rombel from rombel table for display
-        foreach ($siswa as $s) {
-            $rombel = DB::table('rombel')
-                ->where('id_siswa', $s->id)
-                ->orderBy('id', 'desc')
-                ->first();
-            $s->rombel_aktif = $rombel->nama_rombel ?? $s->nama_rombel ?? '-';
-        }
+        // Map nama_rombel to rombel_aktif for frontend consistency
+        $result = $siswa->map(function($s) {
+            return [
+                'id' => $s->id,
+                'nama' => $s->nama,
+                'nisn' => $s->nisn,
+                'nis' => $s->nis,
+                'jk' => $s->jk,
+                'rombel_aktif' => $s->nama_rombel ?: '-',
+            ];
+        });
 
-        return response()->json($siswa);
+        return response()->json($result);
     }
 }
