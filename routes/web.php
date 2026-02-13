@@ -375,6 +375,9 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     Route::get('/jurnal-manual/create', [\App\Http\Controllers\GuruBK\JurnalManualController::class, 'create'])->name('jurnal-manual.create');
     Route::post('/jurnal-manual/store', [\App\Http\Controllers\GuruBK\JurnalManualController::class, 'store'])->name('jurnal-manual.store');
     Route::get('/jurnal-manual/search-siswa', [\App\Http\Controllers\GuruBK\JurnalManualController::class, 'searchSiswa'])->name('jurnal-manual.search-siswa');
+    Route::get('/jurnal-manual/{id}/edit', [\App\Http\Controllers\GuruBK\JurnalManualController::class, 'edit'])->name('jurnal-manual.edit');
+    Route::put('/jurnal-manual/{id}', [\App\Http\Controllers\GuruBK\JurnalManualController::class, 'update'])->name('jurnal-manual.update');
+    Route::delete('/jurnal-manual/{id}', [\App\Http\Controllers\GuruBK\JurnalManualController::class, 'destroy'])->name('jurnal-manual.destroy');
 
     // Panggilan Ortu routes
     Route::get('/panggilan-ortu', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'listAll'])->name('panggilan-ortu.list');

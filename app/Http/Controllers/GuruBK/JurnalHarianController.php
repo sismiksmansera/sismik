@@ -207,6 +207,7 @@ class JurnalHarianController extends Controller
                     'sub_detail' => $item->keterangan ?? '',
                     'status' => '',
                     'guru_bk' => '',
+                    'manual_id' => $item->id,
                 ]);
             }
         }

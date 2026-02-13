@@ -122,9 +122,21 @@
                             @endif
                         </div>
                         <div class="timeline-footer">
+                            @if($act->guru_bk)
                             <span class="guru-bk-tag"><i class="fas fa-user-shield"></i> {{ $act->guru_bk }}</span>
+                            @endif
                             @if($act->status)
                             <span class="status-tag status-{{ strtolower(str_replace(' ', '-', $act->status)) }}">{{ $act->status }}</span>
+                            @endif
+                            @if($act->type === 'manual' && isset($act->manual_id))
+                            <div class="timeline-actions">
+                                <a href="{{ route('guru_bk.jurnal-manual.edit', $act->manual_id) }}" class="btn-action-edit" title="Edit"><i class="fas fa-edit"></i></a>
+                                <form method="POST" action="{{ route('guru_bk.jurnal-manual.destroy', $act->manual_id) }}" class="inline-form" onsubmit="return confirm('Yakin ingin menghapus jurnal ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-action-delete" title="Hapus"><i class="fas fa-trash-alt"></i></button>
+                                </form>
+                            </div>
                             @endif
                         </div>
                     </div>
@@ -237,6 +249,19 @@
     padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
     background: rgba(16,185,129,0.1); color: #10b981;
 }
+
+/* Timeline Actions */
+.timeline-actions { display: flex; gap: 6px; margin-left: auto; }
+.btn-action-edit, .btn-action-delete {
+    width: 30px; height: 30px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 12px;
+    border: 1px solid #e5e7eb; cursor: pointer; transition: all 0.2s; text-decoration: none;
+}
+.btn-action-edit { background: #eff6ff; color: #3b82f6; border-color: #bfdbfe; }
+.btn-action-edit:hover { background: #3b82f6; color: white; }
+.btn-action-delete { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
+.btn-action-delete:hover { background: #ef4444; color: white; }
+.inline-form { display: inline; }
 
 /* Empty State */
 .empty-state { padding: 50px 20px; text-align: center; }

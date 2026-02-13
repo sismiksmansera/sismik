@@ -96,4 +96,88 @@ class JurnalManualController extends Controller
 
         return response()->json($siswa);
     }
+
+    public function edit($id)
+    {
+        $guruBK = Auth::guard('guru_bk')->user();
+
+        if (!$guruBK) {
+            return redirect()->route('login')->with('error', 'Silakan login sebagai Guru BK.');
+        }
+
+        $jurnal = DB::table('jurnal_manual')->where('id', $id)->where('guru_bk_id', $guruBK->id)->first();
+
+        if (!$jurnal) {
+            return back()->with('error', 'Data jurnal tidak ditemukan.');
+        }
+
+        // Get siswa name if tipe_subyek is Siswa
+        $siswaData = null;
+        if ($jurnal->tipe_subyek === 'Siswa' && $jurnal->nisn) {
+            $siswaData = DB::table('siswa')
+                ->select('nisn', 'nama', 'nis', 'jk', 'nama_rombel')
+                ->where('nisn', $jurnal->nisn)
+                ->first();
+        }
+
+        return view('guru-bk.jurnal-manual-edit', compact('guruBK', 'jurnal', 'siswaData'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $guruBK = Auth::guard('guru_bk')->user();
+
+        if (!$guruBK) {
+            return redirect()->route('login')->with('error', 'Silakan login sebagai Guru BK.');
+        }
+
+        $jurnal = DB::table('jurnal_manual')->where('id', $id)->where('guru_bk_id', $guruBK->id)->first();
+
+        if (!$jurnal) {
+            return back()->with('error', 'Data jurnal tidak ditemukan.');
+        }
+
+        $request->validate([
+            'tanggal' => 'required|date',
+            'jenis_aktivitas' => 'required|string',
+            'tipe_subyek' => 'required|in:Siswa,Lainnya',
+            'deskripsi' => 'required|string',
+        ]);
+
+        DB::table('jurnal_manual')->where('id', $id)->update([
+            'tanggal' => $request->tanggal,
+            'waktu' => $request->waktu,
+            'jenis_aktivitas' => $request->jenis_aktivitas,
+            'tipe_subyek' => $request->tipe_subyek,
+            'nisn' => $request->tipe_subyek === 'Siswa' ? $request->nisn : null,
+            'subyek_manual' => $request->tipe_subyek === 'Lainnya' ? $request->subyek_manual : null,
+            'deskripsi' => $request->deskripsi,
+            'keterangan' => $request->keterangan,
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('guru_bk.jurnal-harian', [
+            'tanggal_mulai' => $request->tanggal,
+            'tanggal_akhir' => $request->tanggal,
+        ])->with('success', 'Jurnal manual berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        $guruBK = Auth::guard('guru_bk')->user();
+
+        if (!$guruBK) {
+            return redirect()->route('login')->with('error', 'Silakan login sebagai Guru BK.');
+        }
+
+        $jurnal = DB::table('jurnal_manual')->where('id', $id)->where('guru_bk_id', $guruBK->id)->first();
+
+        if (!$jurnal) {
+            return back()->with('error', 'Data jurnal tidak ditemukan.');
+        }
+
+        DB::table('jurnal_manual')->where('id', $id)->delete();
+
+        return back()->with('success', 'Jurnal manual berhasil dihapus.');
+    }
 }
