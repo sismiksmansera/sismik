@@ -9,6 +9,10 @@
             <i class="fas fa-tasks"></i>
         </div>
         <h1 class="page-title-rekap">TUGAS TAMBAHAN</h1>
+        <div class="header-periode-badge">
+            <i class="fas fa-calendar-alt"></i>
+            {{ $periodeAktif->tahun_pelajaran }} - {{ $periodeAktif->semester }}
+        </div>
     </div>
 
     {{-- Stats Grid --}}
@@ -38,15 +42,6 @@
             <div class="stat-info">
                 <h3>{{ $totalSiswaBimbinganWali }}</h3>
                 <p>Siswa Wali</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon warning">
-                <i class="fas fa-calendar-alt"></i>
-            </div>
-            <div class="stat-info">
-                <h3>{{ $periodeAktif->tahun_pelajaran }}</h3>
-                <p>{{ $periodeAktif->semester }}</p>
             </div>
         </div>
     </div>
@@ -290,16 +285,29 @@
 .tugas-tambahan-bk .page-title-rekap {
     font-size: 32px;
     font-weight: 700;
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     color: #059669;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
+.header-periode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
 /* Stats Grid */
 .tugas-tambahan-bk .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
     margin-bottom: 25px;
 }
