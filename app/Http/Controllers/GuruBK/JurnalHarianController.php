@@ -30,6 +30,7 @@ class JurnalHarianController extends Controller
             'bimbingan' => $activities->where('type', 'bimbingan')->count(),
             'panggilan' => $activities->where('type', 'panggilan')->count(),
             'pelanggaran' => $activities->where('type', 'pelanggaran')->count(),
+            'manual' => $activities->where('type', 'manual')->count(),
         ];
 
         return view('guru-bk.jurnal-harian', compact(
@@ -171,9 +172,49 @@ class JurnalHarianController extends Controller
             ]);
         }
 
+        // 4. Jurnal Manual
+        if (\Illuminate\Support\Facades\Schema::hasTable('jurnal_manual')) {
+            $manual = DB::table('jurnal_manual as jm')
+                ->leftJoin('siswa as s', 'jm.nisn', '=', 's.nisn')
+                ->select(
+                    'jm.id', 'jm.tanggal', 'jm.waktu', 'jm.jenis_aktivitas',
+                    'jm.tipe_subyek', 'jm.subyek_manual', 'jm.deskripsi',
+                    'jm.keterangan', 'jm.created_at',
+                    's.nama as nama_siswa', 's.jk', 's.nama_rombel'
+                )
+                ->where('jm.guru_bk_id', $guruBkId)
+                ->whereBetween('jm.tanggal', [$tanggalMulai, $tanggalAkhir])
+                ->orderBy('jm.tanggal', 'desc')
+                ->orderBy('jm.waktu', 'desc')
+                ->get();
+
+            foreach ($manual as $item) {
+                $subyek = $item->tipe_subyek === 'Siswa'
+                    ? ($item->nama_siswa ?? '-')
+                    : ($item->subyek_manual ?? '-');
+
+                $activities->push((object)[
+                    'type' => 'manual',
+                    'icon' => 'fa-pen-fancy',
+                    'color' => '#f59e0b',
+                    'label' => $item->jenis_aktivitas,
+                    'tanggal' => $item->tanggal,
+                    'waktu' => $item->waktu ?? ($item->created_at ? Carbon::parse($item->created_at)->format('H:i') : '-'),
+                    'nama_siswa' => $subyek,
+                    'jk' => $item->jk ?? '',
+                    'rombel' => $item->nama_rombel ?? '-',
+                    'detail' => $item->deskripsi,
+                    'sub_detail' => $item->keterangan ?? '',
+                    'status' => '',
+                    'guru_bk' => '',
+                ]);
+            }
+        }
+
         return $activities->sortByDesc(function ($a) {
             return $a->tanggal . ' ' . $a->waktu;
         })->values();
     }
 }
+
 

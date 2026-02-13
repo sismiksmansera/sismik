@@ -12,6 +12,9 @@
         @if($periodeAktif)
         <div class="header-periode-badge"><i class="fas fa-calendar-alt"></i> {{ $periodeAktif->tahun_pelajaran }} - {{ $periodeAktif->semester }}</div>
         @endif
+        <div style="margin-top: 14px;">
+            <a href="{{ route('guru_bk.jurnal-manual.create') }}" class="btn-jurnal-manual"><i class="fas fa-pen-fancy"></i> Isi Jurnal Manual</a>
+        </div>
     </div>
 
     {{-- Date Range Filter --}}
@@ -63,6 +66,10 @@
         <div class="stat-card">
             <div class="stat-icon pelanggaran"><i class="fas fa-exclamation-triangle"></i></div>
             <div class="stat-info"><h3>{{ $stats['pelanggaran'] }}</h3><p>Pelanggaran</p></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon manual"><i class="fas fa-pen-fancy"></i></div>
+            <div class="stat-info"><h3>{{ $stats['manual'] }}</h3><p>Manual</p></div>
         </div>
     </div>
 
@@ -188,9 +195,16 @@
     font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 6px;
 }
 .filter-info i { color: #10b981; }
+.btn-jurnal-manual {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px;
+    background: linear-gradient(135deg, #f59e0b, #d97706); color: white;
+    border-radius: 10px; font-weight: 600; font-size: 13px; text-decoration: none;
+    transition: all 0.3s; box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+}
+.btn-jurnal-manual:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(245,158,11,0.4); color: white; }
 
 /* Stats */
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
 .stat-card {
     background: white; padding: 14px 16px; border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; gap: 12px; border: 1px solid #e5e7eb;
@@ -203,6 +217,7 @@
 .stat-icon.bimbingan { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
 .stat-icon.panggilan { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
 .stat-icon.pelanggaran { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.stat-icon.manual { background: linear-gradient(135deg, #f59e0b, #d97706); }
 .stat-info h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1f2937; }
 .stat-info p { margin: 2px 0 0 0; color: #6b7280; font-size: 11px; }
 
