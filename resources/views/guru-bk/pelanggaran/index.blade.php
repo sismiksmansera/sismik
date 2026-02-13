@@ -101,13 +101,9 @@
                         <button type="button" class="btn-icon btn-edit" title="Edit" data-pelanggaran="{{ json_encode($item->only(['id','tanggal','waktu','jenis_pelanggaran','jenis_lainnya','deskripsi','sanksi'])) }}" onclick="openEditModal(JSON.parse(this.dataset.pelanggaran))">
                             <i class="fas fa-edit"></i>
                         </button>
-                        @php
-                            $nisnList = $item->siswa->pluck('nisn')->filter()->implode(',');
-                            $firstNisn = $item->siswa->first()->nisn ?? '';
-                        @endphp
-                        <a href="{{ route('guru_bk.panggilan-ortu.create', ['nisn' => $firstNisn]) }}{{ $item->siswa->count() > 1 ? '?siswa_lain=' . urlencode($nisnList) : '' }}" class="btn-icon btn-phone" title="Panggilan Orang Tua ({{ $item->siswa->count() }} siswa)">
+                        <button type="button" class="btn-icon btn-phone" title="Panggilan Orang Tua" data-siswa-list="{{ json_encode($item->siswa->map(fn($s) => ['nisn' => $s->nisn, 'nama' => $s->nama, 'jk' => $s->jk])->values()) }}" onclick="openPanggilanModal(JSON.parse(this.dataset.siswaList))">
                             <i class="fas fa-phone"></i>
-                        </a>
+                        </button>
                         <form method="POST" action="{{ route('guru_bk.pelanggaran.destroy', $item->id) }}" style="display: inline;" onsubmit="return confirm('Yakin ingin menghapus catatan pelanggaran ini?')">
                             @csrf
                             @method('DELETE')
@@ -307,6 +303,34 @@
             <button type="button" class="btn-secondary" onclick="closeSiswaModal()">Batal</button>
             <button type="button" class="btn-primary" onclick="confirmSiswaSelection()">
                 <i class="fas fa-check"></i> Pilih Siswa
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Pilih Siswa untuk Panggilan Orang Tua --}}
+<div id="modalPanggilan" class="modal-overlay">
+    <div class="modal-container modal-panggilan-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-phone" style="color: #3b82f6;"></i> Panggilan Orang Tua</h3>
+            <button class="modal-close" onclick="closePanggilanModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <p class="panggilan-info"><i class="fas fa-info-circle"></i> Pilih siswa yang akan dibuatkan surat panggilan orang tua:</p>
+            <div class="panggilan-select-all">
+                <label class="panggilan-checkbox-label">
+                    <input type="checkbox" id="panggilanSelectAll" onchange="toggleSelectAllPanggilan()">
+                    <span>Pilih Semua</span>
+                </label>
+            </div>
+            <div class="panggilan-siswa-list" id="panggilanSiswaList">
+                {{-- Populated by JS --}}
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closePanggilanModal()">Batal</button>
+            <button type="button" class="btn-primary" id="btnBuatPanggilan" onclick="navigatePanggilan()" disabled>
+                <i class="fas fa-paper-plane"></i> Buat Surat Panggilan
             </button>
         </div>
     </div>
@@ -638,6 +662,45 @@ textarea.form-control { resize: vertical; }
     box-shadow: 0 4px 12px rgba(245,158,11,0.3);
 }
 .btn-primary-warning:hover { box-shadow: 0 6px 16px rgba(245,158,11,0.4); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+/* Panggilan Ortu Modal */
+.modal-panggilan-container { width: 460px; }
+.panggilan-info {
+    font-size: 13px; color: #6b7280; margin: 0 0 14px 0; display: flex; align-items: center; gap: 6px;
+}
+.panggilan-info i { color: #3b82f6; }
+.panggilan-select-all {
+    padding: 8px 12px; background: #f8fafc; border-radius: 8px;
+    border-bottom: 1px solid #e5e7eb; margin-bottom: 8px;
+}
+.panggilan-checkbox-label {
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: #374151;
+}
+.panggilan-checkbox-label input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: #3b82f6; cursor: pointer;
+}
+.panggilan-siswa-list { max-height: 300px; overflow-y: auto; }
+.panggilan-siswa-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    border: 2px solid transparent;
+}
+.panggilan-siswa-item:hover { background: #f8fafc; }
+.panggilan-siswa-item.checked { background: #eff6ff; border-color: #93c5fd; }
+.panggilan-siswa-item input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: #3b82f6; cursor: pointer; flex-shrink: 0;
+}
+.panggilan-siswa-item .siswa-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: white;
+}
+.panggilan-siswa-item .siswa-avatar.laki { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.panggilan-siswa-item .siswa-avatar.perempuan { background: linear-gradient(135deg, #ec4899, #db2777); }
+.panggilan-siswa-item .siswa-nama { font-weight: 600; font-size: 13px; color: #1f2937; }
+.panggilan-siswa-item .siswa-nisn { font-size: 11px; color: #6b7280; }
 
 /* ===================== RESPONSIVE ===================== */
 @media (max-width: 768px) {
@@ -870,11 +933,85 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+// ===== Panggilan Orang Tua Modal =====
+let panggilanSiswaData = [];
+
+function openPanggilanModal(siswaList) {
+    panggilanSiswaData = siswaList;
+    const container = document.getElementById('panggilanSiswaList');
+    let html = '';
+    siswaList.forEach((s, idx) => {
+        const avatarClass = s.jk === 'Laki-laki' ? 'laki' : 'perempuan';
+        const initial = s.nama ? s.nama.charAt(0).toUpperCase() : '?';
+        html += '<div class="panggilan-siswa-item" onclick="togglePanggilanSiswa(this, ' + idx + ')">' +
+            '<input type="checkbox" data-idx="' + idx + '" data-nisn="' + (s.nisn || '') + '" onclick="event.stopPropagation(); updatePanggilanBtn();">' +
+            '<div class="siswa-avatar ' + avatarClass + '">' + initial + '</div>' +
+            '<div>' +
+                '<div class="siswa-nama">' + escapeHtml(s.nama) + '</div>' +
+                '<div class="siswa-nisn">NISN: ' + (s.nisn || '-') + '</div>' +
+            '</div>' +
+        '</div>';
+    });
+    container.innerHTML = html;
+    document.getElementById('panggilanSelectAll').checked = false;
+    updatePanggilanBtn();
+    document.getElementById('modalPanggilan').classList.add('active');
+}
+
+function closePanggilanModal() {
+    document.getElementById('modalPanggilan').classList.remove('active');
+}
+
+function togglePanggilanSiswa(el, idx) {
+    const cb = el.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+    el.classList.toggle('checked', cb.checked);
+    updatePanggilanBtn();
+}
+
+function toggleSelectAllPanggilan() {
+    const checked = document.getElementById('panggilanSelectAll').checked;
+    document.querySelectorAll('#panggilanSiswaList input[type="checkbox"]').forEach(cb => {
+        cb.checked = checked;
+        cb.closest('.panggilan-siswa-item').classList.toggle('checked', checked);
+    });
+    updatePanggilanBtn();
+}
+
+function updatePanggilanBtn() {
+    const checked = document.querySelectorAll('#panggilanSiswaList input[type="checkbox"]:checked');
+    const btn = document.getElementById('btnBuatPanggilan');
+    btn.disabled = checked.length === 0;
+    if (checked.length > 0) {
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Buat Surat (' + checked.length + ' siswa)';
+    } else {
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Buat Surat Panggilan';
+    }
+}
+
+function navigatePanggilan() {
+    const checked = document.querySelectorAll('#panggilanSiswaList input[type="checkbox"]:checked');
+    const nisnList = [];
+    checked.forEach(cb => {
+        const nisn = cb.dataset.nisn;
+        if (nisn) nisnList.push(nisn);
+    });
+    if (nisnList.length === 0) return;
+    // Navigate to first student's create page, pass rest as query params
+    const firstNisn = nisnList[0];
+    let url = '{{ url("guru-bk/panggilan-ortu/create") }}/' + firstNisn;
+    if (nisnList.length > 1) {
+        url += '?siswa_lain=' + encodeURIComponent(nisnList.join(','));
+    }
+    window.location.href = url;
+}
+
 // Close modals on overlay click
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('modalInput').addEventListener('click', function(e) { if (e.target === this) closeInputModal(); });
     document.getElementById('modalEdit').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
     document.getElementById('modalSiswa').addEventListener('click', function(e) { if (e.target === this) closeSiswaModal(); });
+    document.getElementById('modalPanggilan').addEventListener('click', function(e) { if (e.target === this) closePanggilanModal(); });
 });
 </script>
 @endsection
