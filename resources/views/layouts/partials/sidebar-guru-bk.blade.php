@@ -34,6 +34,10 @@
             <i class="fas fa-phone"></i>
             <span>Panggilan Ortu</span>
         </a>
+        <a href="{{ route('guru_bk.pelanggaran') }}" class="menu-item {{ request()->routeIs('guru_bk.pelanggaran*') ? 'active' : '' }}">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Pelanggaran Siswa</span>
+        </a>
         <a href="{{ route('guru_bk.tugas-tambahan') }}" class="menu-item {{ request()->routeIs('guru_bk.tugas-tambahan') ? 'active' : '' }}">
             <i class="fas fa-tasks"></i>
             <span>Tugas Tambahan</span>
