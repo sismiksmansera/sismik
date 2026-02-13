@@ -101,7 +101,7 @@
                         </span>
                     </div>
                     <div class="card-actions">
-                        <button type="button" class="btn-icon btn-edit" title="Edit" onclick='openEditModal(@json($item->only(["id","tanggal","waktu","jenis_pelanggaran","jenis_lainnya","deskripsi","sanksi"])))'>
+                        <button type="button" class="btn-icon btn-edit" title="Edit" data-pelanggaran="{{ json_encode($item->only(['id','tanggal','waktu','jenis_pelanggaran','jenis_lainnya','deskripsi','sanksi'])) }}" onclick="openEditModal(JSON.parse(this.dataset.pelanggaran))">
                             <i class="fas fa-edit"></i>
                         </button>
                         @php
