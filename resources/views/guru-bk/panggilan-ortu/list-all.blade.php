@@ -22,6 +22,9 @@
             <i class="fas fa-phone"></i>
         </div>
         <h1>Panggilan Orang Tua</h1>
+        @if($periodeAktif)
+        <div class="header-periode-badge"><i class="fas fa-calendar-alt"></i> {{ $periodeAktif->tahun_pelajaran }} - {{ $periodeAktif->semester }}</div>
+        @endif
     </div>
 
     {{-- Buat Panggilan Baru Button --}}
@@ -183,7 +186,13 @@
     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     box-shadow: 0 8px 25px rgba(59,130,246,0.4);
 }
-.page-header-center h1 { font-size: 24px; font-weight: 700; margin: 0; color: #1f2937; }
+.page-header-center h1 { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; color: #1f2937; }
+.header-periode-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.1); color: #3b82f6;
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(59,130,246,0.2);
+}
 
 /* Stats */
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }

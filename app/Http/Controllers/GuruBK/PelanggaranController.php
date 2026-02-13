@@ -25,7 +25,9 @@ class PelanggaranController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('guru-bk.pelanggaran.index', compact('guruBk', 'pelanggaranList'));
+        $periodeAktif = \Illuminate\Support\Facades\DB::table('data_periodik')->where('aktif', 'Ya')->first();
+
+        return view('guru-bk.pelanggaran.index', compact('guruBk', 'pelanggaranList', 'periodeAktif'));
     }
 
     /**

@@ -43,7 +43,9 @@ class PanggilanOrtuController extends Controller
             'Dijadwalkan Ulang' => $panggilan_list->where('status', 'Dijadwalkan Ulang')->count(),
         ];
 
-        return view('guru-bk.panggilan-ortu.list-all', compact('guruBK', 'panggilan_list', 'stats'));
+        $periodeAktif = DB::table('data_periodik')->where('aktif', 'Ya')->first();
+
+        return view('guru-bk.panggilan-ortu.list-all', compact('guruBK', 'panggilan_list', 'stats', 'periodeAktif'));
     }
 
     /**
