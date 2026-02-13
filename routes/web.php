@@ -367,6 +367,9 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     Route::post('/catatan-bimbingan/store/{nisn}', [\App\Http\Controllers\GuruBK\CatatanBimbinganController::class, 'store'])->name('catatan-bimbingan.store');
     Route::get('/catatan-bimbingan/print/{id}', [\App\Http\Controllers\GuruBK\CatatanBimbinganController::class, 'print'])->name('catatan-bimbingan.print');
     
+    // Jurnal Harian
+    Route::get('/jurnal-harian', [\App\Http\Controllers\GuruBK\JurnalHarianController::class, 'index'])->name('jurnal-harian');
+
     // Panggilan Ortu routes
     Route::get('/panggilan-ortu', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'listAll'])->name('panggilan-ortu.list');
     Route::get('/panggilan-ortu/create-batch', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'createBatch'])->name('panggilan-ortu.create-batch');

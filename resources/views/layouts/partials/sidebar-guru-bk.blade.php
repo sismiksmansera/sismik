@@ -38,6 +38,10 @@
             <i class="fas fa-exclamation-triangle"></i>
             <span>Pelanggaran Siswa</span>
         </a>
+        <a href="{{ route('guru_bk.jurnal-harian') }}" class="menu-item {{ request()->routeIs('guru_bk.jurnal-harian') ? 'active' : '' }}">
+            <i class="fas fa-book-open"></i>
+            <span>Jurnal Harian</span>
+        </a>
         <a href="{{ route('guru_bk.tugas-tambahan') }}" class="menu-item {{ request()->routeIs('guru_bk.tugas-tambahan') ? 'active' : '' }}">
             <i class="fas fa-tasks"></i>
             <span>Tugas Tambahan</span>
