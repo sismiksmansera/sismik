@@ -232,7 +232,7 @@ class JurnalHarianController extends Controller
                     'type' => 'bimbingan_wali',
                     'icon' => 'fa-chalkboard-teacher',
                     'color' => '#06b6d4',
-                    'label' => 'Bimbingan Wali Kelas: ' . $item->jenis_bimbingan,
+                    'label' => 'Bimbingan Guru Wali: ' . $item->jenis_bimbingan,
                     'tanggal' => $item->tanggal_pencatatan,
                     'waktu' => $item->created_at ? Carbon::parse($item->created_at)->format('H:i') : '-',
                     'nama_siswa' => $item->nama_siswa ?? '-',
