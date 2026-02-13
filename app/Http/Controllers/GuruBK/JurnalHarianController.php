@@ -47,7 +47,7 @@ class JurnalHarianController extends Controller
         }
 
         $periodeAktif = DB::table('data_periodik')->where('aktif', 'Ya')->first();
-        $sekolah = DB::table('profil_sekolah')->first();
+        try { $sekolah = DB::table('profil_sekolah')->first(); } catch (\Exception $e) { $sekolah = null; }
 
         $tanggalMulai = $request->get('tanggal_mulai', date('Y-m-d'));
         $tanggalAkhir = $request->get('tanggal_akhir', date('Y-m-d'));
