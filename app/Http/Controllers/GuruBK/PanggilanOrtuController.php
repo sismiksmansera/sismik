@@ -133,6 +133,20 @@ class PanggilanOrtuController extends Controller
     }
 
     /**
+     * Show form to create panggilan ortu (standalone with student search)
+     */
+    public function createNew()
+    {
+        $guruBK = Auth::guard('guru_bk')->user();
+        
+        if (!$guruBK) {
+            return redirect()->route('login')->with('error', 'Silakan login sebagai Guru BK.');
+        }
+
+        return view('guru-bk.panggilan-ortu.create-new', compact('guruBK'));
+    }
+
+    /**
      * Show form to create panggilan ortu for multiple students (batch)
      */
     public function createBatch(Request $request)
@@ -253,7 +267,7 @@ class PanggilanOrtuController extends Controller
                 'created_at' => now(),
             ]);
 
-            return redirect()->route('guru_bk.panggilan-ortu', ['nisn' => $nisn])
+            return redirect()->route('guru_bk.panggilan-ortu.list')
                 ->with('success', 'Surat panggilan orang tua berhasil dibuat.');
 
         } catch (\Exception $e) {
@@ -368,8 +382,7 @@ class PanggilanOrtuController extends Controller
                 ->where('id', $id)
                 ->update($updateData);
 
-            return redirect()->route('guru_bk.panggilan-ortu', ['nisn' => $panggilan->nisn])
-                ->with('success', 'Surat panggilan orang tua berhasil diperbarui.');
+            return back()->with('success', 'Surat panggilan orang tua berhasil diperbarui.');
 
         } catch (\Exception $e) {
             Log::error("Error updating panggilan ortu: " . $e->getMessage());

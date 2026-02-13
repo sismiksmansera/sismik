@@ -370,6 +370,7 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     // Panggilan Ortu routes
     Route::get('/panggilan-ortu', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'listAll'])->name('panggilan-ortu.list');
     Route::get('/panggilan-ortu/create-batch', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'createBatch'])->name('panggilan-ortu.create-batch');
+    Route::get('/panggilan-ortu/create-new', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'createNew'])->name('panggilan-ortu.create-new');
     Route::post('/panggilan-ortu/store-batch', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'storeBatch'])->name('panggilan-ortu.store-batch');
     Route::get('/panggilan-ortu/{nisn}', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'index'])->name('panggilan-ortu');
     Route::get('/panggilan-ortu/create/{nisn}', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'create'])->name('panggilan-ortu.create');

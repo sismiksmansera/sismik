@@ -24,6 +24,13 @@
         <h1>Panggilan Orang Tua</h1>
     </div>
 
+    {{-- Buat Panggilan Baru Button --}}
+    <div class="action-row">
+        <a href="{{ route('guru_bk.panggilan-ortu.create-new') }}" class="btn-create-new">
+            <i class="fas fa-plus-circle"></i> Buat Panggilan Baru
+        </a>
+    </div>
+
     {{-- Stats --}}
     <div class="stats-grid">
         <div class="stat-card">
@@ -195,6 +202,16 @@
 .stat-info h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1f2937; }
 .stat-info p { margin: 2px 0 0 0; color: #6b7280; font-size: 11px; }
 
+/* Create Button */
+.action-row { margin-bottom: 20px; }
+.btn-create-new {
+    display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px;
+    background: linear-gradient(135deg, #7c3aed, #5b21b6); color: white;
+    border-radius: 12px; font-weight: 600; font-size: 14px; text-decoration: none;
+    transition: all 0.3s; box-shadow: 0 4px 15px rgba(124,58,237,0.3);
+}
+.btn-create-new:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+
 /* List Container */
 .list-container {
     background: white; border-radius: 16px;
@@ -294,10 +311,12 @@
     .panggilan-list-page { padding: 12px; }
     .header-icon-large { width: 56px; height: 56px; font-size: 26px; border-radius: 14px; margin-bottom: 12px; }
     .page-header-center h1 { font-size: 20px; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .stat-card { padding: 10px 12px; }
-    .stat-icon { width: 36px; height: 36px; font-size: 14px; }
+    .btn-create-new { padding: 10px 18px; font-size: 12px; width: 100%; justify-content: center; }
+    .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .stat-card { padding: 8px 6px; flex-direction: column; gap: 4px; text-align: center; }
+    .stat-icon { width: 30px; height: 30px; font-size: 12px; border-radius: 8px; }
     .stat-info h3 { font-size: 16px; }
+    .stat-info p { font-size: 9px; }
     .container-header { padding: 12px 14px; }
     .panggilan-cards { padding: 10px; gap: 10px; }
     .panggilan-card { padding: 12px; }
