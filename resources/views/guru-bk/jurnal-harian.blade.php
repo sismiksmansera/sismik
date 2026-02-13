@@ -28,6 +28,7 @@
             <div class="filter-actions">
                 <button type="submit" class="btn-filter"><i class="fas fa-search"></i> Tampilkan</button>
                 <a href="{{ route('guru_bk.jurnal-harian') }}" class="btn-reset"><i class="fas fa-redo"></i></a>
+                <a href="{{ route('guru_bk.jurnal-harian.print', ['tanggal_mulai' => $tanggalMulai, 'tanggal_akhir' => $tanggalAkhir]) }}" target="_blank" class="btn-print-action"><i class="fas fa-print"></i> Cetak</a>
             </div>
         </div>
         <div class="filter-info">
@@ -175,6 +176,13 @@
     display: flex; align-items: center;
 }
 .btn-reset:hover { background: #e5e7eb; }
+.btn-print-action {
+    padding: 10px 20px; background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 13px;
+    cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+    text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+.btn-print-action:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(59,130,246,0.4); color: white; }
 .filter-info {
     margin-top: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6;
     font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 6px;

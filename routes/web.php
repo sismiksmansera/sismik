@@ -369,6 +369,7 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     
     // Jurnal Harian
     Route::get('/jurnal-harian', [\App\Http\Controllers\GuruBK\JurnalHarianController::class, 'index'])->name('jurnal-harian');
+    Route::get('/jurnal-harian/print', [\App\Http\Controllers\GuruBK\JurnalHarianController::class, 'print'])->name('jurnal-harian.print');
 
     // Panggilan Ortu routes
     Route::get('/panggilan-ortu', [\App\Http\Controllers\GuruBK\PanggilanOrtuController::class, 'listAll'])->name('panggilan-ortu.list');

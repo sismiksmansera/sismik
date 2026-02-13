@@ -20,10 +20,48 @@ class JurnalHarianController extends Controller
 
         $periodeAktif = DB::table('data_periodik')->where('aktif', 'Ya')->first();
 
-        // Date range filter (default: today)
         $tanggalMulai = $request->get('tanggal_mulai', date('Y-m-d'));
         $tanggalAkhir = $request->get('tanggal_akhir', date('Y-m-d'));
 
+        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir);
+
+        $stats = [
+            'total' => $activities->count(),
+            'bimbingan' => $activities->where('type', 'bimbingan')->count(),
+            'panggilan' => $activities->where('type', 'panggilan')->count(),
+            'pelanggaran' => $activities->where('type', 'pelanggaran')->count(),
+        ];
+
+        return view('guru-bk.jurnal-harian', compact(
+            'guruBK', 'periodeAktif', 'activities', 'stats',
+            'tanggalMulai', 'tanggalAkhir'
+        ));
+    }
+
+    public function print(Request $request)
+    {
+        $guruBK = Auth::guard('guru_bk')->user();
+
+        if (!$guruBK) {
+            return redirect()->route('login')->with('error', 'Silakan login sebagai Guru BK.');
+        }
+
+        $periodeAktif = DB::table('data_periodik')->where('aktif', 'Ya')->first();
+        $sekolah = DB::table('profil_sekolah')->first();
+
+        $tanggalMulai = $request->get('tanggal_mulai', date('Y-m-d'));
+        $tanggalAkhir = $request->get('tanggal_akhir', date('Y-m-d'));
+
+        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir);
+
+        return view('guru-bk.jurnal-harian-print', compact(
+            'guruBK', 'periodeAktif', 'sekolah', 'activities',
+            'tanggalMulai', 'tanggalAkhir'
+        ));
+    }
+
+    private function getActivities($tanggalMulai, $tanggalAkhir)
+    {
         $activities = collect();
 
         // 1. Catatan Bimbingan
@@ -105,7 +143,6 @@ class JurnalHarianController extends Controller
             ->get();
 
         foreach ($pelanggaran as $item) {
-            // Get involved students
             $siswaList = DB::table('pelanggaran_siswa as ps')
                 ->leftJoin('siswa as s', 'ps.siswa_id', '=', 's.id')
                 ->where('ps.pelanggaran_id', $item->id)
@@ -131,22 +168,9 @@ class JurnalHarianController extends Controller
             ]);
         }
 
-        // Sort all activities by date desc, time desc
-        $activities = $activities->sortByDesc(function ($a) {
+        return $activities->sortByDesc(function ($a) {
             return $a->tanggal . ' ' . $a->waktu;
         })->values();
-
-        // Stats
-        $stats = [
-            'total' => $activities->count(),
-            'bimbingan' => $activities->where('type', 'bimbingan')->count(),
-            'panggilan' => $activities->where('type', 'panggilan')->count(),
-            'pelanggaran' => $activities->where('type', 'pelanggaran')->count(),
-        ];
-
-        return view('guru-bk.jurnal-harian', compact(
-            'guruBK', 'periodeAktif', 'activities', 'stats',
-            'tanggalMulai', 'tanggalAkhir'
-        ));
     }
 }
+
