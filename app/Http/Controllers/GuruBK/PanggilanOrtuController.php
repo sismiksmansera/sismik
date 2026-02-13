@@ -11,6 +11,43 @@ use Illuminate\Support\Facades\Log;
 class PanggilanOrtuController extends Controller
 {
     /**
+     * Display all panggilan ortu list (all students)
+     */
+    public function listAll()
+    {
+        $guruBK = Auth::guard('guru_bk')->user();
+        
+        if (!$guruBK) {
+            return redirect()->route('login')->with('error', 'Silakan login sebagai Guru BK.');
+        }
+
+        $panggilan_list = DB::table('panggilan_ortu as p')
+            ->leftJoin('siswa as s', 'p.nisn', '=', 's.nisn')
+            ->leftJoin('guru_bk as g', 'p.guru_bk_id', '=', 'g.id')
+            ->select(
+                'p.*',
+                's.nama as nama_siswa',
+                's.jk as jk_siswa',
+                's.nama_rombel',
+                'g.nama as nama_guru_bk'
+            )
+            ->where('p.guru_bk_id', $guruBK->id)
+            ->orderBy('p.tanggal_surat', 'desc')
+            ->orderBy('p.created_at', 'desc')
+            ->get();
+
+        $stats = [
+            'total' => $panggilan_list->count(),
+            'Menunggu' => $panggilan_list->where('status', 'Menunggu')->count(),
+            'Hadir' => $panggilan_list->where('status', 'Hadir')->count(),
+            'Tidak Hadir' => $panggilan_list->where('status', 'Tidak Hadir')->count(),
+            'Dijadwalkan Ulang' => $panggilan_list->where('status', 'Dijadwalkan Ulang')->count(),
+        ];
+
+        return view('guru-bk.panggilan-ortu.list-all', compact('guruBK', 'panggilan_list', 'stats'));
+    }
+
+    /**
      * Display panggilan ortu list for a student
      */
     public function index($nisn)

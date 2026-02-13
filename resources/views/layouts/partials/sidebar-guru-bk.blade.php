@@ -30,7 +30,7 @@
             <i class="fas fa-users"></i>
             <span>Siswa Bimbingan</span>
         </a>
-        <a href="#" class="menu-item">
+        <a href="{{ route('guru_bk.panggilan-ortu.list') }}" class="menu-item {{ request()->routeIs('guru_bk.panggilan-ortu*') ? 'active' : '' }}">
             <i class="fas fa-phone"></i>
             <span>Panggilan Ortu</span>
         </a>
