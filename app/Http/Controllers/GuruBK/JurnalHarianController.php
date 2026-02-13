@@ -23,7 +23,7 @@ class JurnalHarianController extends Controller
         $tanggalMulai = $request->get('tanggal_mulai', date('Y-m-d'));
         $tanggalAkhir = $request->get('tanggal_akhir', date('Y-m-d'));
 
-        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir);
+        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir, $guruBK->id);
 
         $stats = [
             'total' => $activities->count(),
@@ -52,7 +52,7 @@ class JurnalHarianController extends Controller
         $tanggalMulai = $request->get('tanggal_mulai', date('Y-m-d'));
         $tanggalAkhir = $request->get('tanggal_akhir', date('Y-m-d'));
 
-        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir);
+        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir, $guruBK->id);
 
         return view('guru-bk.jurnal-harian-print', compact(
             'guruBK', 'periodeAktif', 'sekolah', 'activities',
@@ -60,7 +60,7 @@ class JurnalHarianController extends Controller
         ));
     }
 
-    private function getActivities($tanggalMulai, $tanggalAkhir)
+    private function getActivities($tanggalMulai, $tanggalAkhir, $guruBkId)
     {
         $activities = collect();
 
@@ -75,6 +75,7 @@ class JurnalHarianController extends Controller
                 'g.nama as nama_guru_bk'
             )
             ->whereBetween('cb.tanggal', [$tanggalMulai, $tanggalAkhir])
+            ->where('cb.guru_bk_id', $guruBkId)
             ->orderBy('cb.tanggal', 'desc')
             ->orderBy('cb.created_at', 'desc')
             ->get();
@@ -108,6 +109,7 @@ class JurnalHarianController extends Controller
                 'g.nama as nama_guru_bk'
             )
             ->whereBetween('p.created_at', [$tanggalMulai . ' 00:00:00', $tanggalAkhir . ' 23:59:59'])
+            ->where('p.guru_bk_id', $guruBkId)
             ->orderBy('p.created_at', 'desc')
             ->get();
 
@@ -138,6 +140,7 @@ class JurnalHarianController extends Controller
                 'g.nama as nama_guru_bk'
             )
             ->whereBetween('pl.tanggal', [$tanggalMulai, $tanggalAkhir])
+            ->where('pl.guru_bk_id', $guruBkId)
             ->orderBy('pl.tanggal', 'desc')
             ->orderBy('pl.waktu', 'desc')
             ->get();
