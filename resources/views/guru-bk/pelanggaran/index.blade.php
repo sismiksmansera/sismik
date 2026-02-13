@@ -29,7 +29,6 @@
             <i class="fas fa-exclamation-triangle"></i>
         </div>
         <h1>Pelanggaran Siswa</h1>
-        <p>Pencatatan Pelanggaran Siswa</p>
     </div>
 
     {{-- Action Buttons --}}
@@ -45,7 +44,7 @@
         </button>
     </div>
 
-    {{-- Stats --}}
+    {{-- Stats - Only total pelanggaran --}}
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon danger">
@@ -54,28 +53,6 @@
             <div class="stat-info">
                 <h3>{{ count($pelanggaranList) }}</h3>
                 <p>Total Pelanggaran</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon warning">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-info">
-                @php
-                    $totalSiswa = 0;
-                    foreach($pelanggaranList as $p) { $totalSiswa += $p->siswa->count(); }
-                @endphp
-                <h3>{{ $totalSiswa }}</h3>
-                <p>Siswa Terlibat</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon primary">
-                <i class="fas fa-calendar-day"></i>
-            </div>
-            <div class="stat-info">
-                <h3>{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d M Y') }}</h3>
-                <p>Tanggal Dipilih</p>
             </div>
         </div>
     </div>
@@ -124,7 +101,14 @@
                         </span>
                     </div>
                     <div class="card-actions">
-                        <a href="{{ route('guru_bk.panggilan-ortu.create', ['nisn' => $item->siswa->first()->nisn ?? '']) }}" class="btn-icon btn-phone" title="Panggilan Orang Tua">
+                        <button type="button" class="btn-icon btn-edit" title="Edit" onclick='openEditModal(@json($item->only(["id","tanggal","waktu","jenis_pelanggaran","jenis_lainnya","deskripsi","sanksi"])))'>
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        @php
+                            $nisnList = $item->siswa->pluck('nisn')->filter()->implode(',');
+                            $firstNisn = $item->siswa->first()->nisn ?? '';
+                        @endphp
+                        <a href="{{ route('guru_bk.panggilan-ortu.create', ['nisn' => $firstNisn]) }}{{ $item->siswa->count() > 1 ? '?siswa_lain=' . urlencode($nisnList) : '' }}" class="btn-icon btn-phone" title="Panggilan Orang Tua ({{ $item->siswa->count() }} siswa)">
                             <i class="fas fa-phone"></i>
                         </a>
                         <form method="POST" action="{{ route('guru_bk.pelanggaran.destroy', $item->id) }}" style="display: inline;" onsubmit="return confirm('Yakin ingin menghapus catatan pelanggaran ini?')">
@@ -240,6 +224,66 @@
     </div>
 </div>
 
+{{-- Modal Edit Pelanggaran --}}
+<div id="modalEdit" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-edit" style="color: #f59e0b;"></i> Edit Pelanggaran</h3>
+            <button class="modal-close" onclick="closeEditModal()">×</button>
+        </div>
+        <form method="POST" action="" id="formEditPelanggaran">
+            @csrf
+            @method('PUT')
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar"></i> Tanggal</label>
+                        <input type="date" name="tanggal" id="editTanggal" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Waktu</label>
+                        <input type="time" name="waktu" id="editWaktu" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Jenis Pelanggaran</label>
+                    <select name="jenis_pelanggaran" id="editJenisPelanggaran" required class="form-control" onchange="toggleEditJenisLainnya()">
+                        <option value="">-- Pilih Jenis --</option>
+                        <option value="Keterlambatan">Keterlambatan</option>
+                        <option value="Perusakan Fasilitas Sekolah">Perusakan Fasilitas Sekolah</option>
+                        <option value="Penyebaran Konten Hoax">Penyebaran Konten Hoax</option>
+                        <option value="Penyebaran Konten Asusila">Penyebaran Konten Asusila</option>
+                        <option value="Kriminal">Kriminal</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="editJenisLainnyaGroup" style="display: none;">
+                    <label><i class="fas fa-pen"></i> Jenis Lainnya</label>
+                    <input type="text" name="jenis_lainnya" id="editJenisLainnyaInput" placeholder="Masukkan jenis pelanggaran..." class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Deskripsi Pelanggaran</label>
+                    <textarea name="deskripsi" id="editDeskripsi" rows="3" placeholder="Jelaskan detail pelanggaran..." class="form-control"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-balance-scale"></i> Sanksi</label>
+                    <textarea name="sanksi" id="editSanksi" rows="2" placeholder="Sanksi yang diberikan..." class="form-control"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeEditModal()">Batal</button>
+                <button type="submit" class="btn-primary btn-primary-warning">
+                    <i class="fas fa-save"></i> Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- Modal Pencarian Siswa --}}
 <div id="modalSiswa" class="modal-overlay modal-siswa-overlay">
     <div class="modal-container modal-siswa-container">
@@ -289,11 +333,11 @@
 
 /* Toast */
 .toast-notification {
-    position: fixed; top: 20px; right: 20px; min-width: 300px;
+    position: fixed; top: 20px; right: 20px; min-width: 280px; max-width: 90vw;
     background: linear-gradient(135deg, #10b981, #059669);
-    color: white; padding: 16px 20px; border-radius: 12px;
+    color: white; padding: 14px 18px; border-radius: 12px;
     box-shadow: 0 10px 40px rgba(16,185,129,0.4);
-    display: flex; align-items: center; justify-content: space-between; gap: 15px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
     z-index: 9999; animation: slideIn 0.3s ease;
 }
 .toast-notification.toast-error {
@@ -301,29 +345,28 @@
     box-shadow: 0 10px 40px rgba(239,68,68,0.4);
 }
 @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-.toast-content { display: flex; align-items: center; gap: 12px; }
-.toast-content i { font-size: 20px; }
+.toast-content { display: flex; align-items: center; gap: 10px; }
+.toast-content i { font-size: 18px; }
 .toast-close {
     background: rgba(255,255,255,0.2); border: none; color: white;
-    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
 }
 
 /* Header */
 .page-header-center { text-align: center; margin-bottom: 25px; }
 .header-icon-large {
-    width: 80px; height: 80px; border-radius: 20px;
+    width: 70px; height: 70px; border-radius: 18px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 36px; color: white; margin: 0 auto 20px;
+    font-size: 32px; color: white; margin: 0 auto 16px;
     background: linear-gradient(135deg, #ef4444, #dc2626);
     box-shadow: 0 8px 25px rgba(239,68,68,0.4);
 }
-.page-header-center h1 { font-size: 28px; font-weight: 700; margin: 0 0 5px; color: #1f2937; }
-.page-header-center p { color: #6b7280; margin: 0; }
+.page-header-center h1 { font-size: 24px; font-weight: 700; margin: 0; color: #1f2937; }
 
 /* Action Buttons */
 .action-buttons-center {
-    display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: flex-end;
+    display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end;
 }
 .filter-form { display: flex; align-items: flex-end; }
 .date-filter-group label {
@@ -331,32 +374,30 @@
 }
 .date-filter-group label i { margin-right: 4px; }
 .date-input {
-    padding: 12px 16px; border: 2px solid #d1d5db; border-radius: 10px;
+    padding: 10px 14px; border: 2px solid #d1d5db; border-radius: 10px;
     font-size: 14px; font-weight: 500; font-family: 'Poppins', sans-serif;
     background: white; cursor: pointer; transition: all 0.3s;
 }
 .date-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 .btn-add {
-    display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px;
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
     background: linear-gradient(135deg, #ef4444, #dc2626); color: white;
     border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
-    box-shadow: 0 4px 15px rgba(239,68,68,0.35); transition: all 0.3s; font-family: 'Poppins', sans-serif;
+    box-shadow: 0 4px 15px rgba(239,68,68,0.35); transition: all 0.3s; font-family: 'Poppins', sans-serif; font-size: 13px;
 }
 .btn-add:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239,68,68,0.4); }
 
 /* Stats */
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+.stats-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; max-width: 280px; margin-left: auto; margin-right: auto; }
 .stat-card {
-    background: white; padding: 20px; border-radius: 12px;
+    background: white; padding: 16px 20px; border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 15px; border: 1px solid #e5e7eb;
 }
 .stat-icon {
-    width: 50px; height: 50px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; font-size: 20px; color: white;
+    width: 46px; height: 46px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px; color: white;
 }
 .stat-icon.danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.stat-icon.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.stat-icon.primary { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
 .stat-info h3 { margin: 0; font-size: 20px; font-weight: 700; color: #1f2937; }
 .stat-info p { margin: 4px 0 0 0; color: #6b7280; font-size: 12px; }
 
@@ -366,44 +407,44 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.08); overflow: hidden;
 }
 .container-header {
-    padding: 20px 25px; border-bottom: 1px solid #e5e7eb;
+    padding: 16px 20px; border-bottom: 1px solid #e5e7eb;
     display: flex; justify-content: space-between; align-items: center;
 }
 .container-title { display: flex; align-items: center; gap: 10px; }
-.container-title i { color: var(--danger); font-size: 18px; }
-.container-title h2 { margin: 0; font-size: 1.1rem; color: #1f2937; }
+.container-title i { color: var(--danger); font-size: 16px; }
+.container-title h2 { margin: 0; font-size: 1rem; color: #1f2937; }
 .count-badge {
-    padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
     background: rgba(239,68,68,0.1); color: #ef4444;
 }
 
 /* Empty State */
-.empty-state { padding: 60px 30px; text-align: center; }
+.empty-state { padding: 50px 20px; text-align: center; }
 .empty-icon {
-    width: 80px; height: 80px; background: #f0fdf4; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+    width: 70px; height: 70px; background: #f0fdf4; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
 }
-.empty-icon i { font-size: 30px; color: #10b981; }
-.empty-state h3 { margin: 0 0 10px; color: #1f2937; }
-.empty-state p { margin: 0; color: #6b7280; }
+.empty-icon i { font-size: 28px; color: #10b981; }
+.empty-state h3 { margin: 0 0 8px; color: #1f2937; font-size: 16px; }
+.empty-state p { margin: 0; color: #6b7280; font-size: 14px; }
 
 /* Pelanggaran Cards */
-.pelanggaran-cards { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.pelanggaran-cards { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 
 .pelanggaran-card {
-    background: white; border: 1px solid #e5e7eb; border-radius: 14px;
-    padding: 20px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background: white; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 16px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 .pelanggaran-card:hover { box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-color: #ef4444; }
 
 .card-header-row {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 10px;
 }
-.card-header-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.card-header-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .jenis-badge {
-    display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
-    border-radius: 8px; font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px;
+    border-radius: 8px; font-size: 12px; font-weight: 600;
     background: rgba(239,68,68,0.1); color: #ef4444;
 }
 .jenis-badge.keterlambatan { background: rgba(245,158,11,0.1); color: #d97706; }
@@ -413,14 +454,16 @@
 .jenis-badge.penyebaran-konten-asusila { background: rgba(236,72,153,0.1); color: #db2777; }
 
 .waktu-badge {
-    font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 4px;
+    font-size: 11px; color: #6b7280; display: flex; align-items: center; gap: 4px;
 }
-.card-actions { display: flex; gap: 8px; }
+.card-actions { display: flex; gap: 6px; flex-shrink: 0; }
 .btn-icon {
-    width: 36px; height: 36px; border-radius: 8px; border: none;
+    width: 34px; height: 34px; border-radius: 8px; border: none;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.2s; font-size: 14px;
+    cursor: pointer; transition: all 0.2s; font-size: 13px;
 }
+.btn-edit { background: rgba(245,158,11,0.1); color: #f59e0b; }
+.btn-edit:hover { background: #f59e0b; color: white; }
 .btn-phone {
     background: rgba(59,130,246,0.1); color: #3b82f6; text-decoration: none;
 }
@@ -429,25 +472,25 @@
 .btn-trash:hover { background: #ef4444; color: white; }
 
 /* Siswa Tags */
-.siswa-involved { margin-bottom: 12px; }
-.siswa-label { font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-.siswa-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.siswa-involved { margin-bottom: 10px; }
+.siswa-label { font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+.siswa-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .siswa-tag {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px; background: #f3f4f6; border-radius: 20px;
-    font-size: 13px; font-weight: 500; color: #374151;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; background: #f3f4f6; border-radius: 16px;
+    font-size: 12px; font-weight: 500; color: #374151;
 }
 .siswa-initial {
-    width: 22px; height: 22px; border-radius: 50%; display: flex;
-    align-items: center; justify-content: center; font-size: 10px;
+    width: 20px; height: 20px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 9px;
     font-weight: 700; color: white; flex-shrink: 0;
 }
 .siswa-initial.laki { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
 .siswa-initial.perempuan { background: linear-gradient(135deg, #ec4899, #db2777); }
 
-.detail-row { margin-bottom: 8px; }
-.detail-label { font-size: 12px; font-weight: 600; color: #6b7280; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-.detail-text { margin: 0; font-size: 14px; color: #374151; line-height: 1.5; }
+.detail-row { margin-bottom: 6px; }
+.detail-label { font-size: 11px; font-weight: 600; color: #6b7280; display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+.detail-text { margin: 0; font-size: 13px; color: #374151; line-height: 1.5; }
 
 /* ===================== MODALS ===================== */
 .modal-overlay {
@@ -458,7 +501,7 @@
 .modal-overlay.active { display: flex; }
 
 .modal-container {
-    background: white; border-radius: 16px; width: 560px; max-width: 95%;
+    background: white; border-radius: 16px; width: 520px; max-width: 95%;
     max-height: 90vh; display: flex; flex-direction: column;
     box-shadow: 0 25px 60px rgba(0,0,0,0.3); animation: modalIn 0.3s ease;
 }
@@ -468,35 +511,35 @@
 }
 
 .modal-header {
-    padding: 20px 24px; border-bottom: 1px solid #e5e7eb;
+    padding: 16px 20px; border-bottom: 1px solid #e5e7eb;
     display: flex; justify-content: space-between; align-items: center;
 }
-.modal-header h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1f2937; display: flex; align-items: center; gap: 8px; }
+.modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #1f2937; display: flex; align-items: center; gap: 8px; }
 .modal-header h3 i { color: #ef4444; }
 .modal-header-siswa h3 i { color: #3b82f6; }
 .modal-close {
-    width: 32px; height: 32px; border: none; background: #f3f4f6;
-    border-radius: 8px; font-size: 20px; cursor: pointer; color: #6b7280;
+    width: 30px; height: 30px; border: none; background: #f3f4f6;
+    border-radius: 8px; font-size: 18px; cursor: pointer; color: #6b7280;
     display: flex; align-items: center; justify-content: center; transition: all 0.2s;
 }
 .modal-close:hover { background: #ef4444; color: white; }
 
-.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
 
 .modal-footer {
-    padding: 16px 24px; border-top: 1px solid #e5e7eb;
-    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 14px 20px; border-top: 1px solid #e5e7eb;
+    display: flex; justify-content: flex-end; gap: 8px;
 }
 
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-group { margin-bottom: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group { margin-bottom: 14px; }
 .form-group label {
-    display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;
+    display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px;
 }
 .form-group label i { margin-right: 4px; color: #6b7280; }
 .form-control {
-    width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px;
-    font-size: 14px; font-family: 'Poppins', sans-serif; transition: all 0.2s;
+    width: 100%; padding: 9px 12px; border: 2px solid #e5e7eb; border-radius: 10px;
+    font-size: 13px; font-family: 'Poppins', sans-serif; transition: all 0.2s;
     box-sizing: border-box;
 }
 .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
@@ -504,100 +547,140 @@ select.form-control { cursor: pointer; appearance: auto; }
 textarea.form-control { resize: vertical; }
 
 .btn-add-siswa {
-    display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
     background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white;
     border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
-    font-family: 'Poppins', sans-serif; transition: all 0.3s; font-size: 13px;
+    font-family: 'Poppins', sans-serif; transition: all 0.3s; font-size: 12px;
     box-shadow: 0 4px 12px rgba(59,130,246,0.3);
 }
 .btn-add-siswa:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(59,130,246,0.4); }
 
-.selected-siswa-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
-.no-siswa-msg { font-size: 13px; color: #9ca3af; margin: 0; }
+.selected-siswa-list { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.no-siswa-msg { font-size: 12px; color: #9ca3af; margin: 0; }
 
 .selected-siswa-chip {
-    display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px;
     background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #93c5fd;
-    border-radius: 20px; font-size: 13px; font-weight: 500; color: #1d4ed8;
+    border-radius: 16px; font-size: 12px; font-weight: 500; color: #1d4ed8;
 }
 .selected-siswa-chip .chip-remove {
-    width: 18px; height: 18px; border-radius: 50%; background: rgba(239,68,68,0.2);
-    border: none; color: #ef4444; cursor: pointer; font-size: 12px;
+    width: 16px; height: 16px; border-radius: 50%; background: rgba(239,68,68,0.2);
+    border: none; color: #ef4444; cursor: pointer; font-size: 11px;
     display: flex; align-items: center; justify-content: center; transition: all 0.2s;
 }
 .selected-siswa-chip .chip-remove:hover { background: #ef4444; color: white; }
 
 /* Siswa Search Modal */
 .modal-siswa-overlay { z-index: 10001; }
-.modal-siswa-container { width: 500px; }
+.modal-siswa-container { width: 480px; }
 
-.search-box { position: relative; margin-bottom: 16px; }
+.search-box { position: relative; margin-bottom: 14px; }
 .search-input {
-    width: 100%; padding: 12px 16px 12px 42px; border: 2px solid #e5e7eb;
-    border-radius: 12px; font-size: 14px; font-family: 'Poppins', sans-serif;
+    width: 100%; padding: 10px 14px 10px 38px; border: 2px solid #e5e7eb;
+    border-radius: 12px; font-size: 13px; font-family: 'Poppins', sans-serif;
     transition: all 0.2s; box-sizing: border-box;
 }
 .search-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-.search-icon-abs { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+.search-icon-abs { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 13px; }
 
 .selected-count-bar {
-    background: rgba(59,130,246,0.1); color: #1d4ed8; padding: 8px 14px;
-    border-radius: 8px; font-size: 13px; margin-bottom: 12px;
+    background: rgba(59,130,246,0.1); color: #1d4ed8; padding: 7px 12px;
+    border-radius: 8px; font-size: 12px; margin-bottom: 10px;
 }
 
-.siswa-search-results { max-height: 350px; overflow-y: auto; }
+.siswa-search-results { max-height: 300px; overflow-y: auto; }
 
-.search-placeholder { padding: 40px 20px; text-align: center; color: #9ca3af; }
-.search-placeholder i { font-size: 30px; margin-bottom: 10px; display: block; }
+.search-placeholder { padding: 30px 20px; text-align: center; color: #9ca3af; }
+.search-placeholder i { font-size: 26px; margin-bottom: 8px; display: block; }
+.search-placeholder p { font-size: 13px; }
 
 .siswa-result-item {
-    display: flex; align-items: center; gap: 12px; padding: 12px;
+    display: flex; align-items: center; gap: 10px; padding: 10px;
     border-radius: 10px; cursor: pointer; transition: all 0.2s;
-    border: 2px solid transparent; margin-bottom: 6px;
+    border: 2px solid transparent; margin-bottom: 4px;
 }
 .siswa-result-item:hover { background: #f8fafc; border-color: #e2e8f0; }
 .siswa-result-item.selected { background: #eff6ff; border-color: #3b82f6; }
 .siswa-result-item .siswa-avatar {
-    width: 40px; height: 40px; border-radius: 50%;
+    width: 36px; height: 36px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 14px; color: white; flex-shrink: 0;
+    font-weight: 700; font-size: 13px; color: white; flex-shrink: 0;
 }
 .siswa-result-item .siswa-avatar.laki { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
 .siswa-result-item .siswa-avatar.perempuan { background: linear-gradient(135deg, #ec4899, #db2777); }
 .siswa-result-info { flex: 1; min-width: 0; }
-.siswa-result-info .siswa-nama { font-weight: 600; font-size: 14px; color: #1f2937; }
-.siswa-result-info .siswa-meta { font-size: 12px; color: #6b7280; }
+.siswa-result-info .siswa-nama { font-weight: 600; font-size: 13px; color: #1f2937; }
+.siswa-result-info .siswa-meta { font-size: 11px; color: #6b7280; }
 .siswa-result-item .check-icon {
-    width: 24px; height: 24px; border: 2px solid #d1d5db; border-radius: 6px;
+    width: 22px; height: 22px; border: 2px solid #d1d5db; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; color: transparent; transition: all 0.2s;
+    font-size: 11px; color: transparent; transition: all 0.2s;
 }
 .siswa-result-item.selected .check-icon {
     background: #3b82f6; border-color: #3b82f6; color: white;
 }
 
 .btn-secondary {
-    padding: 10px 20px; background: #f3f4f6; color: #374151;
+    padding: 9px 18px; background: #f3f4f6; color: #374151;
     border: 1px solid #d1d5db; border-radius: 10px; font-weight: 600;
-    cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.2s;
+    cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.2s; font-size: 13px;
 }
 .btn-secondary:hover { background: #e5e7eb; }
 .btn-primary {
-    padding: 10px 20px; background: linear-gradient(135deg, #ef4444, #dc2626);
+    padding: 9px 18px; background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white; border: none; border-radius: 10px; font-weight: 600;
     cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.3s;
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 6px; font-size: 13px;
     box-shadow: 0 4px 12px rgba(239,68,68,0.3);
 }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239,68,68,0.4); }
+.btn-primary-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+}
+.btn-primary-warning:hover { box-shadow: 0 6px 16px rgba(245,158,11,0.4); }
 
-/* Responsive */
+/* ===================== RESPONSIVE ===================== */
 @media (max-width: 768px) {
-    .pelanggaran-page { padding: 15px; }
-    .stats-grid { grid-template-columns: 1fr; }
-    .form-row { grid-template-columns: 1fr; }
-    .modal-container { width: 100%; max-width: 95%; }
-    .card-header-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .pelanggaran-page { padding: 12px; }
+    .page-header-center { margin-bottom: 16px; }
+    .header-icon-large { width: 56px; height: 56px; font-size: 26px; border-radius: 14px; margin-bottom: 12px; }
+    .page-header-center h1 { font-size: 20px; }
+    .action-buttons-center { gap: 8px; margin-bottom: 14px; }
+    .date-input { padding: 9px 10px; font-size: 13px; }
+    .btn-add { padding: 9px 14px; font-size: 12px; }
+    .stats-grid { max-width: 100%; }
+    .stat-card { padding: 12px 14px; }
+    .stat-icon { width: 40px; height: 40px; font-size: 16px; }
+    .stat-info h3 { font-size: 18px; }
+    .container-header { padding: 12px 14px; }
+    .container-title h2 { font-size: 0.9rem; }
+    .pelanggaran-cards { padding: 10px; gap: 10px; }
+    .pelanggaran-card { padding: 12px; border-radius: 10px; }
+    .card-header-row { flex-direction: column; align-items: stretch; gap: 8px; }
+    .card-header-left { justify-content: space-between; }
+    .card-actions { justify-content: flex-end; }
+    .btn-icon { width: 32px; height: 32px; font-size: 12px; }
+    .siswa-tags { gap: 4px; }
+    .siswa-tag { padding: 3px 8px; font-size: 11px; }
+    .siswa-initial { width: 18px; height: 18px; font-size: 8px; }
+    .form-row { grid-template-columns: 1fr; gap: 0; }
+    .modal-container { width: 100%; max-width: 96%; border-radius: 14px; }
+    .modal-header { padding: 14px 16px; }
+    .modal-header h3 { font-size: 15px; }
+    .modal-body { padding: 16px; }
+    .modal-footer { padding: 12px 16px; }
+    .jenis-badge { font-size: 11px; padding: 4px 10px; }
+    .detail-text { font-size: 12px; }
+    .toast-notification { top: 10px; right: 10px; left: 10px; min-width: auto; }
+}
+
+@media (max-width: 400px) {
+    .pelanggaran-page { padding: 8px; }
+    .action-buttons-center { flex-direction: column; align-items: stretch; }
+    .filter-form { width: 100%; }
+    .date-input { width: 100%; }
+    .btn-add { justify-content: center; width: 100%; }
 }
 </style>
 
@@ -617,29 +700,47 @@ function closeInputModal() {
     document.getElementById('modalInput').classList.remove('active');
 }
 
+// ===== Edit Modal =====
+function openEditModal(data) {
+    const form = document.getElementById('formEditPelanggaran');
+    form.action = '{{ url("guru-bk/pelanggaran") }}/' + data.id;
+    document.getElementById('editTanggal').value = data.tanggal || '';
+    document.getElementById('editWaktu').value = data.waktu || '';
+    document.getElementById('editJenisPelanggaran').value = data.jenis_pelanggaran || '';
+    document.getElementById('editJenisLainnyaInput').value = data.jenis_lainnya || '';
+    document.getElementById('editDeskripsi').value = data.deskripsi || '';
+    document.getElementById('editSanksi').value = data.sanksi || '';
+    toggleEditJenisLainnya();
+    document.getElementById('modalEdit').classList.add('active');
+}
+function closeEditModal() {
+    document.getElementById('modalEdit').classList.remove('active');
+}
+
 // ===== Jenis Lainnya Toggle =====
 function toggleJenisLainnya() {
     const val = document.getElementById('jenisPelanggaran').value;
     const group = document.getElementById('jenisLainnyaGroup');
     const input = document.getElementById('jenisLainnyaInput');
-    if (val === 'Lainnya') {
-        group.style.display = 'block';
-        input.required = true;
-    } else {
-        group.style.display = 'none';
-        input.required = false;
-        input.value = '';
-    }
+    if (val === 'Lainnya') { group.style.display = 'block'; input.required = true; }
+    else { group.style.display = 'none'; input.required = false; input.value = ''; }
+}
+function toggleEditJenisLainnya() {
+    const val = document.getElementById('editJenisPelanggaran').value;
+    const group = document.getElementById('editJenisLainnyaGroup');
+    const input = document.getElementById('editJenisLainnyaInput');
+    if (val === 'Lainnya') { group.style.display = 'block'; input.required = true; }
+    else { group.style.display = 'none'; input.required = false; }
 }
 
 // ===== Siswa Search Modal =====
-let selectedSiswa = {}; // { id: { nama, jk, rombel } }
+let selectedSiswa = {};
+let siswaDataMap = {};
 let searchTimeout;
 
 function openSiswaModal() {
     document.getElementById('modalSiswa').classList.add('active');
     document.getElementById('searchSiswaInput').focus();
-    updateSearchResults();
 }
 function closeSiswaModal() {
     document.getElementById('modalSiswa').classList.remove('active');
@@ -649,9 +750,6 @@ function searchSiswaDebounced() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(searchSiswaAjax, 300);
 }
-
-// Store all fetched student data in a map for safe referencing
-let siswaDataMap = {};
 
 function searchSiswaAjax() {
     const query = document.getElementById('searchSiswaInput').value.trim();
@@ -685,7 +783,6 @@ function searchSiswaAjax() {
         }
         let html = '';
         data.forEach(s => {
-            // Store in map for safe access
             siswaDataMap[s.id] = { nama: s.nama, jk: s.jk || '', rombel: s.rombel_aktif || '-' };
             const isSelected = selectedSiswa[s.id] ? 'selected' : '';
             const avatarClass = s.jk === 'Laki-laki' ? 'laki' : 'perempuan';
@@ -717,7 +814,6 @@ function toggleSiswaById(id) {
             selectedSiswa[id] = { nama: data.nama, jk: data.jk, rombel: data.rombel };
         }
     }
-    // Update visual
     const items = document.querySelectorAll('.siswa-result-item');
     items.forEach(item => {
         if (parseInt(item.dataset.id) === id) {
@@ -747,18 +843,17 @@ function updateSelectedSiswaDisplay() {
     const container = document.getElementById('selectedSiswaList');
     const ids = Object.keys(selectedSiswa);
     if (ids.length === 0) {
-        container.innerHTML = '<p class="no-siswa-msg" id="noSiswaMsg">Belum ada siswa dipilih</p>';
+        container.innerHTML = '<p class="no-siswa-msg">Belum ada siswa dipilih</p>';
         return;
     }
     let html = '';
     ids.forEach(id => {
         const s = selectedSiswa[id];
-        html += `
-        <div class="selected-siswa-chip">
-            <input type="hidden" name="siswa_ids[]" value="${id}">
-            ${escapeHtml(s.nama)}
-            <button type="button" class="chip-remove" onclick="removeSiswa(${id})">×</button>
-        </div>`;
+        html += '<div class="selected-siswa-chip">' +
+            '<input type="hidden" name="siswa_ids[]" value="' + id + '">' +
+            escapeHtml(s.nama) +
+            '<button type="button" class="chip-remove" onclick="removeSiswa(' + id + ')">×</button>' +
+        '</div>';
     });
     container.innerHTML = html;
 }
@@ -767,19 +862,6 @@ function removeSiswa(id) {
     delete selectedSiswa[id];
     updateSelectedSiswaDisplay();
     updateSelectedCount();
-}
-
-function updateSearchResults() {
-    // Re-highlight selected items from stored state
-    const items = document.querySelectorAll('.siswa-result-item');
-    items.forEach(item => {
-        const id = parseInt(item.dataset.id);
-        if (selectedSiswa[id]) {
-            item.classList.add('selected');
-        } else {
-            item.classList.remove('selected');
-        }
-    });
 }
 
 function escapeHtml(str) {
@@ -791,12 +873,9 @@ function escapeHtml(str) {
 
 // Close modals on overlay click
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('modalInput').addEventListener('click', function(e) {
-        if (e.target === this) closeInputModal();
-    });
-    document.getElementById('modalSiswa').addEventListener('click', function(e) {
-        if (e.target === this) closeSiswaModal();
-    });
+    document.getElementById('modalInput').addEventListener('click', function(e) { if (e.target === this) closeInputModal(); });
+    document.getElementById('modalEdit').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
+    document.getElementById('modalSiswa').addEventListener('click', function(e) { if (e.target === this) closeSiswaModal(); });
 });
 </script>
 @endsection

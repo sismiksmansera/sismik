@@ -407,6 +407,7 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     // Pelanggaran routes
     Route::get('/pelanggaran', [\App\Http\Controllers\GuruBK\PelanggaranController::class, 'index'])->name('pelanggaran');
     Route::post('/pelanggaran', [\App\Http\Controllers\GuruBK\PelanggaranController::class, 'store'])->name('pelanggaran.store');
+    Route::put('/pelanggaran/{id}', [\App\Http\Controllers\GuruBK\PelanggaranController::class, 'update'])->name('pelanggaran.update');
     Route::delete('/pelanggaran/{id}', [\App\Http\Controllers\GuruBK\PelanggaranController::class, 'destroy'])->name('pelanggaran.destroy');
     Route::post('/pelanggaran/search-siswa', [\App\Http\Controllers\GuruBK\PelanggaranController::class, 'searchSiswa'])->name('pelanggaran.search-siswa');
 });

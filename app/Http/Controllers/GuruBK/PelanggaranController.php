@@ -84,6 +84,35 @@ class PelanggaranController extends Controller
     }
 
     /**
+     * Update pelanggaran
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'tanggal' => 'required|date',
+            'jenis_pelanggaran' => 'required|string',
+        ]);
+
+        try {
+            $pelanggaran = Pelanggaran::findOrFail($id);
+            $pelanggaran->update([
+                'tanggal' => $request->tanggal,
+                'waktu' => $request->waktu,
+                'jenis_pelanggaran' => $request->jenis_pelanggaran,
+                'jenis_lainnya' => $request->jenis_pelanggaran === 'Lainnya' ? $request->jenis_lainnya : null,
+                'deskripsi' => $request->deskripsi,
+                'sanksi' => $request->sanksi,
+            ]);
+
+            return redirect()->route('guru_bk.pelanggaran', ['tanggal' => $request->tanggal])
+                ->with('success', 'Data pelanggaran berhasil diperbarui.');
+        } catch (\Exception $e) {
+            Log::error("Error updating pelanggaran: " . $e->getMessage());
+            return back()->with('error', 'Gagal memperbarui data pelanggaran.');
+        }
+    }
+
+    /**
      * AJAX: Search students by name/nisn/nis
      */
     public function searchSiswa(Request $request)
