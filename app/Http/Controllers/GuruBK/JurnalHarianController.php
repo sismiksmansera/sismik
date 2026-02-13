@@ -175,7 +175,7 @@ class JurnalHarianController extends Controller
         // 4. Jurnal Manual
         if (\Illuminate\Support\Facades\Schema::hasTable('jurnal_manual')) {
             $manual = DB::table('jurnal_manual as jm')
-                ->leftJoin('siswa as s', 'jm.nisn', '=', 's.nisn')
+                ->leftJoin('siswa as s', DB::raw('jm.nisn COLLATE utf8mb4_general_ci'), '=', 's.nisn')
                 ->select(
                     'jm.id', 'jm.tanggal', 'jm.waktu', 'jm.jenis_aktivitas',
                     'jm.tipe_subyek', 'jm.subyek_manual', 'jm.deskripsi',
