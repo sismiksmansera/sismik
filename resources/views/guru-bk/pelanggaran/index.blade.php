@@ -650,6 +650,9 @@ function searchSiswaDebounced() {
     searchTimeout = setTimeout(searchSiswaAjax, 300);
 }
 
+// Store all fetched student data in a map for safe referencing
+let siswaDataMap = {};
+
 function searchSiswaAjax() {
     const query = document.getElementById('searchSiswaInput').value.trim();
     if (query.length < 2) {
@@ -665,11 +668,15 @@ function searchSiswaAjax() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
         },
         body: JSON.stringify({ q: query })
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
     .then(data => {
         if (data.length === 0) {
             document.getElementById('siswaSearchResults').innerHTML =
@@ -678,31 +685,37 @@ function searchSiswaAjax() {
         }
         let html = '';
         data.forEach(s => {
+            // Store in map for safe access
+            siswaDataMap[s.id] = { nama: s.nama, jk: s.jk || '', rombel: s.rombel_aktif || '-' };
             const isSelected = selectedSiswa[s.id] ? 'selected' : '';
             const avatarClass = s.jk === 'Laki-laki' ? 'laki' : 'perempuan';
-            html += `
-            <div class="siswa-result-item ${isSelected}" data-id="${s.id}" onclick="toggleSiswaSelect(${s.id}, '${escapeHtml(s.nama)}', '${s.jk || ''}', '${escapeHtml(s.rombel_aktif || '-')}')">
-                <div class="siswa-avatar ${avatarClass}">${s.nama.charAt(0).toUpperCase()}</div>
-                <div class="siswa-result-info">
-                    <div class="siswa-nama">${escapeHtml(s.nama)}</div>
-                    <div class="siswa-meta">${escapeHtml(s.rombel_aktif || '-')} | ${s.nisn || s.nis || '-'}</div>
-                </div>
-                <div class="check-icon"><i class="fas fa-check"></i></div>
-            </div>`;
+            const initial = s.nama ? s.nama.charAt(0).toUpperCase() : '?';
+            html += '<div class="siswa-result-item ' + isSelected + '" data-id="' + s.id + '" onclick="toggleSiswaById(' + s.id + ')">' +
+                '<div class="siswa-avatar ' + avatarClass + '">' + initial + '</div>' +
+                '<div class="siswa-result-info">' +
+                    '<div class="siswa-nama">' + escapeHtml(s.nama) + '</div>' +
+                    '<div class="siswa-meta">' + escapeHtml(s.rombel_aktif || '-') + ' | ' + (s.nisn || s.nis || '-') + '</div>' +
+                '</div>' +
+                '<div class="check-icon"><i class="fas fa-check"></i></div>' +
+            '</div>';
         });
         document.getElementById('siswaSearchResults').innerHTML = html;
     })
-    .catch(() => {
+    .catch(err => {
+        console.error('Search error:', err);
         document.getElementById('siswaSearchResults').innerHTML =
-            '<div class="search-placeholder"><i class="fas fa-exclamation-triangle"></i><p>Terjadi kesalahan</p></div>';
+            '<div class="search-placeholder"><i class="fas fa-exclamation-triangle"></i><p>Terjadi kesalahan saat mencari</p></div>';
     });
 }
 
-function toggleSiswaSelect(id, nama, jk, rombel) {
+function toggleSiswaById(id) {
     if (selectedSiswa[id]) {
         delete selectedSiswa[id];
     } else {
-        selectedSiswa[id] = { nama, jk, rombel };
+        const data = siswaDataMap[id];
+        if (data) {
+            selectedSiswa[id] = { nama: data.nama, jk: data.jk, rombel: data.rombel };
+        }
     }
     // Update visual
     const items = document.querySelectorAll('.siswa-result-item');
