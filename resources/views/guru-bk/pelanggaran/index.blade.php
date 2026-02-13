@@ -33,12 +33,6 @@
 
     {{-- Action Buttons --}}
     <div class="action-buttons-center">
-        <form method="GET" action="{{ route('guru_bk.pelanggaran') }}" class="filter-form">
-            <div class="date-filter-group">
-                <label><i class="fas fa-calendar-alt"></i> Tanggal</label>
-                <input type="date" name="tanggal" value="{{ $tanggal }}" onchange="this.form.submit()" class="date-input">
-            </div>
-        </form>
         <button onclick="openInputModal()" class="btn-add">
             <i class="fas fa-plus-circle"></i> Input Pelanggaran
         </button>
@@ -96,6 +90,9 @@
                             <i class="fas {{ $icon }}"></i>
                             {{ $item->jenis_pelanggaran === 'Lainnya' && $item->jenis_lainnya ? $item->jenis_lainnya : $item->jenis_pelanggaran }}
                         </div>
+                        <span class="waktu-badge">
+                            <i class="fas fa-calendar-alt"></i> {{ \Carbon\Carbon::parse($item->tanggal)->translatedFormat('d M Y') }}
+                        </span>
                         <span class="waktu-badge">
                             <i class="fas fa-clock"></i> {{ $item->waktu ? \Carbon\Carbon::parse($item->waktu)->format('H:i') : '-' }}
                         </span>
@@ -496,14 +493,16 @@
 .modal-overlay {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-    z-index: 10000; align-items: center; justify-content: center;
+    z-index: 10000; align-items: flex-start; justify-content: center;
+    overflow-y: auto; padding: 20px 0;
 }
 .modal-overlay.active { display: flex; }
 
 .modal-container {
     background: white; border-radius: 16px; width: 520px; max-width: 95%;
-    max-height: 90vh; display: flex; flex-direction: column;
+    display: flex; flex-direction: column; margin: auto;
     box-shadow: 0 25px 60px rgba(0,0,0,0.3); animation: modalIn 0.3s ease;
+    flex-shrink: 0;
 }
 @keyframes modalIn {
     from { transform: scale(0.9) translateY(20px); opacity: 0; }

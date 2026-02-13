@@ -13,20 +13,19 @@ use Illuminate\Support\Facades\Log;
 class PelanggaranController extends Controller
 {
     /**
-     * Display pelanggaran list, filtered by date
+     * Display all pelanggaran list
      */
     public function index(Request $request)
     {
         $guruBk = Auth::guard('guru_bk')->user();
-        $tanggal = $request->input('tanggal', date('Y-m-d'));
 
-        $pelanggaranList = Pelanggaran::where('tanggal', $tanggal)
-            ->with('siswa')
+        $pelanggaranList = Pelanggaran::with('siswa')
+            ->orderBy('tanggal', 'desc')
             ->orderBy('waktu', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('guru-bk.pelanggaran.index', compact('guruBk', 'tanggal', 'pelanggaranList'));
+        return view('guru-bk.pelanggaran.index', compact('guruBk', 'pelanggaranList'));
     }
 
     /**
