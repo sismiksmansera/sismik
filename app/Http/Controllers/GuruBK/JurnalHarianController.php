@@ -23,7 +23,7 @@ class JurnalHarianController extends Controller
         $tanggalMulai = $request->get('tanggal_mulai', date('Y-m-d'));
         $tanggalAkhir = $request->get('tanggal_akhir', date('Y-m-d'));
 
-        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir, $guruBK->id);
+        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir, $guruBK->id, $guruBK->nama);
 
         $stats = [
             'total' => $activities->count(),
@@ -31,6 +31,7 @@ class JurnalHarianController extends Controller
             'panggilan' => $activities->where('type', 'panggilan')->count(),
             'pelanggaran' => $activities->where('type', 'pelanggaran')->count(),
             'manual' => $activities->where('type', 'manual')->count(),
+            'bimbingan_wali' => $activities->where('type', 'bimbingan_wali')->count(),
         ];
 
         return view('guru-bk.jurnal-harian', compact(
@@ -53,7 +54,7 @@ class JurnalHarianController extends Controller
         $tanggalMulai = $request->get('tanggal_mulai', date('Y-m-d'));
         $tanggalAkhir = $request->get('tanggal_akhir', date('Y-m-d'));
 
-        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir, $guruBK->id);
+        $activities = $this->getActivities($tanggalMulai, $tanggalAkhir, $guruBK->id, $guruBK->nama);
 
         return view('guru-bk.jurnal-harian-print', compact(
             'guruBK', 'periodeAktif', 'sekolah', 'activities',
@@ -61,7 +62,7 @@ class JurnalHarianController extends Controller
         ));
     }
 
-    private function getActivities($tanggalMulai, $tanggalAkhir, $guruBkId)
+    private function getActivities($tanggalMulai, $tanggalAkhir, $guruBkId, $guruNama = '')
     {
         $activities = collect();
 
@@ -208,6 +209,39 @@ class JurnalHarianController extends Controller
                     'status' => '',
                     'guru_bk' => '',
                     'manual_id' => $item->id,
+                ]);
+            }
+        }
+
+        // 5. Catatan Guru Wali (Bimbingan sebagai Wali Kelas)
+        if (\Illuminate\Support\Facades\Schema::hasTable('catatan_guru_wali') && $guruNama) {
+            $wali = DB::table('catatan_guru_wali as cw')
+                ->leftJoin('siswa as s', 'cw.siswa_id', '=', 's.id')
+                ->select(
+                    'cw.id', 'cw.tanggal_pencatatan', 'cw.jenis_bimbingan',
+                    'cw.catatan', 'cw.perkembangan', 'cw.created_at',
+                    's.nama as nama_siswa', 's.jk', 's.nama_rombel'
+                )
+                ->where('cw.guru_nama', $guruNama)
+                ->whereBetween('cw.tanggal_pencatatan', [$tanggalMulai, $tanggalAkhir])
+                ->orderBy('cw.tanggal_pencatatan', 'desc')
+                ->get();
+
+            foreach ($wali as $item) {
+                $activities->push((object)[
+                    'type' => 'bimbingan_wali',
+                    'icon' => 'fa-chalkboard-teacher',
+                    'color' => '#06b6d4',
+                    'label' => 'Bimbingan Wali Kelas: ' . $item->jenis_bimbingan,
+                    'tanggal' => $item->tanggal_pencatatan,
+                    'waktu' => $item->created_at ? Carbon::parse($item->created_at)->format('H:i') : '-',
+                    'nama_siswa' => $item->nama_siswa ?? '-',
+                    'jk' => $item->jk ?? '',
+                    'rombel' => $item->nama_rombel ?? '-',
+                    'detail' => $item->catatan,
+                    'sub_detail' => $item->perkembangan ? 'Perkembangan: ' . $item->perkembangan : '',
+                    'status' => '',
+                    'guru_bk' => $guruNama,
                 ]);
             }
         }
