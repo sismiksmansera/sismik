@@ -36,7 +36,7 @@ Route::get('/', function () {
 
 // Secret Admin Access (for Maintenance Mode)
 Route::get('/admin-access/{key}', function ($key) {
-    $secretKey = env('MAINTENANCE_SECRET', 'sismik-admin-2026');
+    $secretKey = env('MAINTENANCE_SECRET', 'Admin123');
     if ($key === $secretKey) {
         session(['admin_maintenance_access' => true]);
         return redirect()->route('login');
