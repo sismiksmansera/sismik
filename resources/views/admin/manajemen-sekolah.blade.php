@@ -328,6 +328,10 @@
                                         onclick="openJamPelajaran({{ json_encode($periodik) }})">
                                         <i class="fas fa-clock"></i>
                                     </button>
+                                    <button class="btn-action" title="Setting Hari Non Efektif KBM" 
+                                        onclick="openHariEfektifModal()" style="background: #f59e0b; color: white;">
+                                        <i class="fas fa-calendar-times"></i>
+                                    </button>
                                     <form action="{{ route('admin.periodik.destroy', $periodik->id) }}" 
                                         method="POST" style="display:inline;" 
                                         onsubmit="return confirm('Yakin hapus data ini?')">
@@ -796,6 +800,104 @@
                 <i class="fas fa-save"></i> Simpan Jam Pelajaran
             </button>
         </div>
+</div>
+</div>
+
+<!-- Modal Setting Hari Non Efektif KBM -->
+<div class="modal-overlay" id="modalHariEfektif">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-calendar-times" style="color: var(--primary);"></i> Setting Hari Non Efektif KBM</h3>
+            <button class="modal-close" onclick="closeModal('modalHariEfektif')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Daftar tanggal non efektif -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #374151;">Daftar Hari Non Efektif KBM</h4>
+                    <span id="heCount" style="background: #f59e0b; color: white; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600;">{{ $hariEfektifList->count() }} data</span>
+                </div>
+                <div id="hariEfektifListContainer" style="max-height: 280px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 10px;">
+                    @if($hariEfektifList->isEmpty())
+                    <div id="heEmptyState" style="text-align: center; padding: 30px 20px; color: #9ca3af;">
+                        <i class="fas fa-calendar-check" style="font-size: 32px; margin-bottom: 8px; display: block; color: #d1d5db;"></i>
+                        <p style="margin: 0; font-size: 13px;">Belum ada data. Semua hari dianggap efektif.</p>
+                    </div>
+                    @else
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background: #f8fafc; border-bottom: 2px solid #e5e7eb; position: sticky; top: 0;">
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600; color: #374151;">Tanggal</th>
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600; color: #374151;">Status</th>
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600; color: #374151;">Keterangan</th>
+                                <th style="padding: 8px 12px; text-align: center; font-weight: 600; color: #374151; width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="heTableBody">
+                            @foreach($hariEfektifList->sortBy('tanggal') as $he)
+                            <tr style="border-bottom: 1px solid #f1f5f9;" id="he-row-{{ $he->tanggal }}">
+                                <td style="padding: 8px 12px; font-weight: 500; font-size: 12px;">
+                                    {{ \Carbon\Carbon::parse($he->tanggal)->isoFormat('ddd, D MMM Y') }}
+                                </td>
+                                <td style="padding: 8px 12px;">
+                                    @if($he->status === 'Libur')
+                                    <span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600;">Libur</span>
+                                    @else
+                                    <span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600;">Non-KBM</span>
+                                    @endif
+                                </td>
+                                <td style="padding: 8px 12px; color: #4b5563; font-size: 12px;">{{ $he->keterangan }}</td>
+                                <td style="padding: 8px 12px; text-align: center;">
+                                    <button onclick="deleteHariEfektif('{{ $he->tanggal }}')" style="background: none; border: none; cursor: pointer; color: #ef4444; font-size: 13px;" title="Hapus">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Form Tambah -->
+            <div style="border-top: 2px solid #e5e7eb; padding-top: 16px;">
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-plus-circle" style="color: #3b82f6;"></i> Tambah Tanggal Non Efektif KBM
+                </h4>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label" style="font-size: 13px;">Tanggal <small style="color: #9ca3af;">(bisa input beberapa tanggal sekaligus)</small></label>
+                    <div id="heDateInputs">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <input type="date" class="form-control he-date-input" style="flex: 1; padding: 8px 12px;">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addDateInput()" style="background: none; border: 1px dashed #d1d5db; color: #6b7280; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; width: 100%; margin-top: 4px; transition: all 0.2s;" onmouseover="this.style.borderColor='#3b82f6'; this.style.color='#3b82f6';" onmouseout="this.style.borderColor='#d1d5db'; this.style.color='#6b7280';">
+                        <i class="fas fa-plus"></i> Tambah Tanggal Lainnya
+                    </button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 13px;">Status</label>
+                        <select id="heStatus" class="form-select" style="padding: 8px 12px;">
+                            <option value="Libur">Libur</option>
+                            <option value="Non-KBM">Non-KBM</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 13px;">Keterangan Kegiatan</label>
+                        <input type="text" id="heKeterangan" class="form-control" placeholder="Contoh: Hari Raya Idul Fitri" style="padding: 8px 12px;">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modalHariEfektif')">Tutup</button>
+            <button type="button" class="btn btn-primary" onclick="saveHariEfektif()" id="heSaveBtn">
+                <i class="fas fa-save"></i> Simpan
+            </button>
+        </div>
     </div>
 </div>
 @endsection
@@ -1201,6 +1303,161 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
         btn.disabled = true;
         return true;
+    }
+    // ========== HARI EFEKTIF FUNCTIONS ==========
+    function openHariEfektifModal() {
+        // Reset form fields
+        document.getElementById('heDateInputs').innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <input type="date" class="form-control he-date-input" style="flex: 1; padding: 8px 12px;">
+            </div>
+        `;
+        document.getElementById('heStatus').value = 'Libur';
+        document.getElementById('heKeterangan').value = '';
+        openModal('modalHariEfektif');
+    }
+
+    function addDateInput() {
+        const container = document.getElementById('heDateInputs');
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-bottom: 6px;';
+        row.innerHTML = `
+            <input type="date" class="form-control he-date-input" style="flex: 1; padding: 8px 12px;">
+            <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer; color: #ef4444; font-size: 16px; padding: 4px;" title="Hapus">
+                <i class="fas fa-times-circle"></i>
+            </button>
+        `;
+        container.appendChild(row);
+    }
+
+    function saveHariEfektif() {
+        const dateInputs = document.querySelectorAll('.he-date-input');
+        const tanggal = [];
+        dateInputs.forEach(input => {
+            if (input.value) tanggal.push(input.value);
+        });
+        
+        if (tanggal.length === 0) { alert('Harap isi minimal 1 tanggal.'); return; }
+        
+        const status = document.getElementById('heStatus').value;
+        const keterangan = document.getElementById('heKeterangan').value.trim();
+        
+        if (!keterangan) { alert('Keterangan kegiatan harus diisi.'); return; }
+        
+        const btn = document.getElementById('heSaveBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+        btn.disabled = true;
+        
+        fetch('{{ route("admin.hari-efektif.save") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ tanggal, status, keterangan })
+        })
+        .then(r => r.json())
+        .then(result => {
+            btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+            btn.disabled = false;
+            if (result.success) {
+                alert(result.message);
+                // Reset form inputs
+                document.getElementById('heDateInputs').innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <input type="date" class="form-control he-date-input" style="flex: 1; padding: 8px 12px;">
+                    </div>
+                `;
+                document.getElementById('heKeterangan').value = '';
+                // Reload list via AJAX
+                refreshHariEfektifList();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(() => {
+            btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+            btn.disabled = false;
+        });
+    }
+
+    function deleteHariEfektif(tanggal) {
+        if (!confirm('Yakin ingin menghapus? Tanggal ini akan kembali menjadi hari efektif.')) return;
+        
+        fetch('{{ route("admin.hari-efektif.delete") }}', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ tanggal })
+        })
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                refreshHariEfektifList();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        });
+    }
+
+    function refreshHariEfektifList() {
+        fetch('{{ route("admin.hari-efektif.get") }}')
+        .then(r => r.json())
+        .then(result => {
+            const container = document.getElementById('hariEfektifListContainer');
+            const countEl = document.getElementById('heCount');
+            
+            if (!result.success || result.data.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px 20px; color: #9ca3af;">
+                        <i class="fas fa-calendar-check" style="font-size: 32px; margin-bottom: 8px; display: block; color: #d1d5db;"></i>
+                        <p style="margin: 0; font-size: 13px;">Belum ada data. Semua hari dianggap efektif.</p>
+                    </div>
+                `;
+                countEl.textContent = '0 data';
+                return;
+            }
+            
+            countEl.textContent = result.data.length + ' data';
+            
+            const namaHari = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+            const namaBulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            
+            let html = `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                    <tr style="background: #f8fafc; border-bottom: 2px solid #e5e7eb; position: sticky; top: 0;">
+                        <th style="padding: 8px 12px; text-align: left; font-weight: 600; color: #374151;">Tanggal</th>
+                        <th style="padding: 8px 12px; text-align: left; font-weight: 600; color: #374151;">Status</th>
+                        <th style="padding: 8px 12px; text-align: left; font-weight: 600; color: #374151;">Keterangan</th>
+                        <th style="padding: 8px 12px; text-align: center; font-weight: 600; color: #374151; width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            result.data.forEach(item => {
+                const d = new Date(item.tanggal);
+                const hari = namaHari[d.getDay()];
+                const tgl = d.getDate();
+                const bln = namaBulan[d.getMonth()];
+                const thn = d.getFullYear();
+                const dateStr = hari + ', ' + tgl + ' ' + bln + ' ' + thn;
+                
+                const statusBg = item.status === 'Libur' ? '#ef4444' : '#f59e0b';
+                
+                html += `
+                    <tr style="border-bottom: 1px solid #f1f5f9;" id="he-row-${item.tanggal}">
+                        <td style="padding: 8px 12px; font-weight: 500; font-size: 12px;">${dateStr}</td>
+                        <td style="padding: 8px 12px;">
+                            <span style="background: ${statusBg}; color: white; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600;">${item.status}</span>
+                        </td>
+                        <td style="padding: 8px 12px; color: #4b5563; font-size: 12px;">${item.keterangan}</td>
+                        <td style="padding: 8px 12px; text-align: center;">
+                            <button onclick="deleteHariEfektif('${item.tanggal}')" style="background: none; border: none; cursor: pointer; color: #ef4444; font-size: 13px;" title="Hapus">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        });
     }
 </script>
 @endpush

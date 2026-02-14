@@ -12,6 +12,7 @@ use App\Models\PresensiSiswa;
 use App\Models\AdminSekolah;
 use App\Models\Rombel;
 use App\Services\EffectiveDateService;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -214,6 +215,14 @@ class DashboardController extends Controller
             ->first();
         }
 
+        // Check hari efektif (libur / non-KBM)
+        $hariEfektif = null;
+        if (Schema::hasTable('hari_efektif')) {
+            $hariEfektif = DB::table('hari_efektif')
+                ->where('tanggal', $tanggalHariIni)
+                ->first();
+        }
+
         return view('siswa.dashboard', compact(
             'siswa',
             'periodik',
@@ -225,7 +234,8 @@ class DashboardController extends Controller
             'tanggalHariIni',
             'tanggalFormatted',
             'isTesting',
-            'jadwalPerMapel'
+            'jadwalPerMapel',
+            'hariEfektif'
         ));
     }
     

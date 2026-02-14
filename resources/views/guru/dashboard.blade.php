@@ -497,6 +497,28 @@
                 </div>
             </div>
 
+            @if(isset($hariEfektif) && $hariEfektif)
+            <!-- Hari Efektif Banner -->
+            @php
+                $isLibur = $hariEfektif->status === 'Libur';
+                $bannerBg = $isLibur ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)';
+                $bannerIcon = $isLibur ? 'fa-calendar-times' : 'fa-info-circle';
+                $bannerLabel = $isLibur ? 'HARI LIBUR' : 'NON-KBM';
+            @endphp
+            <div style="background: {{ $bannerBg }}; color: white; padding: 16px 24px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 15px {{ $isLibur ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.3)' }};">
+                <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas {{ $bannerIcon }}" style="font-size: 22px;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 16px; margin-bottom: 2px;">
+                        <i class="fas fa-exclamation-triangle"></i> {{ $bannerLabel }}
+                    </div>
+                    <div style="font-size: 14px; opacity: 0.95;">{{ $hariEfektif->keterangan }}</div>
+                    <div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">Jadwal mengajar hari ini tidak aktif.</div>
+                </div>
+            </div>
+            @endif
+
             @if(empty($jadwalPerMapelRombel))
                 <div class="empty-state">
                     <i class="fas fa-calendar-times"></i>
@@ -504,7 +526,7 @@
                     <p>Tidak ada jadwal mengajar untuk hari {{ $hariIni }}</p>
                 </div>
             @else
-                <div class="schedule-grid">
+                <div class="schedule-grid" style="{{ (isset($hariEfektif) && $hariEfektif) ? 'opacity: 0.5; pointer-events: none; filter: grayscale(40%);' : '' }}">
                     @foreach($jadwalPerMapelRombel as $jadwal)
                         @php
                             $jamText = \App\Http\Controllers\Guru\DashboardController::formatJamRange($jadwal['jam_list']);

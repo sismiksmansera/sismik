@@ -75,6 +75,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/login-settings/overlay', [ManajemenSekolahController::class, 'saveOverlaySettings'])->name('login.save-overlay');
     Route::get('/testing-date', [ManajemenSekolahController::class, 'getTestingDate'])->name('testing-date.get');
     Route::post('/testing-date', [ManajemenSekolahController::class, 'saveTestingDate'])->name('testing-date.save');
+    Route::get('/hari-efektif', [ManajemenSekolahController::class, 'getHariEfektif'])->name('hari-efektif.get');
+    Route::post('/hari-efektif', [ManajemenSekolahController::class, 'saveHariEfektif'])->name('hari-efektif.save');
+    Route::delete('/hari-efektif', [ManajemenSekolahController::class, 'deleteHariEfektif'])->name('hari-efektif.delete');
     
     // Backup & Restore
     Route::get('/backup-restore', [BackupController::class, 'index'])->name('backup-restore');

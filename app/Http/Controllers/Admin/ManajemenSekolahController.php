@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Models\DataPeriodik;
@@ -47,13 +49,20 @@ class ManajemenSekolahController extends Controller
         
         // Get login settings
         $loginSettings = LoginSettings::first();
+
+        // Get hari efektif data
+        $hariEfektifList = collect();
+        if (Schema::hasTable('hari_efektif')) {
+            $hariEfektifList = DB::table('hari_efektif')->orderBy('tanggal', 'desc')->get();
+        }
         
         return view('admin.manajemen-sekolah', compact(
             'admin',
             'periodikList',
             'adminList',
             'guruList',
-            'loginSettings'
+            'loginSettings',
+            'hariEfektifList'
         ));
     }
 
@@ -435,5 +444,93 @@ class ManajemenSekolahController extends Controller
         Cache::forget('login_settings');
 
         return response()->json(['success' => true, 'message' => 'Pengaturan testing date berhasil disimpan!']);
+    }
+
+    /**
+     * Get hari efektif data (AJAX)
+     */
+    public function getHariEfektif(Request $request)
+    {
+        // Auto-create table if needed
+        if (!Schema::hasTable('hari_efektif')) {
+            Schema::create('hari_efektif', function ($table) {
+                $table->id();
+                $table->date('tanggal')->unique();
+                $table->enum('status', ['Libur', 'Non-KBM']);
+                $table->string('keterangan');
+                $table->timestamps();
+                $table->index('tanggal');
+            });
+        }
+
+        $query = DB::table('hari_efektif');
+
+        if ($request->has('bulan') && $request->has('tahun')) {
+            $query->whereYear('tanggal', $request->input('tahun'))
+                  ->whereMonth('tanggal', $request->input('bulan'));
+        }
+
+        $data = $query->orderBy('tanggal', 'desc')->get();
+
+        return response()->json(['success' => true, 'data' => $data]);
+    }
+
+    /**
+     * Save hari efektif setting (AJAX) - supports multiple dates
+     */
+    public function saveHariEfektif(Request $request)
+    {
+        // Auto-create table if needed
+        if (!Schema::hasTable('hari_efektif')) {
+            Schema::create('hari_efektif', function ($table) {
+                $table->id();
+                $table->date('tanggal')->unique();
+                $table->enum('status', ['Libur', 'Non-KBM']);
+                $table->string('keterangan');
+                $table->timestamps();
+                $table->index('tanggal');
+            });
+        }
+
+        $request->validate([
+            'tanggal' => 'required|array|min:1',
+            'tanggal.*' => 'required|date',
+            'status' => 'required|in:Libur,Non-KBM',
+            'keterangan' => 'required|string|max:255',
+        ]);
+
+        $count = 0;
+        foreach ($request->tanggal as $tgl) {
+            DB::table('hari_efektif')->updateOrInsert(
+                ['tanggal' => $tgl],
+                [
+                    'status' => $request->status,
+                    'keterangan' => $request->keterangan,
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+            $count++;
+        }
+
+        return response()->json(['success' => true, 'message' => $count . ' tanggal berhasil disimpan!']);
+    }
+
+    /**
+     * Delete hari efektif setting (AJAX)
+     */
+    public function deleteHariEfektif(Request $request)
+    {
+        $tanggal = $request->input('tanggal');
+        
+        if (!$tanggal) {
+            return response()->json(['success' => false, 'message' => 'Tanggal diperlukan.']);
+        }
+
+        if (Schema::hasTable('hari_efektif')) {
+            DB::table('hari_efektif')->where('tanggal', $tanggal)->delete();
+        }
+
+        return response()->json(['success' => true, 'message' => 'Setting hari efektif berhasil dihapus.']);
     }
 }

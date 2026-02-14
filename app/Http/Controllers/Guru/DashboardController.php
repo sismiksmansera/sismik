@@ -10,6 +10,7 @@ use App\Models\Rombel;
 use App\Models\DataPeriodik;
 use App\Models\AdminSekolah;
 use App\Services\EffectiveDateService;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -184,10 +185,19 @@ class DashboardController extends Controller
                 ->first();
         }
 
+        // Check hari efektif (libur / non-KBM)
+        $hariEfektif = null;
+        if (Schema::hasTable('hari_efektif')) {
+            $hariEfektif = DB::table('hari_efektif')
+                ->where('tanggal', $tanggalHariIni)
+                ->first();
+        }
+
         return view('guru.dashboard', compact(
             'guru', 'periodik', 'rombelWali', 'isImpersonating',
             'hariIni', 'tanggalHariIni', 'jadwalPerMapelRombel', 'jamSetting',
-            'jumlahKelasHariIni', 'totalJamHariIni', 'persentasePresensi', 'isTesting'
+            'jumlahKelasHariIni', 'totalJamHariIni', 'persentasePresensi', 'isTesting',
+            'hariEfektif'
         ));
     }
     

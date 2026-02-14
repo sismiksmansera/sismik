@@ -90,6 +90,28 @@
                 <span class="jadwal-count">{{ count($jadwalPerMapel) }} Mapel</span>
             </div>
             <div class="card-body" style="padding: 20px;">
+                @if(isset($hariEfektif) && $hariEfektif)
+                <!-- Hari Efektif Banner -->
+                @php
+                    $isLibur = $hariEfektif->status === 'Libur';
+                    $bannerBg = $isLibur ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)';
+                    $bannerIcon = $isLibur ? 'fa-calendar-times' : 'fa-info-circle';
+                    $bannerLabel = $isLibur ? 'HARI LIBUR' : 'NON-KBM';
+                @endphp
+                <div style="background: {{ $bannerBg }}; color: white; padding: 14px 20px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px {{ $isLibur ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)' }};">
+                    <div style="width: 42px; height: 42px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas {{ $bannerIcon }}" style="font-size: 18px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; font-size: 14px; margin-bottom: 2px;">
+                            <i class="fas fa-exclamation-triangle"></i> {{ $bannerLabel }}
+                        </div>
+                        <div style="font-size: 13px; opacity: 0.95;">{{ $hariEfektif->keterangan }}</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 2px;">Jadwal pelajaran hari ini tidak aktif.</div>
+                    </div>
+                </div>
+                @endif
+
                 @if($hariIni == 'Minggu')
                 <div class="empty-state">
                     <i class="fas fa-sun" style="font-size: 48px; color: #f59e0b;"></i>
@@ -103,7 +125,7 @@
                     <p>Belum ada jadwal pelajaran untuk hari ini.</p>
                 </div>
                 @else
-                <div class="jadwal-cards-container">
+                <div class="jadwal-cards-container" style="{{ (isset($hariEfektif) && $hariEfektif) ? 'opacity: 0.5; pointer-events: none; filter: grayscale(40%);' : '' }}">
                     @php
                         $statusMap = [
                             'H' => ['text' => 'Hadir', 'class' => 'bg-success', 'icon' => 'fa-check'],
