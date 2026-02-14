@@ -147,24 +147,44 @@
             letter-spacing: 2px;
         }
 
-        .login-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #818cf8;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            padding: 12px 24px;
-            border: 1px solid rgba(129, 140, 248, 0.3);
+        .secret-input-container {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        .secret-input-container.show { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .secret-input {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
             border-radius: 12px;
-            transition: all 0.3s ease;
+            padding: 12px 18px;
+            color: #f1f5f9;
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
         }
-        .login-link:hover {
-            background: rgba(129, 140, 248, 0.1);
-            border-color: rgba(129, 140, 248, 0.6);
-            transform: translateY(-2px);
+        .secret-input:focus { border-color: rgba(129, 140, 248, 0.6); }
+        .secret-input::placeholder { color: #64748b; }
+        .secret-btn {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        .secret-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99,102,241,0.4); }
 
         .footer {
             margin-top: 40px;
@@ -186,7 +206,7 @@
     <div class="bg-pattern"></div>
 
     <div class="maintenance-container">
-        <div class="gear-container">
+        <div class="gear-container" id="gearTrigger" style="cursor: default;" title="">
             <i class="fas fa-cog gear gear-1"></i>
             <i class="fas fa-cog gear gear-2"></i>
         </div>
@@ -207,13 +227,44 @@
             <p><i class="fas fa-info-circle"></i> {{ $message }}</p>
         </div>
 
-        <a href="{{ route('login') }}" class="login-link">
-            <i class="fas fa-sign-in-alt"></i> Login Admin
-        </a>
+        <!-- Hidden admin access - triggered by clicking gear 5 times -->
+        <div class="secret-input-container" id="secretContainer">
+            <p style="color: #64748b; font-size: 0.75rem; margin-bottom: 12px;">
+                <i class="fas fa-lock" style="margin-right: 5px;"></i> Masukkan kunci akses admin
+            </p>
+            <input type="password" class="secret-input" id="secretKey" placeholder="Kunci akses..." onkeydown="if(event.key==='Enter')adminAccess()">
+            <br>
+            <button class="secret-btn" onclick="adminAccess()">
+                <i class="fas fa-sign-in-alt"></i> Masuk
+            </button>
+        </div>
 
         <div class="footer">
             <p>&copy; {{ date('Y') }} SISMIK - Sistem Informasi Manajemen Akademik</p>
         </div>
     </div>
+
+    <script>
+        // Hidden admin access: click gear 5 times
+        let clickCount = 0;
+        let clickTimer = null;
+        document.getElementById('gearTrigger').addEventListener('click', function() {
+            clickCount++;
+            clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => { clickCount = 0; }, 3000);
+            if (clickCount >= 5) {
+                document.getElementById('secretContainer').classList.add('show');
+                document.getElementById('secretKey').focus();
+                clickCount = 0;
+            }
+        });
+
+        function adminAccess() {
+            const key = document.getElementById('secretKey').value.trim();
+            if (key) {
+                window.location.href = '/admin-access/' + encodeURIComponent(key);
+            }
+        }
+    </script>
 </body>
 </html>

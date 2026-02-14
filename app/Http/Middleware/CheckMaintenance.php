@@ -14,12 +14,11 @@ class CheckMaintenance
     {
         // Skip maintenance check for these routes
         $excludedRoutes = [
-            'maintenance',
-            'login',
-            'logout',
             'setup',
             'setup/*',
+            'logout',
             'admin/*',
+            'admin-access/*',
         ];
 
         foreach ($excludedRoutes as $pattern) {
@@ -30,6 +29,16 @@ class CheckMaintenance
 
         // Skip if logged in as admin
         if (Auth::guard('admin')->check()) {
+            return $next($request);
+        }
+
+        // Allow login page access only with valid admin access token
+        if ($request->is('login') && session('admin_maintenance_access')) {
+            return $next($request);
+        }
+
+        // Allow POST login if admin access token is in session
+        if ($request->is('login') && $request->isMethod('post') && session('admin_maintenance_access')) {
             return $next($request);
         }
 
