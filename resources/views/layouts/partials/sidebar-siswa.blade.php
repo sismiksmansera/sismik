@@ -58,6 +58,10 @@
             <i class="fas fa-chalkboard-teacher"></i>
             <span>Catatan Guru Wali</span>
         </a>
+        <a href="{{ route('siswa.pelanggaran') }}" class="menu-item {{ request()->routeIs('siswa.pelanggaran') ? 'active' : '' }}">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Pelanggaran</span>
+        </a>
         <a href="{{ route('siswa.pengaduan.index') }}" class="menu-item {{ request()->routeIs('siswa.pengaduan*') ? 'active' : '' }}">
             <i class="fas fa-bullhorn"></i>
             <span>Pengaduan</span>

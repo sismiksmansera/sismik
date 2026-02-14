@@ -481,4 +481,7 @@ Route::prefix('siswa')->name('siswa.')->middleware('check.siswa')->group(functio
     
     // Catatan Guru Wali
     Route::get('/catatan-guru-wali', [\App\Http\Controllers\Siswa\CatatanGuruWaliController::class, 'index'])->name('catatan-guru-wali');
+    
+    // Pelanggaran
+    Route::get('/pelanggaran', [\App\Http\Controllers\Siswa\PelanggaranController::class, 'index'])->name('pelanggaran');
 });
