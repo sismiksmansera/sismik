@@ -415,6 +415,32 @@
     font-weight: 600;
     margin-left: 6px;
 }
+.piket-kbm-footer {
+    padding: 14px 24px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+}
+.btn-catatan-piket {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+.btn-catatan-piket:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+    color: white;
+}
 </style>
 @endpush
 
@@ -503,6 +529,11 @@
                         <span class="colleague-type {{ $piket->tipe_guru }}">{{ $piket->tipe_guru === 'guru_bk' ? 'Guru BK' : 'Guru' }}</span>
                     </div>
                     @endforeach
+                </div>
+                <div class="piket-kbm-footer">
+                    <a href="{{ route('guru.catatan-piket') }}" class="btn-catatan-piket">
+                        <i class="fas fa-clipboard-check"></i> Buka Catatan Piket
+                    </a>
                 </div>
             </div>
             @endif
