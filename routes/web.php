@@ -116,6 +116,11 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/mapel/jadwal', [MataPelajaranController::class, 'saveJadwal'])->name('mapel.jadwal.save');
     Route::get('/mapel/agama-islam-id', [MataPelajaranController::class, 'getAgamaIslamId'])->name('mapel.agama-islam-id');
     
+    // Piket KBM Management
+    Route::get('/piket-kbm', [\App\Http\Controllers\Admin\PiketKbmController::class, 'index'])->name('piket-kbm.index');
+    Route::post('/piket-kbm', [\App\Http\Controllers\Admin\PiketKbmController::class, 'store'])->name('piket-kbm.store');
+    Route::delete('/piket-kbm/{id}', [\App\Http\Controllers\Admin\PiketKbmController::class, 'destroy'])->name('piket-kbm.destroy');
+    
     // Jadwal Pelajaran (Jadwal Harian)
     Route::get('/jadwal-pelajaran', [JadwalPelajaranController::class, 'index'])->name('jadwal-pelajaran.index');
     

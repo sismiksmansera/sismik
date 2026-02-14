@@ -53,6 +53,10 @@
             <i class="fas fa-book"></i>
             <span>Mata Pelajaran</span>
         </a>
+        <a href="{{ route('admin.piket-kbm.index') }}" class="menu-item {{ request()->routeIs('admin.piket-kbm.*') ? 'active' : '' }}">
+            <i class="fas fa-user-clock"></i>
+            <span>Piket KBM</span>
+        </a>
         <a href="{{ route('admin.ekstrakurikuler.index') }}" class="menu-item {{ request()->routeIs('admin.ekstrakurikuler.*') ? 'active' : '' }}">
             <i class="fas fa-futbol"></i>
             <span>Ekstrakurikuler</span>
