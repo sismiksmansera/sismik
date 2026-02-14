@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\DataPeriodik;
 use App\Models\PiketKbm;
-use Carbon\Carbon;
+use App\Services\EffectiveDateService;
 
 class TugasTambahanController extends Controller
 {
@@ -198,9 +198,10 @@ class TugasTambahanController extends Controller
         // Total siswa bimbingan
         $totalSiswaBimbingan = array_sum(array_column($guruWaliData, 'jumlah'));
 
-        // 4. PIKET KBM - Check if guru is on duty today
-        $dayMap = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
-        $hariIni = $dayMap[Carbon::now()->format('l')] ?? '';
+        // 4. PIKET KBM - Check if guru is on duty today (respects Testing Date setting)
+        $effectiveDate = EffectiveDateService::getEffectiveDate();
+        $hariIni = $effectiveDate['hari'];
+        $isTesting = $effectiveDate['is_testing'];
         $piketHariIni = PiketKbm::where('hari', $hariIni)
             ->where('guru_id', $guru->id)
             ->where('tipe_guru', 'guru')
