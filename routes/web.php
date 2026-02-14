@@ -463,4 +463,7 @@ Route::prefix('siswa')->name('siswa.')->middleware('check.siswa')->group(functio
     // Riwayat Akademik
     Route::get('/riwayat-akademik', [\App\Http\Controllers\Siswa\RiwayatAkademikController::class, 'index'])->name('riwayat-akademik');
     Route::get('/riwayat-akademik/print', [\App\Http\Controllers\Siswa\RiwayatAkademikController::class, 'print'])->name('riwayat-akademik.print');
+    
+    // Catatan Guru Wali
+    Route::get('/catatan-guru-wali', [\App\Http\Controllers\Siswa\CatatanGuruWaliController::class, 'index'])->name('catatan-guru-wali');
 });

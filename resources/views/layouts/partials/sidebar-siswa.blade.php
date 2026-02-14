@@ -54,6 +54,10 @@
             <i class="fas fa-clipboard-list"></i>
             <span>Catatan BK</span>
         </a>
+        <a href="{{ route('siswa.catatan-guru-wali') }}" class="menu-item {{ request()->routeIs('siswa.catatan-guru-wali') ? 'active' : '' }}">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span>Catatan Guru Wali</span>
+        </a>
         <a href="{{ route('siswa.pengaduan.index') }}" class="menu-item {{ request()->routeIs('siswa.pengaduan*') ? 'active' : '' }}">
             <i class="fas fa-bullhorn"></i>
             <span>Pengaduan</span>
