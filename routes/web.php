@@ -61,6 +61,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     
     // Manajemen Sekolah
     Route::get('/manajemen-sekolah', [ManajemenSekolahController::class, 'index'])->name('manajemen-sekolah');
+    Route::get('/pengaturan-lainnya', [\App\Http\Controllers\Admin\PengaturanLainnyaController::class, 'index'])->name('pengaturan-lainnya');
     
     // Periodik CRUD
     Route::post('/periodik', [ManajemenSekolahController::class, 'storePeriodik'])->name('periodik.store');

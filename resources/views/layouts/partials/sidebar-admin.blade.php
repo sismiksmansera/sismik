@@ -77,7 +77,7 @@
             <i class="fas fa-school"></i>
             <span>Manajemen Sekolah</span>
         </a>
-        <a href="#" class="menu-item">
+        <a href="{{ route('admin.pengaturan-lainnya') }}" class="menu-item {{ request()->routeIs('admin.pengaturan-lainnya') ? 'active' : '' }}">
             <i class="fas fa-cog"></i>
             <span>Pengaturan Lainnya</span>
         </a>
