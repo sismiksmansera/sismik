@@ -138,8 +138,23 @@
             }
         </style>
 
+        <!-- Hari Efektif Banner -->
+        @if(isset($hariEfektif) && $hariEfektif)
+        <div style="background: {{ $hariEfektif->status === 'Libur' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)' }}; color: white; border-radius: 12px; padding: 20px 24px; margin-top: 30px; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 15px {{ $hariEfektif->status === 'Libur' ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.3)' }};">
+            <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas {{ $hariEfektif->status === 'Libur' ? 'fa-calendar-times' : 'fa-info-circle' }}" style="font-size: 24px;"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 700;">
+                    {{ $hariEfektif->status === 'Libur' ? 'Hari Libur' : 'Hari Non-KBM' }}
+                </h3>
+                <p style="margin: 0; font-size: 14px; opacity: 0.95;">{{ $hariEfektif->keterangan }}</p>
+            </div>
+        </div>
+        @endif
+
         <!-- Jadwal Pelajaran Hari Ini -->
-        <div class="schedule-section" style="margin-top: 30px; margin-bottom: 30px;">
+        <div class="schedule-section" style="margin-top: 30px; margin-bottom: 30px; {{ isset($hariEfektif) && $hariEfektif ? 'opacity: 0.5; pointer-events: none; filter: grayscale(40%);' : '' }}">
             <div class="schedule-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 12px; display: flex; align-items: center; justify-content: center;">

@@ -12,6 +12,7 @@ use App\Models\GuruBK;
 use App\Models\Rombel;
 use App\Models\DataPeriodik;
 use App\Services\EffectiveDateService;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -285,6 +286,12 @@ class DashboardController extends Controller
             }
         }
 
+        // Get hari efektif data
+        $hariEfektif = null;
+        if (Schema::hasTable('hari_efektif')) {
+            $hariEfektif = DB::table('hari_efektif')->where('tanggal', $tanggalHariIni)->first();
+        }
+
         return view('admin.dashboard', compact(
             'admin',
             'periodik',
@@ -300,7 +307,8 @@ class DashboardController extends Controller
             'tanggalFormatted',
             'isTesting',
             'jadwalPerRombel',
-            'kelasKosong'
+            'kelasKosong',
+            'hariEfektif'
         ));
     }
     

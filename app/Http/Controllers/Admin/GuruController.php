@@ -726,9 +726,64 @@ class GuruController extends Controller
         }
         
         // ========== KEAKTIFAN PERCENTAGE ==========
-        $expectedDays = 20;
-        $actualPresensi = $statPresensi->total_hari ?? 0;
-        $persentaseKeaktifan = $expectedDays > 0 ? min(100, round(($actualPresensi / $expectedDays) * 100)) : 0;
+        // Count unique jadwal sessions per day (group by hari + rombel + mapel = 1 session)
+        $jadwalSesiPerHari = [];
+        foreach ($listJadwal as $j) {
+            $sesiKey = $j->hari . '|' . $j->id_rombel . '|' . strtolower($j->nama_mapel);
+            $jadwalSesiPerHari[$j->hari][$sesiKey] = true;
+        }
+        
+        // Map hari names to PHP day numbers (0=Sunday, 1=Monday, etc.)
+        $hariMap = ['Minggu' => 0, 'Senin' => 1, 'Selasa' => 2, 'Rabu' => 3, 'Kamis' => 4, 'Jumat' => 5, 'Sabtu' => 6];
+        
+        // Get hari_efektif (holidays) in the date range
+        $hariLibur = [];
+        if (\Schema::hasTable('hari_efektif')) {
+            $liburList = \DB::table('hari_efektif')
+                ->whereBetween('tanggal', [$tanggalMulai, min($tanggalSelesai, date('Y-m-d'))])
+                ->pluck('tanggal')
+                ->toArray();
+            foreach ($liburList as $tgl) {
+                $hariLibur[$tgl] = true;
+            }
+        }
+        
+        // Count expected sessions: for each scheduled day, count how many times that weekday 
+        // occurred from tanggalMulai to today (or tanggalSelesai), minus holidays
+        $expectedSessions = 0;
+        $today = min($tanggalSelesai, date('Y-m-d'));
+        
+        foreach ($jadwalSesiPerHari as $hari => $sesiList) {
+            $dayNum = $hariMap[$hari] ?? -1;
+            if ($dayNum < 0) continue;
+            
+            $jumlahSesi = count($sesiList); // number of sessions on this day
+            
+            // Count occurrences of this weekday from tanggalMulai to today
+            $current = new \DateTime($tanggalMulai);
+            $end = new \DateTime($today);
+            
+            while ($current <= $end) {
+                if ((int)$current->format('w') === $dayNum) {
+                    $dateStr = $current->format('Y-m-d');
+                    if (!isset($hariLibur[$dateStr])) {
+                        $expectedSessions += $jumlahSesi;
+                    }
+                }
+                $current->modify('+1 day');
+            }
+        }
+        
+        // Count actual presensi sessions (distinct tanggal + rombel + mapel)
+        $actualSessions = \DB::table('presensi_siswa')
+            ->where('guru_pengajar', $guruNama)
+            ->where('tahun_pelajaran', $filterTahun)
+            ->where('semester', $filterSemester)
+            ->whereBetween('tanggal_presensi', [$tanggalMulai, $today])
+            ->selectRaw('COUNT(DISTINCT CONCAT(tanggal_presensi, id_rombel, mata_pelajaran)) as total')
+            ->value('total') ?? 0;
+        
+        $persentaseKeaktifan = $expectedSessions > 0 ? min(100, round(($actualSessions / $expectedSessions) * 100)) : 0;
         
         if ($persentaseKeaktifan >= 80) {
             $warnaIndikator = '#10b981';
@@ -753,7 +808,8 @@ class GuruController extends Controller
             'minDate', 'maxDate', 'years',
             'statPresensi', 'listPresensi', 'statPenilaian', 'listPenilaian',
             'listJadwal', 'totalJam',
-            'persentaseKeaktifan', 'warnaIndikator', 'labelIndikator'
+            'persentaseKeaktifan', 'warnaIndikator', 'labelIndikator',
+            'actualSessions', 'expectedSessions'
         ));
     }
     
