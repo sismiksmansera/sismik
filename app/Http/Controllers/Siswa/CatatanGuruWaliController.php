@@ -51,13 +51,16 @@ class CatatanGuruWaliController extends Controller
 
         // Get perkembangan stats
         $perkembanganStats = [
+            'Belum Dinilai' => 0,
             'Belum Berkembang' => 0,
             'Berkembang Sesuai Harapan' => 0,
             'Berkembang Sangat Baik' => 0,
         ];
         foreach ($catatanList as $c) {
-            $p = $c->perkembangan ?? 'Belum Berkembang';
-            if (isset($perkembanganStats[$p])) {
+            $p = $c->perkembangan;
+            if (empty($p)) {
+                $perkembanganStats['Belum Dinilai']++;
+            } elseif (isset($perkembanganStats[$p])) {
                 $perkembanganStats[$p]++;
             }
         }

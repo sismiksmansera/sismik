@@ -61,6 +61,7 @@
         color: white;
     }
     .stat-icon-h.total { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .stat-icon-h.belum-dinilai { background: linear-gradient(135deg, #9ca3af, #6b7280); }
     .stat-icon-h.belum { background: linear-gradient(135deg, #ef4444, #dc2626); }
     .stat-icon-h.sesuai { background: linear-gradient(135deg, #f59e0b, #d97706); }
     .stat-icon-h.baik { background: linear-gradient(135deg, #22c55e, #16a34a); }
@@ -129,6 +130,7 @@
         gap: 5px;
         white-space: nowrap;
     }
+    .perkembangan-badge.belum-dinilai { background: #f3f4f6; color: #6b7280; }
     .perkembangan-badge.belum { background: #fee2e2; color: #991b1b; }
     .perkembangan-badge.sesuai { background: #fef3c7; color: #92400e; }
     .perkembangan-badge.baik { background: #dcfce7; color: #166534; }
@@ -205,6 +207,11 @@
                 <div class="stat-label-h">Total Catatan</div>
             </div>
             <div class="stat-item-h">
+                <div class="stat-icon-h belum-dinilai"><i class="fas fa-minus-circle"></i></div>
+                <div class="stat-value-h">{{ $perkembanganStats['Belum Dinilai'] }}</div>
+                <div class="stat-label-h">Belum Dinilai</div>
+            </div>
+            <div class="stat-item-h">
                 <div class="stat-icon-h belum"><i class="fas fa-exclamation-circle"></i></div>
                 <div class="stat-value-h">{{ $perkembanganStats['Belum Berkembang'] }}</div>
                 <div class="stat-label-h">Belum Berkembang</div>
@@ -251,16 +258,23 @@
                             default => 'fa-clipboard'
                         };
 
-                        $perkembangan = $catatan->perkembangan ?? 'Belum Berkembang';
-                        if ($perkembangan === 'Berkembang Sangat Baik') {
+                        $perkembangan = $catatan->perkembangan;
+                        if (empty($perkembangan)) {
+                            $perkClass = 'belum-dinilai';
+                            $perkIcon = 'fa-minus-circle';
+                            $perkLabel = 'Belum Dinilai';
+                        } elseif ($perkembangan === 'Berkembang Sangat Baik') {
                             $perkClass = 'baik';
                             $perkIcon = 'fa-star';
+                            $perkLabel = $perkembangan;
                         } elseif ($perkembangan === 'Berkembang Sesuai Harapan') {
                             $perkClass = 'sesuai';
                             $perkIcon = 'fa-thumbs-up';
+                            $perkLabel = $perkembangan;
                         } else {
                             $perkClass = 'belum';
                             $perkIcon = 'fa-exclamation-circle';
+                            $perkLabel = $perkembangan;
                         }
                     @endphp
                     <div class="catatan-card jenis-{{ $jenisClass }}" onclick="toggleCard(this)">
@@ -279,7 +293,7 @@
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <span class="perkembangan-badge {{ $perkClass }}">
                                     <i class="fas {{ $perkIcon }}"></i>
-                                    {{ $perkembangan }}
+                                    {{ $perkLabel }}
                                 </span>
                                 <i class="fas fa-chevron-down toggle-icon"></i>
                             </div>
@@ -297,14 +311,16 @@
                                 </div>
                             </div>
                             @endif
+                            @if(!empty($perkembangan))
                             <div class="catatan-detail">
                                 <div class="catatan-detail-label"><i class="fas fa-chart-line" style="color: #10b981;"></i> Perkembangan</div>
                                 <div class="catatan-detail-value">
                                     <span class="perkembangan-badge {{ $perkClass }}" style="display: inline-flex;">
-                                        <i class="fas {{ $perkIcon }}"></i> {{ $perkembangan }}
+                                        <i class="fas {{ $perkIcon }}"></i> {{ $perkLabel }}
                                     </span>
                                 </div>
                             </div>
+                            @endif
                         </div>
                     </div>
                 @endforeach
