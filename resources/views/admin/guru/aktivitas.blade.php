@@ -190,6 +190,55 @@
         .filter-group { width: 100%; }
         .filter-group select, .filter-group input { width: 100%; }
     }
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalSlideIn 0.3s ease;
+    }
+    @keyframes modalSlideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header {
+        padding: 24px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .modal-header h3 { font-size: 20px; font-weight: 600; margin: 0; }
+    .modal-close {
+        width: 36px; height: 36px;
+        border: none;
+        background: #f3f4f6;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+    }
+    .modal-body { padding: 24px; }
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
 </style>
 @endpush
 
@@ -455,6 +504,7 @@
         </div>
     </div>
 </div>
+
 <!-- Modal Detail Keaktifan -->
 <div class="modal-overlay" id="modalDetailKeaktifan">
     <div class="modal-content" style="max-width: 800px;">
@@ -517,3 +567,14 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+</script>
+@endpush
