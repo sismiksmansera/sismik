@@ -254,13 +254,13 @@
 
         <!-- Stats Cards -->
         <div class="stats-grid">
-            <div class="stat-card" style="border-left: 4px solid {{ $warnaIndikator }};">
+            <div class="stat-card" style="border-left: 4px solid {{ $warnaIndikator }}; cursor: pointer; transition: transform 0.2s;" onclick="openModal('modalDetailKeaktifan')" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" title="Klik untuk detail">
                 <div class="stat-icon" style="background: {{ $warnaIndikator }}20;">
                     <i class="fas fa-heartbeat" style="color: {{ $warnaIndikator }};"></i>
                 </div>
                 <div class="stat-info">
                     <h3 style="color: {{ $warnaIndikator }};">{{ $persentaseKeaktifan }}%</h3>
-                    <p>{{ $labelIndikator }}</p>
+                    <p>{{ $labelIndikator }} <i class="fas fa-search-plus" style="font-size: 10px; color: #9ca3af; margin-left: 4px;"></i></p>
                 </div>
             </div>
             <div class="stat-card">
@@ -452,6 +452,67 @@
                     </div>
                 @endif
             </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Detail Keaktifan -->
+<div class="modal-overlay" id="modalDetailKeaktifan">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-heartbeat" style="color: {{ $warnaIndikator }};"></i> Detail Keaktifan {{ $guru->nama }}</h3>
+            <button class="modal-close" onclick="closeModal('modalDetailKeaktifan')">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+            <!-- Summary -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+                <div style="background: {{ $warnaIndikator }}10; border: 1px solid {{ $warnaIndikator }}30; border-radius: 10px; padding: 15px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: 700; color: {{ $warnaIndikator }};">{{ $persentaseKeaktifan }}%</div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">{{ $labelIndikator }}</div>
+                </div>
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 15px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: 700; color: #10b981;">{{ $actualSessions }}</div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Sesi Hadir</div>
+                </div>
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 15px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: 700; color: #ef4444;">{{ $expectedSessions - $actualSessions }}</div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Sesi Tidak Hadir</div>
+                </div>
+            </div>
+            <p style="font-size: 12px; color: #9ca3af; margin-bottom: 12px;">Total {{ $expectedSessions }} sesi terjadwal dari {{ $tanggalMulai }} s/d hari ini</p>
+            <!-- Detail Table -->
+            <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 10px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 2px solid #e5e7eb; position: sticky; top: 0;">
+                            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #374151;">Tanggal</th>
+                            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #374151;">Hari</th>
+                            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #374151;">Mata Pelajaran</th>
+                            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #374151;">Kelas</th>
+                            <th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #374151;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($detailSesi as $sesi)
+                        <tr style="border-bottom: 1px solid #f1f5f9; background: {{ $sesi['hadir'] ? 'transparent' : '#fef2f2' }};">
+                            <td style="padding: 8px 12px; font-weight: 500;">{{ date('d M Y', strtotime($sesi['tanggal'])) }}</td>
+                            <td style="padding: 8px 12px; color: #6b7280;">{{ $sesi['hari'] }}</td>
+                            <td style="padding: 8px 12px;">{{ $sesi['mapel'] }}</td>
+                            <td style="padding: 8px 12px;"><span style="background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 11px;">{{ $sesi['rombel'] }}</span></td>
+                            <td style="padding: 8px 12px; text-align: center;">
+                                @if($sesi['hadir'])
+                                <span style="background: #d1fae5; color: #059669; padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;"><i class="fas fa-check"></i> Hadir</span>
+                                @else
+                                <span style="background: #fecaca; color: #dc2626; padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;"><i class="fas fa-times"></i> Tidak Hadir</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modalDetailKeaktifan')">Tutup</button>
         </div>
     </div>
 </div>

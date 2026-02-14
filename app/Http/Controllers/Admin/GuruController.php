@@ -726,11 +726,20 @@ class GuruController extends Controller
         }
         
         // ========== KEAKTIFAN PERCENTAGE ==========
-        // Count unique jadwal sessions per day (group by hari + rombel + mapel = 1 session)
+        // Get unique jadwal sessions (group by hari + rombel + mapel = 1 session)
         $jadwalSesiPerHari = [];
+        $sesiInfo = []; // store session details: hari => [sesiKey => [mapel, rombel]]
         foreach ($listJadwal as $j) {
             $sesiKey = $j->hari . '|' . $j->id_rombel . '|' . strtolower($j->nama_mapel);
             $jadwalSesiPerHari[$j->hari][$sesiKey] = true;
+            if (!isset($sesiInfo[$sesiKey])) {
+                $sesiInfo[$sesiKey] = [
+                    'hari' => $j->hari,
+                    'mapel' => $j->nama_mapel,
+                    'rombel' => $j->nama_rombel,
+                    'id_rombel' => $j->id_rombel,
+                ];
+            }
         }
         
         // Map hari names to PHP day numbers (0=Sunday, 1=Monday, etc.)
@@ -739,49 +748,80 @@ class GuruController extends Controller
         // Get hari_efektif (holidays) in the date range
         $hariLibur = [];
         if (\Schema::hasTable('hari_efektif')) {
-            $liburList = \DB::table('hari_efektif')
+            $liburData = \DB::table('hari_efektif')
                 ->whereBetween('tanggal', [$tanggalMulai, min($tanggalSelesai, date('Y-m-d'))])
-                ->pluck('tanggal')
-                ->toArray();
-            foreach ($liburList as $tgl) {
-                $hariLibur[$tgl] = true;
+                ->get();
+            foreach ($liburData as $lib) {
+                $hariLibur[$lib->tanggal] = $lib;
             }
         }
         
-        // Count expected sessions: for each scheduled day, count how many times that weekday 
-        // occurred from tanggalMulai to today (or tanggalSelesai), minus holidays
-        $expectedSessions = 0;
+        // Get all actual presensi sessions (distinct tanggal + rombel + mapel)
         $today = min($tanggalSelesai, date('Y-m-d'));
+        $presensiRecords = \DB::table('presensi_siswa')
+            ->where('guru_pengajar', $guruNama)
+            ->where('tahun_pelajaran', $filterTahun)
+            ->where('semester', $filterSemester)
+            ->whereBetween('tanggal_presensi', [$tanggalMulai, $today])
+            ->selectRaw('DISTINCT tanggal_presensi, id_rombel, mata_pelajaran')
+            ->get();
+        
+        // Build lookup of actual presensi: "tanggal|id_rombel|mapel" => true
+        $presensiLookup = [];
+        foreach ($presensiRecords as $rec) {
+            $key = $rec->tanggal_presensi . '|' . $rec->id_rombel . '|' . strtolower($rec->mata_pelajaran);
+            $presensiLookup[$key] = true;
+        }
+        
+        // Build detailed session list
+        $expectedSessions = 0;
+        $actualSessions = 0;
+        $detailSesi = []; // for modal detail
         
         foreach ($jadwalSesiPerHari as $hari => $sesiList) {
             $dayNum = $hariMap[$hari] ?? -1;
             if ($dayNum < 0) continue;
             
-            $jumlahSesi = count($sesiList); // number of sessions on this day
-            
-            // Count occurrences of this weekday from tanggalMulai to today
             $current = new \DateTime($tanggalMulai);
             $end = new \DateTime($today);
             
             while ($current <= $end) {
                 if ((int)$current->format('w') === $dayNum) {
                     $dateStr = $current->format('Y-m-d');
-                    if (!isset($hariLibur[$dateStr])) {
-                        $expectedSessions += $jumlahSesi;
+                    
+                    // Check if this day is a holiday
+                    if (isset($hariLibur[$dateStr])) {
+                        // Skip holidays - don't count as expected
+                        $current->modify('+1 day');
+                        continue;
+                    }
+                    
+                    // For each session on this day
+                    foreach ($sesiList as $sesiKey => $v) {
+                        $info = $sesiInfo[$sesiKey];
+                        $presensiKey = $dateStr . '|' . $info['id_rombel'] . '|' . strtolower($info['mapel']);
+                        $hadir = isset($presensiLookup[$presensiKey]);
+                        
+                        $expectedSessions++;
+                        if ($hadir) $actualSessions++;
+                        
+                        $detailSesi[] = [
+                            'tanggal' => $dateStr,
+                            'hari' => $hari,
+                            'mapel' => $info['mapel'],
+                            'rombel' => $info['rombel'],
+                            'hadir' => $hadir,
+                        ];
                     }
                 }
                 $current->modify('+1 day');
             }
         }
         
-        // Count actual presensi sessions (distinct tanggal + rombel + mapel)
-        $actualSessions = \DB::table('presensi_siswa')
-            ->where('guru_pengajar', $guruNama)
-            ->where('tahun_pelajaran', $filterTahun)
-            ->where('semester', $filterSemester)
-            ->whereBetween('tanggal_presensi', [$tanggalMulai, $today])
-            ->selectRaw('COUNT(DISTINCT CONCAT(tanggal_presensi, id_rombel, mata_pelajaran)) as total')
-            ->value('total') ?? 0;
+        // Sort detail by date desc
+        usort($detailSesi, function($a, $b) {
+            return strcmp($b['tanggal'], $a['tanggal']);
+        });
         
         $persentaseKeaktifan = $expectedSessions > 0 ? min(100, round(($actualSessions / $expectedSessions) * 100)) : 0;
         
@@ -809,7 +849,7 @@ class GuruController extends Controller
             'statPresensi', 'listPresensi', 'statPenilaian', 'listPenilaian',
             'listJadwal', 'totalJam',
             'persentaseKeaktifan', 'warnaIndikator', 'labelIndikator',
-            'actualSessions', 'expectedSessions'
+            'actualSessions', 'expectedSessions', 'detailSesi'
         ));
     }
     
