@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Models\DataPeriodik;
 use App\Models\PiketKbm;
 use App\Models\CatatanPiketKbm;
@@ -58,34 +59,57 @@ class CatatanPiketController extends Controller
                 }
             }
         }
-        if ($maxJam == 0) $maxJam = 8; // default
+        if ($maxJam == 0) $maxJam = 8;
 
-        // Get ALL jadwal for today (all guru, all rombel)
+        // Get ALL jadwal for today grouped by jam -> rombel -> guru
         $jadwalHariIni = DB::table('jadwal_pelajaran as jp')
             ->join('rombel as r', 'jp.id_rombel', '=', 'r.id')
             ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
-            ->select('jp.jam_ke', 'jp.nama_guru', 'mp.nama_mapel', 'r.nama_rombel')
+            ->select('jp.jam_ke', 'jp.nama_guru', 'mp.nama_mapel', 'r.nama_rombel', 'jp.id_rombel', 'jp.id_mapel')
             ->where('jp.hari', $hariIni)
             ->where('jp.tahun_pelajaran', $tahunAktif)
             ->whereRaw("LOWER(jp.semester) = LOWER(?)", [$semesterAktif])
             ->orderByRaw('CAST(jp.jam_ke AS UNSIGNED)')
+            ->orderBy('r.nama_rombel')
             ->orderBy('jp.nama_guru')
             ->get();
 
-        // Group by jam_ke -> guru
+        // Structure: jam -> rombel -> [guru entries]
         $jadwalPerJam = [];
         foreach ($jadwalHariIni as $j) {
             $jamKe = (int) $j->jam_ke;
+            $rombel = $j->nama_rombel;
             if (!isset($jadwalPerJam[$jamKe])) {
                 $jadwalPerJam[$jamKe] = [];
             }
-            // Group by guru name within each jam
-            if (!isset($jadwalPerJam[$jamKe][$j->nama_guru])) {
-                $jadwalPerJam[$jamKe][$j->nama_guru] = [
-                    'nama_guru' => $j->nama_guru,
-                    'mapel' => $j->nama_mapel,
-                    'rombel' => $j->nama_rombel,
-                ];
+            if (!isset($jadwalPerJam[$jamKe][$rombel])) {
+                $jadwalPerJam[$jamKe][$rombel] = [];
+            }
+            $jadwalPerJam[$jamKe][$rombel][] = [
+                'nama_guru' => $j->nama_guru,
+                'nama_mapel' => $j->nama_mapel,
+                'id_rombel' => $j->id_rombel,
+                'id_mapel' => $j->id_mapel,
+            ];
+        }
+
+        // Get izin guru for today
+        $izinGuruHariIni = [];
+        if (Schema::hasTable('izin_guru')) {
+            $izinRows = DB::table('izin_guru')
+                ->where('tanggal_izin', $tanggalHariIni)
+                ->get();
+            foreach ($izinRows as $izin) {
+                // Key: guru-rombel-jam combination
+                $jamList = explode(',', $izin->jam_ke);
+                foreach ($jamList as $jk) {
+                    $jk = trim($jk);
+                    $key = $izin->guru . '|' . $izin->id_rombel . '|' . $jk;
+                    $izinGuruHariIni[$key] = [
+                        'alasan' => $izin->alasan_izin,
+                        'tugas' => $izin->uraian_tugas ?? '',
+                    ];
+                }
             }
         }
 
@@ -94,7 +118,7 @@ class CatatanPiketController extends Controller
             ->where('piket_kbm_id', $piketHariIni->id)
             ->get()
             ->keyBy(function ($item) {
-                return $item->jam_ke . '-' . $item->nama_guru;
+                return $item->jam_ke . '|' . $item->nama_guru . '|' . $item->nama_rombel;
             });
 
         // Get all piket guru for today
@@ -111,6 +135,7 @@ class CatatanPiketController extends Controller
             'maxJam',
             'jadwalPerJam',
             'catatanHariIni',
+            'izinGuruHariIni',
             'piketHariIni',
             'semuaPiketHariIni',
             'tahunAktif',
@@ -127,7 +152,7 @@ class CatatanPiketController extends Controller
             'tanggal' => 'required|date',
             'jam_ke' => 'required|integer',
             'nama_guru' => 'required|string',
-            'status_kehadiran' => 'required|in:Hadir,Tidak Hadir,Izin,Terlambat',
+            'status_kehadiran' => 'required|in:Hadir Tepat Waktu,Hadir Terlambat,Izin,Tanpa Keterangan',
         ]);
 
         CatatanPiketKbm::updateOrCreate(
@@ -136,13 +161,12 @@ class CatatanPiketController extends Controller
                 'tanggal' => $request->tanggal,
                 'jam_ke' => $request->jam_ke,
                 'nama_guru' => $request->nama_guru,
+                'nama_rombel' => $request->nama_rombel,
             ],
             [
                 'nama_mapel' => $request->nama_mapel,
-                'nama_rombel' => $request->nama_rombel,
                 'status_kehadiran' => $request->status_kehadiran,
                 'keterangan' => $request->keterangan,
-                'penugasan' => $request->penugasan,
                 'dicatat_oleh' => $guru->nama,
             ]
         );

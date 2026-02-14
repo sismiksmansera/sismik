@@ -17,7 +17,6 @@ class CatatanPiketKbm extends Model
         'nama_rombel',
         'status_kehadiran',
         'keterangan',
-        'penugasan',
         'dicatat_oleh',
     ];
 
