@@ -89,8 +89,15 @@
         margin-bottom: 14px;
         border: 1px solid #e5e7eb;
         overflow: hidden;
-        transition: box-shadow 0.2s;
+        transition: box-shadow 0.2s, background 0.3s, border-color 0.3s;
     }
+    /* Jam card states */
+    .jam-card.jam-none { background: #f9fafb; border-color: #d1d5db; }
+    .jam-card.jam-none .jam-number { background: linear-gradient(135deg, #9ca3af, #6b7280); }
+    .jam-card.jam-partial { background: #fffef5; border-color: #fbbf24; }
+    .jam-card.jam-partial .jam-number { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .jam-card.jam-complete { background: #f0fdf4; border-color: #86efac; }
+    .jam-card.jam-complete .jam-number { background: linear-gradient(135deg, #10b981, #059669); }
     .jam-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
     .jam-card-header {
         padding: 16px 20px;
@@ -445,9 +452,22 @@
                 $waktu = isset($jamSetting[$jam]) ? $jamSetting[$jam]['mulai'] . ' - ' . $jamSetting[$jam]['selesai'] : '';
                 $totalRombel = count($rombelList);
                 $totalGuru = 0;
-                foreach ($rombelList as $entries) { $totalGuru += count($entries); }
+                $confirmedGuru = 0;
+                foreach ($rombelList as $rNama => $entries) {
+                    $totalGuru += count($entries);
+                    foreach ($entries as $e) {
+                        $ck = $jam . '|' . $e['nama_guru'] . '|' . $rNama;
+                        $ik = $e['nama_guru'] . '|' . $e['id_rombel'] . '|' . $jam;
+                        if (isset($catatanHariIni[$ck]) || isset($izinGuruHariIni[$ik])) {
+                            $confirmedGuru++;
+                        }
+                    }
+                }
+                $jamState = 'jam-none';
+                if ($totalGuru > 0 && $confirmedGuru >= $totalGuru) $jamState = 'jam-complete';
+                elseif ($confirmedGuru > 0) $jamState = 'jam-partial';
             @endphp
-            <div class="jam-card {{ $jam === 1 ? 'open' : '' }}" id="jam-card-{{ $jam }}">
+            <div class="jam-card {{ $jam === 1 ? 'open' : '' }} {{ $totalGuru > 0 ? $jamState : '' }}" id="jam-card-{{ $jam }}" data-total="{{ $totalGuru }}" data-confirmed="{{ $confirmedGuru }}">
                 <div class="jam-card-header" onclick="toggleJam({{ $jam }})">
                     <div class="jam-left">
                         <div class="jam-number">{{ $jam }}</div>
@@ -801,6 +821,27 @@
         badge.className = 'guru-status-badge ' + badgeClassMap[status];
         badge.textContent = status;
         badge.style.display = 'inline-block';
+
+        // Update jam card color
+        updateJamCardColor(currentJamKe);
+    }
+
+    function updateJamCardColor(jamKe) {
+        const jamCard = document.getElementById('jam-card-' + jamKe);
+        if (!jamCard) return;
+        let total = parseInt(jamCard.dataset.total) || 0;
+        let confirmed = parseInt(jamCard.dataset.confirmed) || 0;
+        confirmed++;
+        jamCard.dataset.confirmed = confirmed;
+
+        jamCard.classList.remove('jam-none', 'jam-partial', 'jam-complete');
+        if (total > 0 && confirmed >= total) {
+            jamCard.classList.add('jam-complete');
+        } else if (confirmed > 0) {
+            jamCard.classList.add('jam-partial');
+        } else {
+            jamCard.classList.add('jam-none');
+        }
     }
 </script>
 @endpush
