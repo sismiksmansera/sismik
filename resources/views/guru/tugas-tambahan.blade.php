@@ -308,6 +308,113 @@
     
     .section-header h2 { font-size: 1rem; }
 }
+
+/* PIKET KBM CARD */
+.piket-kbm-block {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-bottom: 25px;
+    border: 2px solid #3b82f6;
+    animation: piketPulse 2s ease-in-out;
+}
+@keyframes piketPulse {
+    0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.3); }
+    50% { box-shadow: 0 0 20px 5px rgba(59,130,246,0.15); }
+    100% { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+}
+.piket-kbm-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    padding: 20px 24px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.piket-kbm-header .piket-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+.piket-kbm-header .piket-title { flex: 1; }
+.piket-kbm-header .piket-title h3 { margin: 0; font-size: 17px; font-weight: 700; }
+.piket-kbm-header .piket-title p { margin: 4px 0 0; font-size: 13px; opacity: 0.85; }
+.piket-kbm-header .piket-day-badge {
+    background: rgba(255,255,255,0.25);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.piket-kbm-body {
+    padding: 20px 24px;
+}
+.piket-kbm-body .piket-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+.piket-colleague {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    transition: all 0.2s;
+}
+.piket-colleague:last-child { margin-bottom: 0; }
+.piket-colleague.is-me {
+    background: #eff6ff;
+    border: 1.5px solid #93c5fd;
+}
+.piket-colleague:not(.is-me) {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+.piket-colleague .colleague-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+}
+.piket-colleague .colleague-avatar.guru { background: linear-gradient(135deg, #10b981, #059669); }
+.piket-colleague .colleague-avatar.guru_bk { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.piket-colleague .colleague-name { font-size: 13.5px; font-weight: 500; color: #1f2937; }
+.piket-colleague .colleague-type {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: auto;
+}
+.piket-colleague .colleague-type.guru { background: #d1fae5; color: #065f46; }
+.piket-colleague .colleague-type.guru_bk { background: #ede9fe; color: #5b21b6; }
+.me-badge {
+    background: #3b82f6;
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-left: 6px;
+}
 </style>
 @endpush
 
@@ -364,6 +471,41 @@
                     </div>
                 </div>
             </div>
+
+            @if($piketHariIni)
+            <!-- PIKET KBM INFO CARD -->
+            <div class="piket-kbm-block">
+                <div class="piket-kbm-header">
+                    <div class="piket-icon">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                    <div class="piket-title">
+                        <h3>Tugas Piket KBM</h3>
+                        <p>Anda bertugas piket hari ini</p>
+                    </div>
+                    <span class="piket-day-badge">
+                        <i class="fas fa-calendar-day"></i> {{ $hariIni }}
+                    </span>
+                </div>
+                <div class="piket-kbm-body">
+                    <div class="piket-label">Guru Piket Hari Ini</div>
+                    @foreach($semuaPiketHariIni as $piket)
+                    <div class="piket-colleague {{ $piket->guru_id == $guru->id && $piket->tipe_guru == 'guru' ? 'is-me' : '' }}">
+                        <div class="colleague-avatar {{ $piket->tipe_guru }}">
+                            <i class="fas {{ $piket->tipe_guru === 'guru_bk' ? 'fa-user-graduate' : 'fa-chalkboard-teacher' }}"></i>
+                        </div>
+                        <span class="colleague-name">
+                            {{ $piket->nama_guru }}
+                            @if($piket->guru_id == $guru->id && $piket->tipe_guru == 'guru')
+                                <span class="me-badge">ANDA</span>
+                            @endif
+                        </span>
+                        <span class="colleague-type {{ $piket->tipe_guru }}">{{ $piket->tipe_guru === 'guru_bk' ? 'Guru BK' : 'Guru' }}</span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
 
             @if($totalTugas > 0)
                 <!-- PEMBINA EKSTRAKURIKULER -->

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\DataPeriodik;
+use App\Models\PiketKbm;
+use Carbon\Carbon;
 
 class TugasTambahanController extends Controller
 {
@@ -195,8 +197,24 @@ class TugasTambahanController extends Controller
         
         // Total siswa bimbingan
         $totalSiswaBimbingan = array_sum(array_column($guruWaliData, 'jumlah'));
+
+        // 4. PIKET KBM - Check if guru is on duty today
+        $dayMap = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
+        $hariIni = $dayMap[Carbon::now()->format('l')] ?? '';
+        $piketHariIni = PiketKbm::where('hari', $hariIni)
+            ->where('guru_id', $guru->id)
+            ->where('tipe_guru', 'guru')
+            ->first();
+
+        // Get all guru piket for today (to show colleagues)
+        $semuaPiketHariIni = [];
+        if ($piketHariIni) {
+            $semuaPiketHariIni = PiketKbm::where('hari', $hariIni)
+                ->orderBy('created_at')
+                ->get();
+        }
         
-        $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbingan > 0 ? 1 : 0);
+        $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbingan > 0 ? 1 : 0) + ($piketHariIni ? 1 : 0);
 
         return view('guru.tugas-tambahan', compact(
             'guru',
@@ -206,7 +224,10 @@ class TugasTambahanController extends Controller
             'tugasWaliKelas',
             'guruWaliData',
             'totalSiswaBimbingan',
-            'totalTugas'
+            'totalTugas',
+            'piketHariIni',
+            'hariIni',
+            'semuaPiketHariIni'
         ));
     }
 }
