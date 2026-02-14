@@ -40,7 +40,7 @@
         font-weight: 600;
     }
     .header-badge.testing { background: rgba(245,158,11,0.3); }
-    .btn-back {
+    .btn-back-header {
         background: rgba(255,255,255,0.2);
         color: white;
         border: none;
@@ -55,7 +55,7 @@
         gap: 6px;
         transition: all 0.2s;
     }
-    .btn-back:hover { background: rgba(255,255,255,0.3); color: white; }
+    .btn-back-header:hover { background: rgba(255,255,255,0.3); color: white; }
 
     /* Piket Team */
     .piket-team-card {
@@ -138,7 +138,7 @@
         overflow: hidden;
         transition: max-height 0.4s ease;
     }
-    .jam-card.open .jam-card-body { max-height: 5000px; }
+    .jam-card.open .jam-card-body { max-height: 8000px; }
     .jam-card-inner { padding: 0 20px 20px; }
 
     /* Rombel Block */
@@ -168,140 +168,203 @@
     }
     .rombel-name i { font-size: 13px; opacity: 0.7; }
 
-    /* Guru Entry */
+    /* Guru Entry - Clickable Card Style */
     .guru-entry {
-        padding: 14px 16px;
+        padding: 12px 16px;
         border-bottom: 1px solid #f1f5f9;
-    }
-    .guru-entry:last-child { border-bottom: none; }
-    .guru-info {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
+        gap: 12px;
+        transition: background 0.15s;
     }
+    .guru-entry:last-child { border-bottom: none; }
+    .guru-entry:hover { background: #f1f5f9; }
+
     .guru-avatar {
-        width: 36px; height: 36px;
-        background: linear-gradient(135deg, #10b981, #059669);
+        width: 40px; height: 40px;
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
         border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
         color: white; font-size: 14px; flex-shrink: 0;
-    }
-    .guru-detail { flex: 1; }
-    .guru-name-text { font-size: 14px; font-weight: 600; color: #1f2937; }
-    .guru-mapel-text { font-size: 12px; color: #6b7280; margin-top: 2px; }
-
-    /* Status Buttons */
-    .status-buttons {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-    }
-    .status-btn {
-        padding: 6px 14px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
         border: 2px solid transparent;
+        transition: all 0.2s;
+    }
+
+    /* Status-based avatar border */
+    .guru-entry.status-hadir-tepat .guru-avatar { border-color: #059669; }
+    .guru-entry.status-hadir-terlambat .guru-avatar { border-color: #7c3aed; }
+    .guru-entry.status-izin .guru-avatar { border-color: #d97706; }
+    .guru-entry.status-tanpa-keterangan .guru-avatar { border-color: #dc2626; }
+
+    .guru-detail { flex: 1; min-width: 0; }
+    .guru-name-text { font-size: 13px; font-weight: 600; color: #1f2937; }
+    .guru-mapel-text { font-size: 11px; color: #6b7280; margin-top: 1px; }
+
+    /* Clickable Status Area */
+    .guru-status-click {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: rgba(255,255,255,0.8);
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
         cursor: pointer;
         transition: all 0.2s;
-        font-family: inherit;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: #f9fafb;
-        color: #6b7280;
+        min-width: 170px;
+        justify-content: center;
     }
-    .status-btn:hover { transform: translateY(-1px); }
-    .status-btn.active { transform: scale(1.02); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-
-    .status-btn[data-status="Hadir Tepat Waktu"] { border-color: #d1fae5; }
-    .status-btn[data-status="Hadir Tepat Waktu"]:hover,
-    .status-btn[data-status="Hadir Tepat Waktu"].active { background: #059669; color: white; border-color: #059669; }
-
-    .status-btn[data-status="Hadir Terlambat"] { border-color: #ddd6fe; }
-    .status-btn[data-status="Hadir Terlambat"]:hover,
-    .status-btn[data-status="Hadir Terlambat"].active { background: #7c3aed; color: white; border-color: #7c3aed; }
-
-    .status-btn[data-status="Izin"] { border-color: #fde68a; }
-    .status-btn[data-status="Izin"]:hover,
-    .status-btn[data-status="Izin"].active { background: #d97706; color: white; border-color: #d97706; }
-
-    .status-btn[data-status="Tanpa Keterangan"] { border-color: #fecaca; }
-    .status-btn[data-status="Tanpa Keterangan"]:hover,
-    .status-btn[data-status="Tanpa Keterangan"].active { background: #dc2626; color: white; border-color: #dc2626; }
-
-    .status-btn:disabled {
+    .guru-status-click:hover {
+        border-color: #3b82f6;
+        background: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .guru-status-click.disabled {
         cursor: not-allowed;
-        opacity: 0.7;
-        transform: none !important;
+        opacity: 0.85;
+    }
+    .guru-status-click.disabled:hover {
+        border-color: #d97706;
+        transform: none;
+        box-shadow: none;
+    }
+    .status-label { font-size: 11px; color: #9ca3af; }
+    .status-value { font-size: 12px; font-weight: 600; color: #6b7280; }
+    .status-edit-icon { font-size: 10px; color: #9ca3af; }
+
+    /* Status-colored value text  */
+    .guru-entry.status-hadir-tepat .status-value { color: #059669; }
+    .guru-entry.status-hadir-tepat .guru-status-click { border-color: #a7f3d0; background: #f0fdf4; }
+    .guru-entry.status-hadir-terlambat .status-value { color: #7c3aed; }
+    .guru-entry.status-hadir-terlambat .guru-status-click { border-color: #ddd6fe; background: #f5f3ff; }
+    .guru-entry.status-izin .status-value { color: #d97706; }
+    .guru-entry.status-izin .guru-status-click { border-color: #fde68a; background: #fffbeb; }
+    .guru-entry.status-tanpa-keterangan .status-value { color: #dc2626; }
+    .guru-entry.status-tanpa-keterangan .guru-status-click { border-color: #fecaca; background: #fef2f2; }
+
+    /* Status badge (top-right corner indicator) */
+    .guru-status-badge {
+        font-size: 9px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        color: white;
+        flex-shrink: 0;
+    }
+    .guru-status-badge.hadir-tepat { background: #059669; }
+    .guru-status-badge.hadir-terlambat { background: #7c3aed; }
+    .guru-status-badge.izin { background: #d97706; }
+    .guru-status-badge.tanpa-keterangan { background: #dc2626; }
+
+    /* Izin Info inline */
+    .izin-inline-info {
+        font-size: 11px;
+        color: #92400e;
+        background: #fffbeb;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid #fde68a;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
     }
 
-    /* Izin Info Box */
-    .izin-info-box {
+    /* MODAL STYLES */
+    .piket-modal-options {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+    }
+    .piket-modal-option {
+        position: relative;
+        cursor: pointer;
+        margin: 0;
+        padding: 0;
+        transition: all 0.2s ease;
+    }
+    .modal-option-content {
+        padding: 12px 18px;
+        border: 2.5px solid #e9ecef;
+        border-radius: 10px;
+        background: white;
+        transition: all 0.2s ease;
+        min-width: 100px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    .modal-option-content:hover { transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1); }
+    .modal-option-content i { font-size: 22px; display: block; line-height: 1; }
+    .modal-option-content span { font-weight: 600; font-size: 11px; line-height: 1; text-align: center; white-space: nowrap; }
+
+    .piket-modal-option.hadir-tepat .modal-option-content { color: #059669; border-color: rgba(5,150,105,0.3); }
+    .piket-modal-option.hadir-terlambat .modal-option-content { color: #7c3aed; border-color: rgba(124,58,237,0.3); }
+    .piket-modal-option.izin .modal-option-content { color: #d97706; border-color: rgba(217,119,6,0.3); }
+    .piket-modal-option.tanpa-keterangan .modal-option-content { color: #dc2626; border-color: rgba(220,38,38,0.3); }
+
+    .piket-modal-option.selected .modal-option-content { border-width: 3px; transform: scale(0.95); }
+    .piket-modal-option.hadir-tepat.selected .modal-option-content { background: #059669; color: white; border-color: #059669; }
+    .piket-modal-option.hadir-terlambat.selected .modal-option-content { background: #7c3aed; color: white; border-color: #7c3aed; }
+    .piket-modal-option.izin.selected .modal-option-content { background: #d97706; color: white; border-color: #d97706; }
+    .piket-modal-option.tanpa-keterangan.selected .modal-option-content { background: #dc2626; color: white; border-color: #dc2626; }
+
+    /* Modal guru info section */
+    .modal-guru-info {
+        text-align: center;
+        padding: 15px;
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+    .modal-guru-avatar {
+        width: 70px; height: 70px;
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: white; font-size: 28px;
+        margin-bottom: 10px;
+        border: 3px solid #3b82f6;
+    }
+    .modal-guru-name { font-size: 16px; font-weight: 700; color: #1f2937; margin: 0; }
+    .modal-guru-detail { font-size: 13px; color: #6b7280; margin: 4px 0 0; }
+
+    /* Modal izin info */
+    .modal-izin-box {
         background: #fffbeb;
         border: 1px solid #fde68a;
         border-radius: 10px;
-        padding: 12px 14px;
-        margin-top: 10px;
+        padding: 14px;
+        margin-top: 12px;
     }
-    .izin-info-box .izin-label {
-        font-size: 11px;
-        font-weight: 700;
-        color: #92400e;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 6px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .izin-info-box .izin-text {
-        font-size: 13px;
-        color: #78350f;
-        line-height: 1.5;
-    }
-    .izin-info-box .izin-tugas {
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px dashed #fbbf24;
-    }
+    .modal-izin-box .izin-row { margin-bottom: 8px; }
+    .modal-izin-box .izin-row:last-child { margin-bottom: 0; }
+    .modal-izin-box .izin-label-text { font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; }
+    .modal-izin-box .izin-value-text { font-size: 13px; color: #78350f; margin-top: 2px; }
 
-    /* Keterangan inline */
-    .keterangan-row {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        margin-top: 8px;
-    }
-    .keterangan-input {
-        flex: 1;
-        padding: 6px 12px;
+    /* Keterangan in modal */
+    .modal-keterangan-section { margin-top: 12px; }
+    .modal-keterangan-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .modal-keterangan-input {
+        width: 100%;
+        padding: 8px 12px;
         border: 1.5px solid #d1d5db;
         border-radius: 8px;
-        font-size: 12px;
+        font-size: 13px;
         font-family: inherit;
         transition: all 0.2s;
     }
-    .keterangan-input:focus {
+    .modal-keterangan-input:focus {
         outline: none;
         border-color: #3b82f6;
         box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
     }
-
-    /* Save result indicator */
-    .save-indicator {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 3px 8px;
-        border-radius: 6px;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        transition: opacity 0.3s;
-    }
-    .save-indicator.success { background: #d1fae5; color: #065f46; }
-    .save-indicator.error { background: #fef2f2; color: #dc2626; }
 
     /* Empty state */
     .empty-jam {
@@ -311,19 +374,15 @@
         font-size: 13px;
     }
 
-    /* Saved badge on guru */
-    .saved-check {
-        color: #10b981;
-        font-size: 12px;
-        margin-left: 4px;
-    }
-
     @media (max-width: 768px) {
         .catatan-header { flex-direction: column; text-align: center; }
         .catatan-header .header-left { flex-direction: column; }
-        .status-buttons { flex-direction: column; }
-        .status-btn { justify-content: center; }
         .jam-stats { display: none; }
+        .guru-entry { flex-wrap: wrap; }
+        .guru-status-click { min-width: 100%; }
+        .modal-option-content { padding: 10px 12px; min-width: 70px; }
+        .modal-option-content i { font-size: 18px; }
+        .modal-option-content span { font-size: 10px; }
     }
 </style>
 @endpush
@@ -352,7 +411,7 @@
                         <span class="header-badge testing"><i class="fas fa-flask"></i> Testing</span>
                     @endif
                 </div>
-                <a href="{{ route('guru.tugas-tambahan') }}" class="btn-back">
+                <a href="{{ route('guru.tugas-tambahan') }}" class="btn-back-header">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -416,80 +475,65 @@
 
                                     @foreach($guruEntries as $entry)
                                         @php
-                                            $slug = Str::slug($entry['nama_guru'] . '-' . $namaRombel);
+                                            $uniqueId = $jam . '-' . Str::slug($entry['nama_guru'] . '-' . $namaRombel);
                                             $catatanKey = $jam . '|' . $entry['nama_guru'] . '|' . $namaRombel;
                                             $existing = $catatanHariIni[$catatanKey] ?? null;
                                             $izinKey = $entry['nama_guru'] . '|' . $entry['id_rombel'] . '|' . $jam;
                                             $izinData = $izinGuruHariIni[$izinKey] ?? null;
                                             $isIzin = !is_null($izinData);
-                                            $currentStatus = $existing->status_kehadiran ?? ($isIzin ? 'Izin' : '');
-                                        @endphp
-                                        <div class="guru-entry" id="entry-{{ $jam }}-{{ $slug }}">
-                                            <div class="guru-info">
-                                                <div class="guru-avatar">
-                                                    <i class="fas fa-chalkboard-teacher"></i>
-                                                </div>
-                                                <div class="guru-detail">
-                                                    <div class="guru-name-text">
-                                                        {{ $entry['nama_guru'] }}
-                                                        @if($existing)
-                                                            <i class="fas fa-check-circle saved-check" title="Sudah dicatat"></i>
-                                                        @endif
-                                                    </div>
-                                                    <div class="guru-mapel-text">{{ $entry['nama_mapel'] }}</div>
-                                                </div>
-                                                <span class="save-indicator" id="indicator-{{ $jam }}-{{ $slug }}" style="display:none;"></span>
-                                            </div>
 
-                                            <div class="status-buttons">
+                                            // Determine current status
+                                            $currentStatus = '';
+                                            $statusText = 'Klik untuk konfirmasi';
+                                            $statusClass = '';
+                                            $badgeClass = '';
+
+                                            if ($isIzin) {
+                                                $currentStatus = 'Izin';
+                                                $statusText = 'Izin (Konfirmasi Guru)';
+                                                $statusClass = 'status-izin';
+                                                $badgeClass = 'izin';
+                                            } elseif ($existing) {
+                                                $currentStatus = $existing->status_kehadiran;
+                                                $statusText = $currentStatus;
+                                                $statusMap = [
+                                                    'Hadir Tepat Waktu' => ['class' => 'status-hadir-tepat', 'badge' => 'hadir-tepat'],
+                                                    'Hadir Terlambat' => ['class' => 'status-hadir-terlambat', 'badge' => 'hadir-terlambat'],
+                                                    'Izin' => ['class' => 'status-izin', 'badge' => 'izin'],
+                                                    'Tanpa Keterangan' => ['class' => 'status-tanpa-keterangan', 'badge' => 'tanpa-keterangan'],
+                                                ];
+                                                $statusClass = $statusMap[$currentStatus]['class'] ?? '';
+                                                $badgeClass = $statusMap[$currentStatus]['badge'] ?? '';
+                                            }
+                                        @endphp
+                                        <div class="guru-entry {{ $statusClass }}" id="entry-{{ $uniqueId }}">
+                                            <div class="guru-avatar">
+                                                <i class="fas fa-chalkboard-teacher"></i>
+                                            </div>
+                                            <div class="guru-detail">
+                                                <div class="guru-name-text">{{ $entry['nama_guru'] }}</div>
+                                                <div class="guru-mapel-text">{{ $entry['nama_mapel'] }}</div>
                                                 @if($isIzin)
-                                                    {{-- Guru already confirmed izin via their account --}}
-                                                    <button class="status-btn active" data-status="Izin" disabled>
-                                                        <i class="fas fa-file-alt"></i> Izin (Dikonfirmasi Guru)
-                                                    </button>
-                                                @else
-                                                    <button class="status-btn {{ $currentStatus === 'Hadir Tepat Waktu' ? 'active' : '' }}"
-                                                            data-status="Hadir Tepat Waktu"
-                                                            onclick="selectStatus({{ $jam }}, '{{ $slug }}', 'Hadir Tepat Waktu', '{{ addslashes($entry['nama_guru']) }}', '{{ addslashes($entry['nama_mapel']) }}', '{{ addslashes($namaRombel) }}', this)">
-                                                        <i class="fas fa-check-circle"></i> Hadir Tepat Waktu
-                                                    </button>
-                                                    <button class="status-btn {{ $currentStatus === 'Hadir Terlambat' ? 'active' : '' }}"
-                                                            data-status="Hadir Terlambat"
-                                                            onclick="selectStatus({{ $jam }}, '{{ $slug }}', 'Hadir Terlambat', '{{ addslashes($entry['nama_guru']) }}', '{{ addslashes($entry['nama_mapel']) }}', '{{ addslashes($namaRombel) }}', this)">
-                                                        <i class="fas fa-clock"></i> Hadir Terlambat
-                                                    </button>
-                                                    <button class="status-btn {{ $currentStatus === 'Izin' ? 'active' : '' }}"
-                                                            data-status="Izin"
-                                                            onclick="selectStatus({{ $jam }}, '{{ $slug }}', 'Izin', '{{ addslashes($entry['nama_guru']) }}', '{{ addslashes($entry['nama_mapel']) }}', '{{ addslashes($namaRombel) }}', this)">
-                                                        <i class="fas fa-file-alt"></i> Izin
-                                                    </button>
-                                                    <button class="status-btn {{ $currentStatus === 'Tanpa Keterangan' ? 'active' : '' }}"
-                                                            data-status="Tanpa Keterangan"
-                                                            onclick="selectStatus({{ $jam }}, '{{ $slug }}', 'Tanpa Keterangan', '{{ addslashes($entry['nama_guru']) }}', '{{ addslashes($entry['nama_mapel']) }}', '{{ addslashes($namaRombel) }}', this)">
-                                                        <i class="fas fa-question-circle"></i> Tanpa Keterangan
-                                                    </button>
+                                                    <div class="izin-inline-info">
+                                                        <i class="fas fa-info-circle"></i> Izin dikonfirmasi oleh guru
+                                                    </div>
                                                 @endif
                                             </div>
 
-                                            @if($isIzin)
-                                                <div class="izin-info-box">
-                                                    <div class="izin-label"><i class="fas fa-info-circle"></i> Alasan Izin</div>
-                                                    <div class="izin-text">{{ $izinData['alasan'] }}</div>
-                                                    @if(!empty($izinData['tugas']))
-                                                        <div class="izin-tugas">
-                                                            <div class="izin-label"><i class="fas fa-tasks"></i> Tugas yang Diberikan</div>
-                                                            <div class="izin-text">{{ $izinData['tugas'] }}</div>
-                                                        </div>
-                                                    @endif
-                                                </div>
+                                            @if(!empty($badgeClass))
+                                                <span class="guru-status-badge {{ $badgeClass }}" id="badge-{{ $uniqueId }}">{{ $currentStatus }}</span>
+                                            @else
+                                                <span class="guru-status-badge" id="badge-{{ $uniqueId }}" style="display:none;"></span>
                                             @endif
 
-                                            @if(!$isIzin)
-                                                <div class="keterangan-row">
-                                                    <input type="text" class="keterangan-input" id="keterangan-{{ $jam }}-{{ $slug }}"
-                                                           placeholder="Keterangan (opsional)..." value="{{ $existing->keterangan ?? '' }}">
+                                            <div class="guru-status-click {{ $isIzin ? 'disabled' : '' }}"
+                                                 onclick="openPiketModal('{{ $uniqueId }}', {{ $jam }}, '{{ addslashes($entry['nama_guru']) }}', '{{ addslashes($entry['nama_mapel']) }}', '{{ addslashes($namaRombel) }}', '{{ $currentStatus }}', '{{ $existing->keterangan ?? '' }}', {{ $isIzin ? 'true' : 'false' }}, '{{ addslashes($izinData['alasan'] ?? '') }}', '{{ addslashes($izinData['tugas'] ?? '') }}')">
+                                                <div style="text-align:center;">
+                                                    <div class="status-label">Status</div>
+                                                    <div class="status-value" id="statusVal-{{ $uniqueId }}">{{ $statusText }}</div>
                                                 </div>
-                                            @endif
+                                                <i class="fas fa-pencil-alt status-edit-icon"></i>
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
@@ -506,39 +550,191 @@
         @endfor
     </div>
 </div>
+
+<!-- Modal Konfirmasi Kehadiran Guru -->
+<div class="modal fade" id="piketModal" tabindex="-1" aria-labelledby="piketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="piketModalLabel">
+                    <i class="fas fa-user-check me-2"></i> Konfirmasi Kehadiran Guru
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Guru Info -->
+                <div class="modal-guru-info">
+                    <div class="modal-guru-avatar">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h4 class="modal-guru-name" id="modalGuruName"></h4>
+                    <p class="modal-guru-detail" id="modalGuruDetail"></p>
+                </div>
+
+                <!-- Status Options -->
+                <div class="piket-modal-options" id="modalOptionsSection">
+                    <div class="row g-2 justify-content-center">
+                        <div class="col-auto">
+                            <label class="piket-modal-option hadir-tepat" onclick="selectPiketStatus('Hadir Tepat Waktu')">
+                                <div class="modal-option-content" id="opt-hadir-tepat">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Hadir<br>Tepat Waktu</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-auto">
+                            <label class="piket-modal-option hadir-terlambat" onclick="selectPiketStatus('Hadir Terlambat')">
+                                <div class="modal-option-content" id="opt-hadir-terlambat">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Hadir<br>Terlambat</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-auto">
+                            <label class="piket-modal-option izin" onclick="selectPiketStatus('Izin')">
+                                <div class="modal-option-content" id="opt-izin">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Izin</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-auto">
+                            <label class="piket-modal-option tanpa-keterangan" onclick="selectPiketStatus('Tanpa Keterangan')">
+                                <div class="modal-option-content" id="opt-tanpa-keterangan">
+                                    <i class="fas fa-question-circle"></i>
+                                    <span>Tanpa<br>Keterangan</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Izin Info Box (shown when guru already confirmed izin) -->
+                <div class="modal-izin-box" id="modalIzinBox" style="display:none;">
+                    <div class="izin-row">
+                        <div class="izin-label-text"><i class="fas fa-info-circle"></i> Alasan Izin</div>
+                        <div class="izin-value-text" id="modalIzinAlasan"></div>
+                    </div>
+                    <div class="izin-row" id="modalIzinTugasRow" style="display:none;">
+                        <div class="izin-label-text"><i class="fas fa-tasks"></i> Tugas yang Diberikan</div>
+                        <div class="izin-value-text" id="modalIzinTugas"></div>
+                    </div>
+                </div>
+
+                <!-- Keterangan -->
+                <div class="modal-keterangan-section" id="modalKeteranganSection">
+                    <div class="modal-keterangan-label">Keterangan (opsional)</div>
+                    <input type="text" class="modal-keterangan-input" id="modalKeterangan" placeholder="Tambahkan keterangan...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btnSimpanModal" onclick="savePiketStatus()">
+                    <i class="fas fa-save me-1"></i> Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    let currentUniqueId = '';
+    let currentJamKe = 0;
+    let currentNamaGuru = '';
+    let currentNamaMapel = '';
+    let currentNamaRombel = '';
+    let currentSelectedStatus = '';
+    let isIzinMode = false;
 
     function toggleJam(jam) {
-        const card = document.getElementById('jam-card-' + jam);
-        card.classList.toggle('open');
+        document.getElementById('jam-card-' + jam).classList.toggle('open');
     }
 
-    function selectStatus(jamKe, slug, status, namaGuru, namaMapel, namaRombel, btn) {
-        // Toggle active state
-        const parent = btn.closest('.status-buttons');
-        const buttons = parent.querySelectorAll('.status-btn');
-        const wasActive = btn.classList.contains('active');
+    function openPiketModal(uniqueId, jamKe, namaGuru, namaMapel, namaRombel, currentStatus, keterangan, isIzin, izinAlasan, izinTugas) {
+        currentUniqueId = uniqueId;
+        currentJamKe = jamKe;
+        currentNamaGuru = namaGuru;
+        currentNamaMapel = namaMapel;
+        currentNamaRombel = namaRombel;
+        currentSelectedStatus = currentStatus;
+        isIzinMode = isIzin;
 
-        buttons.forEach(b => b.classList.remove('active'));
-        if (!wasActive) {
-            btn.classList.add('active');
+        // Set guru info
+        document.getElementById('modalGuruName').textContent = namaGuru;
+        document.getElementById('modalGuruDetail').textContent = namaMapel + ' • ' + namaRombel + ' • Jam ke-' + jamKe;
+
+        // Reset option selections
+        document.querySelectorAll('.piket-modal-option').forEach(opt => opt.classList.remove('selected'));
+
+        // Handle izin mode
+        if (isIzin) {
+            document.getElementById('modalOptionsSection').style.display = 'none';
+            document.getElementById('modalIzinBox').style.display = 'block';
+            document.getElementById('modalIzinAlasan').textContent = izinAlasan;
+            document.getElementById('modalKeteranganSection').style.display = 'none';
+            document.getElementById('btnSimpanModal').style.display = 'none';
+
+            if (izinTugas) {
+                document.getElementById('modalIzinTugasRow').style.display = 'block';
+                document.getElementById('modalIzinTugas').textContent = izinTugas;
+            } else {
+                document.getElementById('modalIzinTugasRow').style.display = 'none';
+            }
+        } else {
+            document.getElementById('modalOptionsSection').style.display = 'block';
+            document.getElementById('modalIzinBox').style.display = 'none';
+            document.getElementById('modalKeteranganSection').style.display = 'block';
+            document.getElementById('btnSimpanModal').style.display = 'inline-block';
+            document.getElementById('modalKeterangan').value = keterangan || '';
+
+            // Highlight current status
+            if (currentStatus) {
+                const statusClassMap = {
+                    'Hadir Tepat Waktu': 'hadir-tepat',
+                    'Hadir Terlambat': 'hadir-terlambat',
+                    'Izin': 'izin',
+                    'Tanpa Keterangan': 'tanpa-keterangan'
+                };
+                const cls = statusClassMap[currentStatus];
+                if (cls) {
+                    document.querySelector('.piket-modal-option.' + cls).classList.add('selected');
+                }
+            }
         }
 
-        // Auto-save
-        const keteranganEl = document.getElementById('keterangan-' + jamKe + '-' + slug);
-        const keterangan = keteranganEl ? keteranganEl.value : '';
-        const indicator = document.getElementById('indicator-' + jamKe + '-' + slug);
+        var modal = new bootstrap.Modal(document.getElementById('piketModal'));
+        modal.show();
+    }
 
-        // Show saving state
-        indicator.style.display = 'inline-flex';
-        indicator.className = 'save-indicator';
-        indicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-        indicator.style.color = '#6b7280';
-        indicator.style.background = '#f3f4f6';
+    function selectPiketStatus(status) {
+        currentSelectedStatus = status;
+        // Toggle selection visuals
+        document.querySelectorAll('.piket-modal-option').forEach(opt => opt.classList.remove('selected'));
+        const statusClassMap = {
+            'Hadir Tepat Waktu': 'hadir-tepat',
+            'Hadir Terlambat': 'hadir-terlambat',
+            'Izin': 'izin',
+            'Tanpa Keterangan': 'tanpa-keterangan'
+        };
+        const cls = statusClassMap[status];
+        if (cls) {
+            document.querySelector('.piket-modal-option.' + cls).classList.add('selected');
+        }
+    }
+
+    function savePiketStatus() {
+        if (!currentSelectedStatus) {
+            alert('Pilih status kehadiran terlebih dahulu');
+            return;
+        }
+
+        const keterangan = document.getElementById('modalKeterangan').value;
+        const btn = document.getElementById('btnSimpanModal');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...';
 
         fetch('{{ route("guru.catatan-piket.store") }}', {
             method: 'POST',
@@ -549,29 +745,65 @@
             body: JSON.stringify({
                 piket_kbm_id: {{ $piketHariIni->id }},
                 tanggal: '{{ $tanggalHariIni }}',
-                jam_ke: jamKe,
-                nama_guru: namaGuru,
-                nama_mapel: namaMapel,
-                nama_rombel: namaRombel,
-                status_kehadiran: wasActive ? '' : status,
+                jam_ke: currentJamKe,
+                nama_guru: currentNamaGuru,
+                nama_mapel: currentNamaMapel,
+                nama_rombel: currentNamaRombel,
+                status_kehadiran: currentSelectedStatus,
                 keterangan: keterangan,
             })
         })
         .then(res => res.json())
         .then(result => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save me-1"></i> Simpan';
+
             if (result.success) {
-                indicator.className = 'save-indicator success';
-                indicator.innerHTML = '<i class="fas fa-check"></i> Tersimpan';
-                setTimeout(() => { indicator.style.display = 'none'; }, 2000);
+                // Update the card UI
+                updateEntryUI(currentUniqueId, currentSelectedStatus);
+
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('piketModal')).hide();
             } else {
-                indicator.className = 'save-indicator error';
-                indicator.innerHTML = '<i class="fas fa-times"></i> Gagal';
+                alert('Gagal menyimpan: ' + (result.message || 'Terjadi kesalahan'));
             }
         })
         .catch(() => {
-            indicator.className = 'save-indicator error';
-            indicator.innerHTML = '<i class="fas fa-times"></i> Error';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save me-1"></i> Simpan';
+            alert('Terjadi kesalahan jaringan');
         });
+    }
+
+    function updateEntryUI(uniqueId, status) {
+        const entry = document.getElementById('entry-' + uniqueId);
+        const statusVal = document.getElementById('statusVal-' + uniqueId);
+        const badge = document.getElementById('badge-' + uniqueId);
+
+        // Remove all status classes
+        entry.classList.remove('status-hadir-tepat', 'status-hadir-terlambat', 'status-izin', 'status-tanpa-keterangan');
+
+        // Add new status class
+        const statusClassMap = {
+            'Hadir Tepat Waktu': 'status-hadir-tepat',
+            'Hadir Terlambat': 'status-hadir-terlambat',
+            'Izin': 'status-izin',
+            'Tanpa Keterangan': 'status-tanpa-keterangan'
+        };
+        const badgeClassMap = {
+            'Hadir Tepat Waktu': 'hadir-tepat',
+            'Hadir Terlambat': 'hadir-terlambat',
+            'Izin': 'izin',
+            'Tanpa Keterangan': 'tanpa-keterangan'
+        };
+
+        entry.classList.add(statusClassMap[status]);
+        statusVal.textContent = status;
+
+        // Update badge
+        badge.className = 'guru-status-badge ' + badgeClassMap[status];
+        badge.textContent = status;
+        badge.style.display = 'inline-block';
     }
 </script>
 @endpush
