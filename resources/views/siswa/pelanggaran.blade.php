@@ -236,6 +236,10 @@
 @endpush
 
 @section('content')
+<div class="layout">
+    @include('layouts.partials.sidebar-siswa')
+
+    <div class="main-content">
 <!-- Header -->
 <div class="pelanggaran-header-card">
     <div class="pelanggaran-header-icon">
@@ -331,6 +335,8 @@
                 <p>Belum ada catatan pelanggaran pada periode ini. Pertahankan!</p>
             </div>
         @endforelse
+    </div>
+</div>
     </div>
 </div>
 @endsection

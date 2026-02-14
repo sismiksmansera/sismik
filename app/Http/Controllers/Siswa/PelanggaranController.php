@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DataPeriodik;
 use App\Models\Pelanggaran;
+use App\Models\LoginSettings;
 
 class PelanggaranController extends Controller
 {
@@ -51,6 +52,9 @@ class PelanggaranController extends Controller
         $totalPelanggaran = $pelanggaranList->count();
         $jenisCounts = $pelanggaranList->groupBy('jenis_pelanggaran')->map->count();
 
+        // Login settings for sidebar logo
+        $loginSettings = LoginSettings::first();
+
         return view('siswa.pelanggaran', compact(
             'siswa',
             'periodik',
@@ -58,7 +62,8 @@ class PelanggaranController extends Controller
             'totalPelanggaran',
             'jenisCounts',
             'tahunAktif',
-            'semesterAktif'
+            'semesterAktif',
+            'loginSettings'
         ));
     }
 }
