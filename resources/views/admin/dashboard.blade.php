@@ -205,12 +205,16 @@
                         <table class="modern-table" style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: #f9fafb;">
-                                    <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151; width: 160px;">Jam ke -</th>
-                                    <th style="padding: 12px 15px; text-align: left; font-weight: 600; color: #374151;">Mata Pelajaran</th>
-                                    <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151;">Kehadiran Guru</th>
-                                    <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151;">Presensi Siswa</th>
-                                    <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151;">Penilaian</th>
-                                    <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151; width: 100px;">Detail</th>
+                                    <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151; width: 160px;" rowspan="2">Jam ke -</th>
+                                    <th style="padding: 12px 15px; text-align: left; font-weight: 600; color: #374151;" rowspan="2">Mata Pelajaran</th>
+                                    <th style="padding: 8px 15px; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;" colspan="2">Kehadiran Guru</th>
+                                    <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151;" rowspan="2">Presensi Siswa</th>
+                                    <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151;" rowspan="2">Penilaian</th>
+                                    <th style="padding: 12px 15px; text-align: center; font-weight: 600; color: #374151; width: 100px;" rowspan="2">Detail</th>
+                                </tr>
+                                <tr style="background: #f3f4f6;">
+                                    <th style="padding: 6px 10px; text-align: center; font-weight: 600; color: #6b7280; font-size: 11px;">Konfirmasi Siswa</th>
+                                    <th style="padding: 6px 10px; text-align: center; font-weight: 600; color: #6b7280; font-size: 11px;">Konfirmasi Guru Piket</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -222,6 +226,9 @@
                                     // Kehadiran guru styling
                                     $kehadiranStatus = $jadwal['kehadiran_status'];
                                     $kehadiranGuruData = $jadwal['kehadiran_guru_data'] ?? null;
+                                    
+                                    // Catatan piket data
+                                    $catatanPiket = $jadwal['catatan_piket'] ?? null;
                                     
                                     // Presensi styling
                                     $presensiPersen = $jadwal['presensi_persen'];
@@ -243,34 +250,62 @@
                                         <div style="font-weight: 600; color: var(--primary);">{{ $jadwal['nama_mapel'] }}</div>
                                         <small style="color: #6b7280;">Guru: {{ $jadwal['nama_guru'] ?? '-' }}</small>
                                     </td>
-                                    <td style="padding: 12px 15px; text-align: center;">
+                                    {{-- Konfirmasi Siswa --}}
+                                    <td style="padding: 12px 10px; text-align: center;">
                                         @if($kehadiranStatus === 'belum')
-                                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(156,163,175,0.1); color: #6b7280;">
+                                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(156,163,175,0.1); color: #6b7280;">
                                                 <i class="fas fa-minus-circle"></i>
-                                                Belum Hadir
+                                                Belum
                                             </span>
                                         @elseif($kehadiranStatus === 'izin')
-                                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(245,158,11,0.1); color: #f59e0b;">
+                                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(245,158,11,0.1); color: #f59e0b;">
                                                 <i class="fas fa-clock"></i>
                                                 Izin
                                             </span>
                                         @elseif($kehadiranStatus === 'belum_terkonfirmasi')
-                                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(245,158,11,0.1); color: #f59e0b;">
+                                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 600; background: rgba(245,158,11,0.1); color: #f59e0b;">
                                                 <i class="fas fa-question-circle"></i>
-                                                Belum Terkonfirmasi
+                                                Belum Konfirmasi
                                             </span>
                                         @elseif($kehadiranStatus === 'terkonfirmasi' && $kehadiranGuruData)
-                                            <div style="font-size: 11px; line-height: 1.6; text-align: left; display: inline-block;">
+                                            <div style="font-size: 10px; line-height: 1.6; text-align: left; display: inline-block;">
                                                 @if($kehadiranGuruData['tepat_waktu'] > 0)
-                                                <div style="color: #059669;"><i class="fas fa-check-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tepat_waktu'] }}% Terkonfirmasi Tepat Waktu</div>
+                                                <div style="color: #059669;"><i class="fas fa-check-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tepat_waktu'] }}% Tepat Waktu</div>
                                                 @endif
                                                 @if($kehadiranGuruData['terlambat'] > 0)
-                                                <div style="color: #d97706;"><i class="fas fa-clock" style="width: 14px;"></i> {{ $kehadiranGuruData['terlambat'] }}% Terkonfirmasi Terlambat</div>
+                                                <div style="color: #d97706;"><i class="fas fa-clock" style="width: 14px;"></i> {{ $kehadiranGuruData['terlambat'] }}% Terlambat</div>
                                                 @endif
                                                 @if($kehadiranGuruData['tidak_hadir'] > 0)
-                                                <div style="color: #dc2626;"><i class="fas fa-times-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tidak_hadir'] }}% Terkonfirmasi Tidak Hadir</div>
+                                                <div style="color: #dc2626;"><i class="fas fa-times-circle" style="width: 14px;"></i> {{ $kehadiranGuruData['tidak_hadir'] }}% Tidak Hadir</div>
                                                 @endif
                                             </div>
+                                        @endif
+                                    </td>
+                                    {{-- Konfirmasi Guru Piket --}}
+                                    <td style="padding: 12px 10px; text-align: center;">
+                                        @if($catatanPiket)
+                                            @php
+                                                $piketStatus = $catatanPiket->status_kehadiran;
+                                                $piketStyleMap = [
+                                                    'Hadir Tepat Waktu' => ['bg' => 'rgba(5,150,105,0.1)', 'color' => '#059669', 'icon' => 'fa-check-circle', 'label' => 'Tepat Waktu'],
+                                                    'Hadir Terlambat' => ['bg' => 'rgba(124,58,237,0.1)', 'color' => '#7c3aed', 'icon' => 'fa-clock', 'label' => 'Terlambat'],
+                                                    'Izin' => ['bg' => 'rgba(217,119,6,0.1)', 'color' => '#d97706', 'icon' => 'fa-file-alt', 'label' => 'Izin'],
+                                                    'Tanpa Keterangan' => ['bg' => 'rgba(220,38,38,0.1)', 'color' => '#dc2626', 'icon' => 'fa-question-circle', 'label' => 'Tanpa Ket.'],
+                                                ];
+                                                $ps = $piketStyleMap[$piketStatus] ?? ['bg' => 'rgba(156,163,175,0.1)', 'color' => '#6b7280', 'icon' => 'fa-minus-circle', 'label' => $piketStatus];
+                                            @endphp
+                                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: {{ $ps['bg'] }}; color: {{ $ps['color'] }};">
+                                                <i class="fas {{ $ps['icon'] }}"></i>
+                                                {{ $ps['label'] }}
+                                            </span>
+                                            <div style="font-size: 9px; color: #9ca3af; margin-top: 3px;">
+                                                oleh {{ $catatanPiket->dicatat_oleh }}
+                                            </div>
+                                        @else
+                                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(156,163,175,0.1); color: #9ca3af;">
+                                                <i class="fas fa-minus-circle"></i>
+                                                Belum
+                                            </span>
                                         @endif
                                     </td>
                                     <td style="padding: 12px 15px; text-align: center;">
