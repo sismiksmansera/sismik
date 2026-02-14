@@ -93,6 +93,12 @@ class CatatanPiketController extends Controller
             ];
         }
 
+        // Natural sort rombel names within each jam (so X.10 comes after X.9)
+        foreach ($jadwalPerJam as $jamKe => &$rombelData) {
+            uksort($rombelData, 'strnatcmp');
+        }
+        unset($rombelData);
+
         // Get izin guru for today
         $izinGuruHariIni = [];
         if (Schema::hasTable('izin_guru')) {
