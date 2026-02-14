@@ -265,6 +265,23 @@
             </div>
         @endif
 
+        <!-- Maintenance Mode Quick Card -->
+        <div onclick="openMaintenanceModal()" style="background: white; border-radius: 16px; padding: 18px 24px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 10px rgba(0,0,0,0.06)'">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-tools" style="color: white; font-size: 18px;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: #1f2937; font-size: 15px;">Maintenance Mode</div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 2px;" id="maintenanceQuickStatus">Memuat status...</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="maintenanceQuickBadge" style="padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #f3f4f6; color: #6b7280;">...</span>
+                <i class="fas fa-chevron-right" style="color: #9ca3af; font-size: 12px;"></i>
+            </div>
+        </div>
+
         <!-- Data Periodik Section -->
         <div class="content-section">
             <div class="section-header">
@@ -900,6 +917,53 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Maintenance Mode -->
+<div class="modal-overlay" id="modalMaintenance">
+    <div class="modal-content" style="max-width: 550px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-tools" style="color: #f59e0b;"></i> Pengaturan Maintenance Mode</h3>
+            <button class="modal-close" onclick="closeModal('modalMaintenance')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1px solid #fde68a; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 18px;"></i>
+                    <strong style="color: #92400e;">Perhatian</strong>
+                </div>
+                <p style="color: #78350f; font-size: 13px; margin: 0;">Saat maintenance mode aktif, semua pengguna (guru, guru BK, siswa) tidak dapat mengakses sistem. Hanya admin yang tetap bisa login.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Status Maintenance</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <label class="toggle-switch" style="position: relative; display: inline-block; width: 52px; height: 28px; cursor: pointer;">
+                        <input type="checkbox" id="maintenanceToggle" style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #d1d5db; border-radius: 28px; transition: 0.3s;"></span>
+                    </label>
+                    <span id="maintenanceStatusLabel" style="font-weight: 600; font-size: 14px; color: #6b7280;">Non-Aktif</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Pesan Maintenance</label>
+                <textarea id="maintenanceMessage" class="form-control" rows="3" placeholder="Tulis pesan yang akan ditampilkan kepada pengguna..." style="resize: vertical;">Sistem sedang dalam pemeliharaan. Silakan kembali beberapa saat lagi.</textarea>
+            </div>
+
+            <div id="maintenancePreviewLink" style="display: none; margin-top: 10px;">
+                <a href="/" target="_blank" style="color: #6366f1; font-size: 13px; text-decoration: none;">
+                    <i class="fas fa-external-link-alt"></i> Lihat halaman maintenance
+                </a>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modalMaintenance')">Tutup</button>
+            <button type="button" class="btn btn-primary" onclick="saveMaintenanceSettings()">
+                <i class="fas fa-save"></i> Simpan
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -1459,6 +1523,103 @@
             container.innerHTML = html;
         });
     }
+
+    // ============ MAINTENANCE MODE ============
+    function updateMaintenanceUI(isActive) {
+        const toggle = document.getElementById('maintenanceToggle');
+        const label = document.getElementById('maintenanceStatusLabel');
+        const quickStatus = document.getElementById('maintenanceQuickStatus');
+        const quickBadge = document.getElementById('maintenanceQuickBadge');
+        const previewLink = document.getElementById('maintenancePreviewLink');
+        const slider = toggle.nextElementSibling;
+
+        toggle.checked = isActive;
+        slider.style.background = isActive ? '#ef4444' : '#d1d5db';
+
+        // Update slider circle
+        if (!slider.querySelector('.slider-dot')) {
+            const dot = document.createElement('span');
+            dot.className = 'slider-dot';
+            dot.style.cssText = 'position:absolute;width:22px;height:22px;background:white;border-radius:50%;top:3px;transition:0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);';
+            slider.appendChild(dot);
+        }
+        const dot = slider.querySelector('.slider-dot');
+        dot.style.left = isActive ? '27px' : '3px';
+
+        label.textContent = isActive ? 'Aktif' : 'Non-Aktif';
+        label.style.color = isActive ? '#ef4444' : '#6b7280';
+
+        if (quickStatus) {
+            quickStatus.textContent = isActive ? 'Pengguna tidak dapat mengakses sistem' : 'Sistem berjalan normal';
+        }
+        if (quickBadge) {
+            quickBadge.textContent = isActive ? 'AKTIF' : 'NON-AKTIF';
+            quickBadge.style.background = isActive ? '#fef2f2' : '#f0fdf4';
+            quickBadge.style.color = isActive ? '#ef4444' : '#10b981';
+        }
+        if (previewLink) {
+            previewLink.style.display = isActive ? 'block' : 'none';
+        }
+    }
+
+    function loadMaintenanceSettings() {
+        fetch('{{ route("admin.maintenance.get") }}')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    updateMaintenanceUI(data.maintenance_mode == 1);
+                    document.getElementById('maintenanceMessage').value = data.maintenance_message;
+                }
+            })
+            .catch(() => {
+                document.getElementById('maintenanceQuickStatus').textContent = 'Gagal memuat status';
+            });
+    }
+
+    function openMaintenanceModal() {
+        loadMaintenanceSettings();
+        openModal('modalMaintenance');
+    }
+
+    function saveMaintenanceSettings() {
+        const toggle = document.getElementById('maintenanceToggle');
+        const message = document.getElementById('maintenanceMessage').value;
+
+        fetch('{{ route("admin.maintenance.save") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                maintenance_mode: toggle.checked,
+                maintenance_message: message
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                updateMaintenanceUI(data.maintenance_mode == 1);
+                alert(data.message);
+                closeModal('modalMaintenance');
+            } else {
+                alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+            }
+        })
+        .catch(() => alert('Gagal menyimpan pengaturan.'));
+    }
+
+    // Toggle switch click handler
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMaintenanceSettings();
+
+        const toggle = document.getElementById('maintenanceToggle');
+        if (toggle) {
+            toggle.addEventListener('change', function() {
+                updateMaintenanceUI(this.checked);
+            });
+        }
+    });
 </script>
 @endpush
 

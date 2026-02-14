@@ -533,4 +533,40 @@ class ManajemenSekolahController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Setting hari efektif berhasil dihapus.']);
     }
+
+    /**
+     * Get maintenance mode settings (AJAX)
+     */
+    public function getMaintenanceSettings()
+    {
+        $settings = LoginSettings::first();
+
+        return response()->json([
+            'success' => true,
+            'maintenance_mode' => $settings->maintenance_mode ?? 0,
+            'maintenance_message' => $settings->maintenance_message ?? 'Sistem sedang dalam pemeliharaan. Silakan kembali beberapa saat lagi.',
+        ]);
+    }
+
+    /**
+     * Save maintenance mode settings (AJAX)
+     */
+    public function saveMaintenanceSettings(Request $request)
+    {
+        $settings = LoginSettings::first();
+
+        if (!$settings) {
+            return response()->json(['success' => false, 'message' => 'Settings not found.'], 404);
+        }
+
+        $settings->maintenance_mode = $request->boolean('maintenance_mode') ? 1 : 0;
+        $settings->maintenance_message = $request->input('maintenance_message', 'Sistem sedang dalam pemeliharaan. Silakan kembali beberapa saat lagi.');
+        $settings->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $settings->maintenance_mode ? 'Maintenance mode diaktifkan.' : 'Maintenance mode dinonaktifkan.',
+            'maintenance_mode' => $settings->maintenance_mode,
+        ]);
+    }
 }

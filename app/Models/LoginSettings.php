@@ -20,6 +20,8 @@ class LoginSettings extends Model
         'overlay_color_end',
         'testing_date',
         'testing_active',
+        'maintenance_mode',
+        'maintenance_message',
     ];
 
     protected $casts = [

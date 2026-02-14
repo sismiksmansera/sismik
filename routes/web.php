@@ -79,6 +79,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/hari-efektif', [ManajemenSekolahController::class, 'saveHariEfektif'])->name('hari-efektif.save');
     Route::delete('/hari-efektif', [ManajemenSekolahController::class, 'deleteHariEfektif'])->name('hari-efektif.delete');
     
+    // Maintenance Mode
+    Route::get('/maintenance-settings', [ManajemenSekolahController::class, 'getMaintenanceSettings'])->name('maintenance.get');
+    Route::post('/maintenance-settings', [ManajemenSekolahController::class, 'saveMaintenanceSettings'])->name('maintenance.save');
+    
     // Backup & Restore
     Route::get('/backup-restore', [BackupController::class, 'index'])->name('backup-restore');
     Route::get('/backup/database', [BackupController::class, 'backupDatabase'])->name('backup.database');
