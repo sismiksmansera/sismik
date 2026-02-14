@@ -119,18 +119,19 @@ class CatatanPiketController extends Controller
             }
         }
 
-        // Get existing catatan for today
-        $catatanHariIni = CatatanPiketKbm::where('tanggal', $tanggalHariIni)
-            ->where('piket_kbm_id', $piketHariIni->id)
-            ->get()
-            ->keyBy(function ($item) {
-                return $item->jam_ke . '|' . $item->nama_guru . '|' . $item->nama_rombel;
-            });
-
         // Get all piket guru for today
         $semuaPiketHariIni = PiketKbm::where('hari', $hariIni)
             ->orderBy('created_at')
             ->get();
+
+        // Get existing catatan for today from ALL piket team members
+        $allPiketIds = $semuaPiketHariIni->pluck('id')->toArray();
+        $catatanHariIni = CatatanPiketKbm::where('tanggal', $tanggalHariIni)
+            ->whereIn('piket_kbm_id', $allPiketIds)
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->jam_ke . '|' . $item->nama_guru . '|' . $item->nama_rombel;
+            });
 
         return view('guru.catatan-piket', compact(
             'guru',
@@ -163,13 +164,13 @@ class CatatanPiketController extends Controller
 
         CatatanPiketKbm::updateOrCreate(
             [
-                'piket_kbm_id' => $request->piket_kbm_id,
                 'tanggal' => $request->tanggal,
                 'jam_ke' => $request->jam_ke,
                 'nama_guru' => $request->nama_guru,
                 'nama_rombel' => $request->nama_rombel,
             ],
             [
+                'piket_kbm_id' => $request->piket_kbm_id,
                 'nama_mapel' => $request->nama_mapel,
                 'status_kehadiran' => $request->status_kehadiran,
                 'keterangan' => $request->keterangan,
