@@ -280,6 +280,11 @@
         border-radius: 12px;
         border: 1px solid #e9ecef;
     }
+    .piket-modal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
     .piket-modal-option {
         position: relative;
         cursor: pointer;
@@ -288,21 +293,21 @@
         transition: all 0.2s ease;
     }
     .modal-option-content {
-        padding: 12px 18px;
+        padding: 18px 12px;
         border: 2.5px solid #e9ecef;
         border-radius: 10px;
         background: white;
         transition: all 0.2s ease;
-        min-width: 100px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 8px;
+        height: 100%;
     }
     .modal-option-content:hover { transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1); }
-    .modal-option-content i { font-size: 22px; display: block; line-height: 1; }
-    .modal-option-content span { font-weight: 600; font-size: 11px; line-height: 1; text-align: center; white-space: nowrap; }
+    .modal-option-content i { font-size: 26px; display: block; line-height: 1; }
+    .modal-option-content span { font-weight: 600; font-size: 12px; line-height: 1.3; text-align: center; }
 
     .piket-modal-option.hadir-tepat .modal-option-content { color: #059669; border-color: rgba(5,150,105,0.3); }
     .piket-modal-option.hadir-terlambat .modal-option-content { color: #7c3aed; border-color: rgba(124,58,237,0.3); }
@@ -573,39 +578,31 @@
 
                 <!-- Status Options -->
                 <div class="piket-modal-options" id="modalOptionsSection">
-                    <div class="row g-2 justify-content-center">
-                        <div class="col-auto">
-                            <label class="piket-modal-option hadir-tepat" onclick="selectPiketStatus('Hadir Tepat Waktu')">
-                                <div class="modal-option-content" id="opt-hadir-tepat">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Hadir<br>Tepat Waktu</span>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="col-auto">
-                            <label class="piket-modal-option hadir-terlambat" onclick="selectPiketStatus('Hadir Terlambat')">
-                                <div class="modal-option-content" id="opt-hadir-terlambat">
-                                    <i class="fas fa-clock"></i>
-                                    <span>Hadir<br>Terlambat</span>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="col-auto">
-                            <label class="piket-modal-option izin" onclick="selectPiketStatus('Izin')">
-                                <div class="modal-option-content" id="opt-izin">
-                                    <i class="fas fa-file-alt"></i>
-                                    <span>Izin</span>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="col-auto">
-                            <label class="piket-modal-option tanpa-keterangan" onclick="selectPiketStatus('Tanpa Keterangan')">
-                                <div class="modal-option-content" id="opt-tanpa-keterangan">
-                                    <i class="fas fa-question-circle"></i>
-                                    <span>Tanpa<br>Keterangan</span>
-                                </div>
-                            </label>
-                        </div>
+                    <div class="piket-modal-grid">
+                        <label class="piket-modal-option hadir-tepat" onclick="selectPiketStatus('Hadir Tepat Waktu')">
+                            <div class="modal-option-content" id="opt-hadir-tepat">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Hadir Tepat Waktu</span>
+                            </div>
+                        </label>
+                        <label class="piket-modal-option hadir-terlambat" onclick="selectPiketStatus('Hadir Terlambat')">
+                            <div class="modal-option-content" id="opt-hadir-terlambat">
+                                <i class="fas fa-clock"></i>
+                                <span>Hadir Terlambat</span>
+                            </div>
+                        </label>
+                        <label class="piket-modal-option izin" onclick="selectPiketStatus('Izin')">
+                            <div class="modal-option-content" id="opt-izin">
+                                <i class="fas fa-file-alt"></i>
+                                <span>Izin</span>
+                            </div>
+                        </label>
+                        <label class="piket-modal-option tanpa-keterangan" onclick="selectPiketStatus('Tanpa Keterangan')">
+                            <div class="modal-option-content" id="opt-tanpa-keterangan">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Tanpa Keterangan</span>
+                            </div>
+                        </label>
                     </div>
                 </div>
 
