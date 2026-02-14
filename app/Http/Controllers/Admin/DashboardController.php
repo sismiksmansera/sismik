@@ -259,15 +259,18 @@ class DashboardController extends Controller
                             ->where('jam_ke', $jamKeParam)
                             ->exists();
                         
-                        // Get catatan piket KBM (guru piket confirmation) for this jam
-                        $catatanPiket = null;
+                        // Get catatan piket KBM (guru piket confirmation) for each jam in range
+                        $catatanPiketPerJam = [];
                         if (Schema::hasTable('catatan_piket_kbm')) {
-                            $catatanPiket = DB::table('catatan_piket_kbm')
+                            $catatanRows = DB::table('catatan_piket_kbm')
                                 ->where('tanggal', $tanggalHariIni)
                                 ->where('nama_guru', $data['nama_guru'])
                                 ->where('nama_rombel', $rombelName)
-                                ->where('jam_ke', $firstJam)
-                                ->first();
+                                ->whereIn('jam_ke', $range)
+                                ->get();
+                            foreach ($catatanRows as $cr) {
+                                $catatanPiketPerJam[(int)$cr->jam_ke] = $cr;
+                            }
                         }
 
                         $jadwalItems[] = [
@@ -277,7 +280,7 @@ class DashboardController extends Controller
                             'jam_list' => $range,
                             'kehadiran_status' => $kehadiranStatus,
                             'kehadiran_guru_data' => $kehadiranGuruData,
-                            'catatan_piket' => $catatanPiket,
+                            'catatan_piket_per_jam' => $catatanPiketPerJam,
                             'presensi_persen' => $presensiPersen,
                             'has_penilaian' => $hasPenilaian,
                         ];

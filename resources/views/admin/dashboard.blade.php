@@ -227,8 +227,8 @@
                                     $kehadiranStatus = $jadwal['kehadiran_status'];
                                     $kehadiranGuruData = $jadwal['kehadiran_guru_data'] ?? null;
                                     
-                                    // Catatan piket data
-                                    $catatanPiket = $jadwal['catatan_piket'] ?? null;
+                                    // Catatan piket data (per jam)
+                                    $catatanPiketPerJam = $jadwal['catatan_piket_per_jam'] ?? [];
                                     
                                     // Presensi styling
                                     $presensiPersen = $jadwal['presensi_persen'];
@@ -241,6 +241,13 @@
                                             $presensiStyle = 'background: rgba(239,68,68,0.1); color: #ef4444;';
                                         }
                                     }
+
+                                    $piketStyleMap = [
+                                        'Hadir Tepat Waktu' => ['bg' => 'rgba(5,150,105,0.1)', 'color' => '#059669', 'icon' => 'fa-check-circle', 'label' => 'Tepat Waktu'],
+                                        'Hadir Terlambat' => ['bg' => 'rgba(124,58,237,0.1)', 'color' => '#7c3aed', 'icon' => 'fa-clock', 'label' => 'Terlambat'],
+                                        'Izin' => ['bg' => 'rgba(217,119,6,0.1)', 'color' => '#d97706', 'icon' => 'fa-file-alt', 'label' => 'Izin'],
+                                        'Tanpa Keterangan' => ['bg' => 'rgba(220,38,38,0.1)', 'color' => '#dc2626', 'icon' => 'fa-question-circle', 'label' => 'Tanpa Ket.'],
+                                    ];
                                 @endphp
                                 <tr style="border-bottom: 1px solid #f3f4f6;">
                                     <td style="padding: 12px 15px; text-align: center;">
@@ -281,32 +288,27 @@
                                             </div>
                                         @endif
                                     </td>
-                                    {{-- Konfirmasi Guru Piket --}}
-                                    <td style="padding: 12px 10px; text-align: center;">
-                                        @if($catatanPiket)
-                                            @php
-                                                $piketStatus = $catatanPiket->status_kehadiran;
-                                                $piketStyleMap = [
-                                                    'Hadir Tepat Waktu' => ['bg' => 'rgba(5,150,105,0.1)', 'color' => '#059669', 'icon' => 'fa-check-circle', 'label' => 'Tepat Waktu'],
-                                                    'Hadir Terlambat' => ['bg' => 'rgba(124,58,237,0.1)', 'color' => '#7c3aed', 'icon' => 'fa-clock', 'label' => 'Terlambat'],
-                                                    'Izin' => ['bg' => 'rgba(217,119,6,0.1)', 'color' => '#d97706', 'icon' => 'fa-file-alt', 'label' => 'Izin'],
-                                                    'Tanpa Keterangan' => ['bg' => 'rgba(220,38,38,0.1)', 'color' => '#dc2626', 'icon' => 'fa-question-circle', 'label' => 'Tanpa Ket.'],
-                                                ];
-                                                $ps = $piketStyleMap[$piketStatus] ?? ['bg' => 'rgba(156,163,175,0.1)', 'color' => '#6b7280', 'icon' => 'fa-minus-circle', 'label' => $piketStatus];
-                                            @endphp
-                                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: {{ $ps['bg'] }}; color: {{ $ps['color'] }};">
-                                                <i class="fas {{ $ps['icon'] }}"></i>
-                                                {{ $ps['label'] }}
-                                            </span>
-                                            <div style="font-size: 9px; color: #9ca3af; margin-top: 3px;">
-                                                oleh {{ $catatanPiket->dicatat_oleh }}
-                                            </div>
-                                        @else
-                                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(156,163,175,0.1); color: #9ca3af;">
-                                                <i class="fas fa-minus-circle"></i>
-                                                Belum
-                                            </span>
-                                        @endif
+                                    {{-- Konfirmasi Guru Piket (per jam) --}}
+                                    <td style="padding: 8px 10px; text-align: center;">
+                                        <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                                            @foreach($jamList as $jamKe)
+                                                @php $cp = $catatanPiketPerJam[$jamKe] ?? null; @endphp
+                                                <div style="display: flex; align-items: center; gap: 5px; width: 100%;">
+                                                    <span style="font-size: 10px; font-weight: 700; color: #6b7280; min-width: 30px; text-align: right;">Jam {{ $jamKe }}</span>
+                                                    @if($cp)
+                                                        @php $ps = $piketStyleMap[$cp->status_kehadiran] ?? ['bg' => 'rgba(156,163,175,0.1)', 'color' => '#6b7280', 'icon' => 'fa-minus-circle', 'label' => $cp->status_kehadiran]; @endphp
+                                                        <span style="display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: {{ $ps['bg'] }}; color: {{ $ps['color'] }};">
+                                                            <i class="fas {{ $ps['icon'] }}" style="font-size: 9px;"></i>
+                                                            {{ $ps['label'] }}
+                                                        </span>
+                                                    @else
+                                                        <span style="display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: rgba(156,163,175,0.1); color: #9ca3af;">
+                                                            <i class="fas fa-minus-circle" style="font-size: 9px;"></i> Belum
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </td>
                                     <td style="padding: 12px 15px; text-align: center;">
                                         @if($presensiPersen !== null)
