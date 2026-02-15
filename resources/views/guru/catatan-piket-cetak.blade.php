@@ -230,7 +230,7 @@
     @endif
 
     {{-- Signatures --}}
-    <div style="text-align: right; margin-top: 40px; margin-bottom: 10px; font-size: 11pt;">
+    <div style="text-align: center; margin-top: 40px; margin-bottom: 10px; font-size: 11pt;">
         Seputih Raman, {{ \Carbon\Carbon::parse($tanggalHariIni)->translatedFormat('d F Y') }}
     </div>
     <div class="signature-section">
