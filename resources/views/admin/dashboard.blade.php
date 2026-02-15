@@ -293,7 +293,7 @@
                                         <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
                                             @foreach($jamList as $jamKe)
                                                 @php $cp = $catatanPiketPerJam[$jamKe] ?? null; @endphp
-                                                <div style="display: flex; align-items: center; gap: 5px; width: 100%;">
+                                                <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
                                                     <span style="font-size: 10px; font-weight: 700; color: #6b7280; min-width: 30px; text-align: right;">Jam {{ $jamKe }}</span>
                                                     @if($cp)
                                                         @php $ps = $piketStyleMap[$cp->status_kehadiran] ?? ['bg' => 'rgba(156,163,175,0.1)', 'color' => '#6b7280', 'icon' => 'fa-minus-circle', 'label' => $cp->status_kehadiran]; @endphp
