@@ -217,7 +217,7 @@
             <tr>
                 <td>{{ $idx + 1 }}</td>
                 <td class="rombel-cell">{{ $k['rombel'] }}</td>
-                <td>{{ $k['jam_ke'] }}</td>
+                <td>{{ $k['jam_text'] }}</td>
                 <td style="text-align: left;">{{ $k['mapel'] }}</td>
                 <td style="text-align: left;">{{ $k['guru'] }}</td>
                 <td>{{ $k['keterangan'] }}</td>

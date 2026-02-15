@@ -303,7 +303,7 @@ class CatatanPiketController extends Controller
 
             // KBM Kosong: izin or tanpa keterangan
             if (in_array($status, ['izin', 'tanpa_keterangan'])) {
-                $kbmKosong[] = [
+                $kbmKosongRaw[] = [
                     'rombel' => $rombel,
                     'jam_ke' => $jamKe,
                     'mapel' => $j->nama_mapel,
@@ -311,6 +311,49 @@ class CatatanPiketController extends Controller
                     'keterangan' => $keterangan,
                 ];
             }
+        }
+
+        // Merge consecutive jams in kbmKosong with same rombel+mapel+guru+keterangan
+        $kbmKosong = [];
+        if (!empty($kbmKosongRaw)) {
+            // Sort by rombel then jam
+            usort($kbmKosongRaw, function ($a, $b) {
+                $cmp = strnatcmp($a['rombel'], $b['rombel']);
+                if ($cmp !== 0) return $cmp;
+                return $a['jam_ke'] - $b['jam_ke'];
+            });
+
+            $current = $kbmKosongRaw[0];
+            $current['jam_start'] = $current['jam_ke'];
+            $current['jam_end'] = $current['jam_ke'];
+
+            for ($i = 1; $i < count($kbmKosongRaw); $i++) {
+                $row = $kbmKosongRaw[$i];
+                if (
+                    $row['rombel'] === $current['rombel'] &&
+                    $row['mapel'] === $current['mapel'] &&
+                    $row['guru'] === $current['guru'] &&
+                    $row['keterangan'] === $current['keterangan'] &&
+                    $row['jam_ke'] === $current['jam_end'] + 1
+                ) {
+                    // Extend the range
+                    $current['jam_end'] = $row['jam_ke'];
+                } else {
+                    // Push current and start new
+                    $current['jam_text'] = $current['jam_start'] == $current['jam_end']
+                        ? (string)$current['jam_start']
+                        : $current['jam_start'] . '-' . $current['jam_end'];
+                    $kbmKosong[] = $current;
+                    $current = $row;
+                    $current['jam_start'] = $row['jam_ke'];
+                    $current['jam_end'] = $row['jam_ke'];
+                }
+            }
+            // Push last
+            $current['jam_text'] = $current['jam_start'] == $current['jam_end']
+                ? (string)$current['jam_start']
+                : $current['jam_start'] . '-' . $current['jam_end'];
+            $kbmKosong[] = $current;
         }
 
         // Natural sort rombel
