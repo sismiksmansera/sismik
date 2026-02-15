@@ -755,12 +755,15 @@
                                             {{ $p['tahun_pelajaran'] }} - {{ ucfirst($p['semester']) }}
                                         </div>
                                         <div style="margin-top: 4px; font-size: 11px; color: #6b7280;">
-                                            <i class="fas fa-calendar-alt" style="color: #3b82f6; margin-right: 2px;"></i>
-                                            Mulai: {{ $p['tanggal_mulai'] ? \Carbon\Carbon::parse($p['tanggal_mulai'])->format('d/m/Y') : '-' }}
-                                            @if($p['tanggal_akhir'])
-                                                &nbsp;s/d {{ \Carbon\Carbon::parse($p['tanggal_akhir'])->format('d/m/Y') }}
-                                            @else
-                                                &nbsp;<span style="color: #10b981;">(Aktif)</span>
+                                            <i class="fas fa-key" style="color: #8b5cf6; margin-right: 2px;"></i>
+                                            {{ $p['kode_jadwal'] ?? '-' }}
+                                            @if($p['tanggal_mulai'])
+                                                &nbsp;({{ \Carbon\Carbon::parse($p['tanggal_mulai'])->format('d/m/Y') }}
+                                                @if($p['tanggal_akhir'])
+                                                    s/d {{ \Carbon\Carbon::parse($p['tanggal_akhir'])->format('d/m/Y') }})
+                                                @else
+                                                    — <span style="color: #10b981;">Aktif</span>)
+                                                @endif
                                             @endif
                                         </div>
                                     </td>
@@ -862,14 +865,23 @@
                 </select>
             </div>
             
-            <div class="date-row" style="margin-bottom: 20px;">
-                <div class="form-group">
-                    <label class="form-label"><i class="fas fa-calendar-alt" style="color: #3b82f6;"></i> Tanggal Mulai Berlaku <span style="color: #ef4444;">*</span></label>
-                    <input type="date" id="inputTanggalMulai" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label"><i class="fas fa-calendar-check" style="color: #6b7280;"></i> Tanggal Akhir Berlaku <span style="color: #9ca3af; font-weight: 400;">(Opsional)</span></label>
-                    <input type="date" id="inputTanggalAkhir" class="form-input">
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label"><i class="fas fa-key" style="color: #3b82f6;"></i> Kode Jadwal <span style="color: #ef4444;">*</span></label>
+                <select id="selectKodeJadwal" class="form-select">
+                    <option value="">-- Pilih Kode Jadwal --</option>
+                    @foreach($periodeJadwalList as $pj)
+                        <option value="{{ $pj->kode }}">
+                            {{ $pj->kode }} — {{ \Carbon\Carbon::parse($pj->tanggal_mulai)->format('d/m/Y') }}
+                            @if($pj->tanggal_akhir)
+                                s/d {{ \Carbon\Carbon::parse($pj->tanggal_akhir)->format('d/m/Y') }}
+                            @else
+                                (Aktif)
+                            @endif
+                        </option>
+                    @endforeach
+                </select>
+                <div style="margin-top: 6px; font-size: 11px; color: #6b7280;">
+                    <i class="fas fa-info-circle"></i> Kelola kode jadwal di halaman <strong>Manajemen Guru</strong> → tombol "Atur Periode Jadwal"
                 </div>
             </div>
 
@@ -999,8 +1011,7 @@
     function resetJadwalForm() {
         document.getElementById('selectRombel').value = '';
         document.getElementById('selectMapel').value = '';
-        document.getElementById('inputTanggalMulai').value = '';
-        document.getElementById('inputTanggalAkhir').value = '';
+        document.getElementById('selectKodeJadwal').value = '';
         document.getElementById('jadwalSection').style.display = 'none';
         document.querySelectorAll('.jadwal-checkbox').forEach(cb => {
             cb.checked = false;
@@ -1084,8 +1095,9 @@
                 id_rombel: idRombel,
                 id_mapel: idMapel,
                 jadwal: jadwal,
-                tanggal_mulai: document.getElementById('inputTanggalMulai').value,
-                tanggal_akhir: document.getElementById('inputTanggalAkhir').value || null
+                tanggal_mulai: null,
+                tanggal_akhir: null,
+                kode_jadwal: document.getElementById('selectKodeJadwal').value
             })
         })
         .then(res => res.json())

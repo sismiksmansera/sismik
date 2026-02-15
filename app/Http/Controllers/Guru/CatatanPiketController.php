@@ -69,10 +69,11 @@ class CatatanPiketController extends Controller
             ->where('jp.hari', $hariIni)
             ->where('jp.tahun_pelajaran', $tahunAktif)
             ->whereRaw("LOWER(jp.semester) = LOWER(?)", [$semesterAktif])
-            ->where('jp.tanggal_mulai', '<=', $tanggalHariIni)
+            ->join('periode_jadwal as pj', 'jp.kode_jadwal', '=', 'pj.kode')
+            ->where('pj.tanggal_mulai', '<=', $tanggalHariIni)
             ->where(function ($q) use ($tanggalHariIni) {
-                $q->whereNull('jp.tanggal_akhir')
-                  ->orWhere('jp.tanggal_akhir', '>=', $tanggalHariIni);
+                $q->whereNull('pj.tanggal_akhir')
+                  ->orWhere('pj.tanggal_akhir', '>=', $tanggalHariIni);
             })
             ->orderByRaw('CAST(jp.jam_ke AS UNSIGNED)')
             ->orderBy('r.nama_rombel')
@@ -233,10 +234,11 @@ class CatatanPiketController extends Controller
             ->where('jp.hari', $hariIni)
             ->where('jp.tahun_pelajaran', $tahunAktif)
             ->whereRaw("LOWER(jp.semester) = LOWER(?)", [$semesterAktif])
-            ->where('jp.tanggal_mulai', '<=', $tanggalHariIni)
+            ->join('periode_jadwal as pj', 'jp.kode_jadwal', '=', 'pj.kode')
+            ->where('pj.tanggal_mulai', '<=', $tanggalHariIni)
             ->where(function ($q) use ($tanggalHariIni) {
-                $q->whereNull('jp.tanggal_akhir')
-                  ->orWhere('jp.tanggal_akhir', '>=', $tanggalHariIni);
+                $q->whereNull('pj.tanggal_akhir')
+                  ->orWhere('pj.tanggal_akhir', '>=', $tanggalHariIni);
             })
             ->orderBy('r.nama_rombel')
             ->orderByRaw('CAST(jp.jam_ke AS UNSIGNED)')

@@ -336,14 +336,18 @@ class GuruController extends Controller
             
             // Group by hari
             $jadwalPerHari = [];
-            $tglMulai = null;
-            $tglAkhir = null;
+            $kodeJadwal = null;
             foreach ($jadwalData as $j) {
                 $jadwalPerHari[$j->hari][] = (int) $j->jam_ke;
-                if ($tglMulai === null) {
-                    $tglMulai = $j->tanggal_mulai ?? null;
-                    $tglAkhir = $j->tanggal_akhir ?? null;
+                if ($kodeJadwal === null) {
+                    $kodeJadwal = $j->kode_jadwal ?? null;
                 }
+            }
+            
+            // Get periode info from kode_jadwal
+            $periodeInfo = null;
+            if ($kodeJadwal) {
+                $periodeInfo = \App\Models\PeriodeJadwal::where('kode', $kodeJadwal)->first();
             }
             
             // Count jam
@@ -370,8 +374,9 @@ class GuruController extends Controller
                 'semester' => $p->semester,
                 'jadwal' => $jadwalFormatted,
                 'jam_count' => $jamCount,
-                'tanggal_mulai' => $tglMulai,
-                'tanggal_akhir' => $tglAkhir,
+                'kode_jadwal' => $kodeJadwal,
+                'tanggal_mulai' => $periodeInfo ? $periodeInfo->tanggal_mulai->format('Y-m-d') : null,
+                'tanggal_akhir' => $periodeInfo && $periodeInfo->tanggal_akhir ? $periodeInfo->tanggal_akhir->format('Y-m-d') : null,
             ];
         }
         
@@ -384,10 +389,13 @@ class GuruController extends Controller
         // Get mapel list (for modal)
         $mapelList = \App\Models\MataPelajaran::orderBy('nama_mapel', 'asc')->get();
         
+        // Get periode jadwal list (for modal dropdown)
+        $periodeJadwalList = \App\Models\PeriodeJadwal::orderBy('tanggal_mulai', 'desc')->get();
+        
         return view('admin.guru.tugas-mengajar', compact(
             'guru', 'penugasanWithJadwal', 'tahunList', 'tahunFilter', 'semesterFilter',
             'totalRombel', 'totalMapel', 'totalJam', 'tahunAktif', 'semesterAktif',
-            'rombelList', 'mapelList'
+            'rombelList', 'mapelList', 'periodeJadwalList'
         ));
     }
     
@@ -443,13 +451,12 @@ class GuruController extends Controller
             $idRombel = $request->input('id_rombel');
             $idMapel = $request->input('id_mapel');
             $jadwal = $request->input('jadwal', []);
-            $tanggalMulai = $request->input('tanggal_mulai');
-            $tanggalAkhir = $request->input('tanggal_akhir');
+            $kodeJadwal = $request->input('kode_jadwal');
             
-            if (empty($tanggalMulai)) {
+            if (empty($kodeJadwal)) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Tanggal mulai berlaku wajib diisi!'
+                    'message' => 'Kode Jadwal wajib dipilih!'
                 ]);
             }
             
@@ -477,8 +484,7 @@ class GuruController extends Controller
                         'nama_guru' => $namaGuru,
                         'tahun_pelajaran' => $tahunAktif,
                         'semester' => $semesterAktif,
-                        'tanggal_mulai' => $tanggalMulai,
-                        'tanggal_akhir' => $tanggalAkhir ?: null,
+                        'kode_jadwal' => $kodeJadwal,
                     ]);
                 }
             }
@@ -667,10 +673,11 @@ class GuruController extends Controller
         $listJadwal = \DB::table('jadwal_pelajaran as jp')
             ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
             ->join('rombel as r', 'jp.id_rombel', '=', 'r.id')
+            ->leftJoin('periode_jadwal as pj', 'jp.kode_jadwal', '=', 'pj.kode')
             ->where('jp.nama_guru', $guruNama)
             ->where('jp.tahun_pelajaran', $filterTahun)
             ->where('jp.semester', $semesterJadwal)
-            ->select('jp.*', 'mp.nama_mapel', 'r.nama_rombel')
+            ->select('jp.*', 'mp.nama_mapel', 'r.nama_rombel', 'pj.tanggal_mulai as periode_mulai', 'pj.tanggal_akhir as periode_akhir')
             ->orderByRaw("FIELD(jp.hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu')")
             ->orderBy('jp.jam_ke')
             ->get();
@@ -747,7 +754,7 @@ class GuruController extends Controller
         // ========== KEAKTIFAN PERCENTAGE ==========
         // Get unique jadwal sessions (group by hari + rombel + mapel = 1 session)
         $jadwalSesiPerHari = [];
-        $sesiInfo = []; // store session details: hari => [sesiKey => [mapel, rombel, tanggal_mulai, tanggal_akhir]]
+        $sesiInfo = []; // store session details: hari => [sesiKey => [mapel, rombel, periode_mulai, periode_akhir]]
         foreach ($listJadwal as $j) {
             $sesiKey = $j->hari . '|' . $j->id_rombel . '|' . strtolower($j->nama_mapel);
             $jadwalSesiPerHari[$j->hari][$sesiKey] = true;
@@ -757,8 +764,8 @@ class GuruController extends Controller
                     'mapel' => $j->nama_mapel,
                     'rombel' => $j->nama_rombel,
                     'id_rombel' => $j->id_rombel,
-                    'tanggal_mulai' => $j->tanggal_mulai ?? null,
-                    'tanggal_akhir' => $j->tanggal_akhir ?? null,
+                    'tanggal_mulai' => $j->periode_mulai ?? null,
+                    'tanggal_akhir' => $j->periode_akhir ?? null,
                 ];
             }
         }
@@ -1478,5 +1485,74 @@ class GuruController extends Controller
         return redirect()->route('admin.guru.import-jadwal.show')
             ->with('success', $message)
             ->with('import_errors', $errors);
+    }
+
+    /**
+     * Get all periode jadwal (AJAX)
+     */
+    public function getPeriodeJadwal()
+    {
+        $periodeList = \App\Models\PeriodeJadwal::orderBy('tanggal_mulai', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $periodeList->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'kode' => $p->kode,
+                    'tanggal_mulai' => $p->tanggal_mulai->format('Y-m-d'),
+                    'tanggal_akhir' => $p->tanggal_akhir ? $p->tanggal_akhir->format('Y-m-d') : null,
+                    'jadwal_count' => \App\Models\JadwalPelajaran::where('kode_jadwal', $p->kode)->count(),
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * Store a new periode jadwal (AJAX)
+     */
+    public function storePeriodeJadwal(Request $request)
+    {
+        $request->validate([
+            'kode' => 'required|string|max:50|unique:periode_jadwal,kode',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_akhir' => 'nullable|date|after_or_equal:tanggal_mulai',
+        ]);
+
+        $periode = \App\Models\PeriodeJadwal::create([
+            'kode' => $request->kode,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_akhir' => $request->tanggal_akhir,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Periode jadwal berhasil ditambahkan!',
+            'data' => $periode,
+        ]);
+    }
+
+    /**
+     * Delete a periode jadwal (AJAX)
+     */
+    public function destroyPeriodeJadwal($id)
+    {
+        $periode = \App\Models\PeriodeJadwal::findOrFail($id);
+
+        // Check if any jadwal uses this kode
+        $usageCount = \App\Models\JadwalPelajaran::where('kode_jadwal', $periode->kode)->count();
+        if ($usageCount > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "Tidak bisa dihapus, masih digunakan oleh {$usageCount} jadwal pelajaran.",
+            ]);
+        }
+
+        $periode->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Periode jadwal berhasil dihapus!',
+        ]);
     }
 }

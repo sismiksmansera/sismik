@@ -178,6 +178,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/guru/import-jadwal', [GuruController::class, 'showImportJadwal'])->name('guru.import-jadwal.show');
     Route::get('/guru/import-jadwal/download', [GuruController::class, 'downloadBlangkoJadwal'])->name('guru.import-jadwal.download');
     Route::post('/guru/import-jadwal', [GuruController::class, 'importJadwalData'])->name('guru.import-jadwal.import');
+    // Periode Jadwal (Kode Jadwal) Management
+    Route::get('/guru/periode-jadwal', [GuruController::class, 'getPeriodeJadwal'])->name('guru.periode-jadwal.index');
+    Route::post('/guru/periode-jadwal', [GuruController::class, 'storePeriodeJadwal'])->name('guru.periode-jadwal.store');
+    Route::delete('/guru/periode-jadwal/{id}', [GuruController::class, 'destroyPeriodeJadwal'])->name('guru.periode-jadwal.destroy');
     
     // Cek Presensi Siswa
     Route::get('/cek-presensi', [\App\Http\Controllers\Admin\CekPresensiController::class, 'index'])->name('cek-presensi.index');

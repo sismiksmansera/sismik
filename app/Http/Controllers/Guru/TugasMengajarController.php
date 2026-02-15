@@ -93,7 +93,7 @@ class TugasMengajarController extends Controller
 
             // Get jadwal for this assignment
             $jadwalItems = DB::select("
-                SELECT hari, jam_ke, tahun_pelajaran, semester, tanggal_mulai, tanggal_akhir
+                SELECT hari, jam_ke, tahun_pelajaran, semester, kode_jadwal
                 FROM jadwal_pelajaran
                 $jadwalConditions
                 ORDER BY FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'), jam_ke ASC
@@ -101,14 +101,18 @@ class TugasMengajarController extends Controller
 
             // Group by hari
             $jadwalPerHari = [];
-            $tglMulai = null;
-            $tglAkhir = null;
+            $kodeJadwal = null;
             foreach ($jadwalItems as $j) {
                 $jadwalPerHari[$j->hari][] = (int) $j->jam_ke;
-                if ($tglMulai === null) {
-                    $tglMulai = $j->tanggal_mulai ?? null;
-                    $tglAkhir = $j->tanggal_akhir ?? null;
+                if ($kodeJadwal === null) {
+                    $kodeJadwal = $j->kode_jadwal ?? null;
                 }
+            }
+
+            // Get periode info from kode_jadwal
+            $periodeInfo = null;
+            if ($kodeJadwal) {
+                $periodeInfo = \App\Models\PeriodeJadwal::where('kode', $kodeJadwal)->first();
             }
 
             // Count jam
@@ -139,8 +143,9 @@ class TugasMengajarController extends Controller
                 'semester' => $row->semester,
                 'jadwal' => $jadwalFormatted,
                 'jam_count' => $jamCount,
-                'tanggal_mulai' => $tglMulai,
-                'tanggal_akhir' => $tglAkhir,
+                'kode_jadwal' => $kodeJadwal,
+                'tanggal_mulai' => $periodeInfo ? $periodeInfo->tanggal_mulai->format('Y-m-d') : null,
+                'tanggal_akhir' => $periodeInfo && $periodeInfo->tanggal_akhir ? $periodeInfo->tanggal_akhir->format('Y-m-d') : null,
             ];
         }
 

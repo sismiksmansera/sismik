@@ -21,20 +21,29 @@ class JadwalPelajaran extends Model
         'nama_guru',
         'tahun_pelajaran',
         'semester',
-        'tanggal_mulai',
-        'tanggal_akhir',
+        'kode_jadwal',
     ];
 
     /**
-     * Scope: only jadwal active on the given date
+     * Scope: only jadwal active on the given date (via periode_jadwal)
      */
     public function scopeActiveOn($query, $date)
     {
-        return $query->where('tanggal_mulai', '<=', $date)
-                     ->where(function ($q) use ($date) {
-                         $q->whereNull('tanggal_akhir')
-                           ->orWhere('tanggal_akhir', '>=', $date);
-                     });
+        return $query->whereHas('periodeJadwal', function ($q) use ($date) {
+            $q->where('tanggal_mulai', '<=', $date)
+              ->where(function ($q2) use ($date) {
+                  $q2->whereNull('tanggal_akhir')
+                     ->orWhere('tanggal_akhir', '>=', $date);
+              });
+        });
+    }
+
+    /**
+     * Get the periode jadwal
+     */
+    public function periodeJadwal()
+    {
+        return $this->belongsTo(PeriodeJadwal::class, 'kode_jadwal', 'kode');
     }
 
     /**
@@ -53,3 +62,4 @@ class JadwalPelajaran extends Model
         return $this->belongsTo(Rombel::class, 'id_rombel');
     }
 }
+

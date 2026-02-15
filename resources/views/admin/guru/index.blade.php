@@ -372,6 +372,9 @@
             <a href="{{ route('admin.guru.create') }}" class="btn" style="background: var(--green-primary); color: white;">
                 <i class="fas fa-plus"></i> Tambah Guru
             </a>
+            <button onclick="openPeriodeJadwalModal()" class="btn" style="background: #8b5cf6; color: white; font-size: 12px;">
+                <i class="fas fa-key"></i> Atur Periode Jadwal
+            </button>
             <a href="{{ route('admin.guru.import.show') }}" class="btn" style="background: #f59e0b; color: white; font-size: 12px;">
                 <i class="fas fa-file-import"></i> Import/Export Data
             </a>
@@ -637,6 +640,66 @@
         </form>
     </div>
 </div>
+</div>
+
+<!-- Modal Periode Jadwal -->
+<div id="modalPeriodeJadwal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 650px;">
+        <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); padding: 25px 20px; text-align: center;">
+            <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-key" style="font-size: 32px; color: white;"></i>
+            </div>
+            <h3 style="margin: 0; color: white; font-size: 18px; font-weight: 700;">Atur Periode Jadwal</h3>
+            <p style="margin: 8px 0 0; color: rgba(255,255,255,0.8); font-size: 13px;">Kelola kode periode untuk jadwal pelajaran</p>
+        </div>
+        <div style="padding: 20px;">
+            <!-- Add Form -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 12px; font-size: 14px; color: #374151;"><i class="fas fa-plus-circle" style="color: #8b5cf6;"></i> Tambah Periode Baru</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                    <div>
+                        <label style="font-size: 11px; color: #6b7280; font-weight: 600; display: block; margin-bottom: 4px;">Kode Jadwal</label>
+                        <input type="text" id="pjKode" placeholder="Contoh: JDW-001" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; color: #6b7280; font-weight: 600; display: block; margin-bottom: 4px;">Tanggal Mulai</label>
+                        <input type="date" id="pjTanggalMulai" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; color: #6b7280; font-weight: 600; display: block; margin-bottom: 4px;">Tanggal Akhir <span style="color: #9ca3af;">(opsional)</span></label>
+                        <input type="date" id="pjTanggalAkhir" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; box-sizing: border-box;">
+                    </div>
+                </div>
+                <button onclick="addPeriodeJadwal()" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-plus"></i> Tambah
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div id="periodeJadwalTableWrapper" style="max-height: 300px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f1f5f9;">
+                            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e2e8f0;">Kode</th>
+                            <th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e2e8f0;">Mulai</th>
+                            <th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e2e8f0;">Akhir</th>
+                            <th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e2e8f0;">Jadwal</th>
+                            <th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e2e8f0; width: 60px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="periodeJadwalBody">
+                        <tr><td colspan="5" style="padding: 20px; text-align: center; color: #9ca3af;">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div style="padding: 16px 20px; border-top: 1px solid #e2e8f0; text-align: right;">
+            <button onclick="closePeriodeJadwalModal()" style="background: #f1f5f9; color: #64748b; padding: 10px 24px; border: 1px solid #e2e8f0; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                <i class="fas fa-times"></i> Tutup
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -718,6 +781,93 @@ function showSelectedFile(input) {
         fileNameEl.style.display = 'block';
         document.getElementById('importSubmitBtn').disabled = false;
     }
+}
+
+// ===== Periode Jadwal Modal =====
+function openPeriodeJadwalModal() {
+    document.getElementById('modalPeriodeJadwal').style.display = 'flex';
+    loadPeriodeJadwal();
+}
+
+function closePeriodeJadwalModal() {
+    document.getElementById('modalPeriodeJadwal').style.display = 'none';
+}
+
+function loadPeriodeJadwal() {
+    fetch('{{ route("admin.guru.periode-jadwal.index") }}')
+        .then(res => res.json())
+        .then(result => {
+            const tbody = document.getElementById('periodeJadwalBody');
+            if (!result.success || result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: #9ca3af;"><i class="fas fa-inbox" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>Belum ada periode jadwal</td></tr>';
+                return;
+            }
+            tbody.innerHTML = result.data.map(p => {
+                const mulai = new Date(p.tanggal_mulai).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
+                const akhir = p.tanggal_akhir ? new Date(p.tanggal_akhir).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '<span style="color: #10b981; font-weight: 600;">Aktif</span>';
+                return `<tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 10px 12px;"><span style="background: rgba(139,92,246,0.1); color: #8b5cf6; padding: 3px 10px; border-radius: 6px; font-weight: 600; font-size: 12px;">${p.kode}</span></td>
+                    <td style="padding: 10px 12px; text-align: center; font-size: 12px;">${mulai}</td>
+                    <td style="padding: 10px 12px; text-align: center; font-size: 12px;">${akhir}</td>
+                    <td style="padding: 10px 12px; text-align: center;"><span style="background: #f1f5f9; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;">${p.jadwal_count}</span></td>
+                    <td style="padding: 10px 12px; text-align: center;"><button onclick="deletePeriodeJadwal(${p.id}, '${p.kode}', ${p.jadwal_count})" style="background: rgba(239,68,68,0.1); color: #ef4444; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 12px;" title="Hapus"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            }).join('');
+        })
+        .catch(err => {
+            document.getElementById('periodeJadwalBody').innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: #ef4444;">Gagal memuat data</td></tr>';
+        });
+}
+
+function addPeriodeJadwal() {
+    const kode = document.getElementById('pjKode').value.trim();
+    const mulai = document.getElementById('pjTanggalMulai').value;
+    const akhir = document.getElementById('pjTanggalAkhir').value || null;
+
+    if (!kode || !mulai) {
+        alert('Kode dan Tanggal Mulai wajib diisi!');
+        return;
+    }
+
+    fetch('{{ route("admin.guru.periode-jadwal.store") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ kode, tanggal_mulai: mulai, tanggal_akhir: akhir })
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            document.getElementById('pjKode').value = '';
+            document.getElementById('pjTanggalMulai').value = '';
+            document.getElementById('pjTanggalAkhir').value = '';
+            loadPeriodeJadwal();
+        } else {
+            alert(result.message || 'Gagal menambahkan periode');
+        }
+    })
+    .catch(err => alert('Error: ' + err.message));
+}
+
+function deletePeriodeJadwal(id, kode, count) {
+    if (count > 0) {
+        alert('Periode "' + kode + '" masih digunakan oleh ' + count + ' jadwal. Tidak bisa dihapus.');
+        return;
+    }
+    if (!confirm('Hapus periode "' + kode + '"?')) return;
+
+    fetch('{{ url("/admin/guru/periode-jadwal") }}/' + id, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            loadPeriodeJadwal();
+        } else {
+            alert(result.message || 'Gagal menghapus');
+        }
+    })
+    .catch(err => alert('Error: ' + err.message));
 }
 </script>
 @endpush
