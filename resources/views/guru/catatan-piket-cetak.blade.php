@@ -230,14 +230,20 @@
     @endif
 
     {{-- Signatures --}}
+    <div style="text-align: right; margin-top: 40px; margin-bottom: 10px; font-size: 11pt;">
+        Seputih Raman, {{ \Carbon\Carbon::parse($tanggalHariIni)->translatedFormat('d F Y') }}
+    </div>
     <div class="signature-section">
-        <div class="signature-box">
-            <div class="sig-title">Guru Piket,</div>
-            <div class="sig-name">&nbsp;</div>
-        </div>
         <div class="signature-box">
             <div class="sig-title">Kepala Sekolah,</div>
             <div class="sig-name">{{ $kepalaSekolah }}</div>
+            @if($nipKepala)
+                <div class="sig-nip">NIP. {{ $nipKepala }}</div>
+            @endif
+        </div>
+        <div class="signature-box">
+            <div class="sig-title">Guru Piket,</div>
+            <div class="sig-name">&nbsp;</div>
         </div>
     </div>
 </body>

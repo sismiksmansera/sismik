@@ -359,12 +359,9 @@ class CatatanPiketController extends Controller
         // Natural sort rombel
         uksort($rombelJadwal, 'strnatcmp');
 
-        // Get kepala sekolah name
-        $kepalaSekolah = '';
-        if (Schema::hasTable('profil_sekolah')) {
-            $profil = DB::table('profil_sekolah')->first();
-            $kepalaSekolah = $profil->kepala_sekolah ?? '';
-        }
+        // Get kepala sekolah from data_periodik
+        $kepalaSekolah = $periodik->nama_kepala ?? '';
+        $nipKepala = $periodik->nip_kepala ?? '';
 
         return view('guru.catatan-piket-cetak', compact(
             'guru',
@@ -374,7 +371,8 @@ class CatatanPiketController extends Controller
             'rombelJadwal',
             'kbmKosong',
             'semuaPiketHariIni',
-            'kepalaSekolah'
+            'kepalaSekolah',
+            'nipKepala'
         ));
     }
 }
