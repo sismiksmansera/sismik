@@ -309,6 +309,7 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     // Catatan Piket KBM routes
     Route::get('/catatan-piket', [\App\Http\Controllers\Guru\CatatanPiketController::class, 'index'])->name('catatan-piket');
     Route::post('/catatan-piket', [\App\Http\Controllers\Guru\CatatanPiketController::class, 'store'])->name('catatan-piket.store');
+    Route::get('/catatan-piket/cetak', [\App\Http\Controllers\Guru\CatatanPiketController::class, 'cetak'])->name('catatan-piket.cetak');
     
     // Siswa Bimbingan (Guru Wali) route
     Route::get('/siswa-bimbingan', [\App\Http\Controllers\Guru\SiswaBimbinganController::class, 'index'])->name('siswa-bimbingan');

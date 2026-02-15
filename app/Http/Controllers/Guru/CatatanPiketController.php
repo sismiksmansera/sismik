@@ -183,4 +183,155 @@ class CatatanPiketController extends Controller
             'message' => 'Catatan piket berhasil disimpan'
         ]);
     }
+
+    public function cetak()
+    {
+        $guru = Auth::guard('guru')->user();
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunAktif = $periodik->tahun_pelajaran ?? '';
+        $semesterAktif = $periodik->semester ?? '';
+
+        $effectiveDate = EffectiveDateService::getEffectiveDate();
+        $hariIni = $effectiveDate['hari'];
+        $tanggalHariIni = $effectiveDate['date'];
+
+        // Check if guru is on piket today
+        $piketHariIni = PiketKbm::where('hari', $hariIni)
+            ->where('guru_id', $guru->id)
+            ->where('tipe_guru', 'guru')
+            ->first();
+
+        if (!$piketHariIni) {
+            return redirect()->route('guru.catatan-piket');
+        }
+
+        // Get jam pelajaran settings
+        $periodikId = $periodik->id ?? 0;
+        $jamRow = DB::table('jam_pelajaran_setting')
+            ->where('periodik_id', $periodikId)
+            ->first();
+        $maxJam = 0;
+        if ($jamRow) {
+            for ($i = 1; $i <= 11; $i++) {
+                $mulai = $jamRow->{"jp_{$i}_mulai"} ?? null;
+                $selesai = $jamRow->{"jp_{$i}_selesai"} ?? null;
+                if ($mulai && $selesai) $maxJam = $i;
+            }
+        }
+        if ($maxJam == 0) $maxJam = 8;
+
+        // Get jadwal hari ini
+        $jadwalHariIni = DB::table('jadwal_pelajaran as jp')
+            ->join('rombel as r', 'jp.id_rombel', '=', 'r.id')
+            ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
+            ->select('jp.jam_ke', 'jp.nama_guru', 'mp.nama_mapel', 'r.nama_rombel', 'jp.id_rombel', 'jp.id_mapel')
+            ->where('jp.hari', $hariIni)
+            ->where('jp.tahun_pelajaran', $tahunAktif)
+            ->whereRaw("LOWER(jp.semester) = LOWER(?)", [$semesterAktif])
+            ->orderBy('r.nama_rombel')
+            ->orderByRaw('CAST(jp.jam_ke AS UNSIGNED)')
+            ->get();
+
+        // Get all piket team and catatan
+        $semuaPiketHariIni = PiketKbm::where('hari', $hariIni)->orderBy('created_at')->get();
+        $allPiketIds = $semuaPiketHariIni->pluck('id')->toArray();
+
+        $catatanAll = CatatanPiketKbm::where('tanggal', $tanggalHariIni)
+            ->whereIn('piket_kbm_id', $allPiketIds)
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->jam_ke . '|' . $item->nama_guru . '|' . $item->nama_rombel;
+            });
+
+        // Get izin guru hari ini
+        $izinGuruHariIni = [];
+        if (Schema::hasTable('izin_guru')) {
+            $izinRows = DB::table('izin_guru')
+                ->where('tanggal_izin', $tanggalHariIni)
+                ->get();
+            foreach ($izinRows as $izin) {
+                $jamList = explode(',', $izin->jam_ke);
+                foreach ($jamList as $jk) {
+                    $jk = trim($jk);
+                    $key = $izin->guru . '|' . $izin->id_rombel . '|' . $jk;
+                    $izinGuruHariIni[$key] = $izin->alasan_izin;
+                }
+            }
+        }
+
+        // Build per-rombel data: rombel => [jam_ke => status]
+        $rombelJadwal = []; // rombel => [jam => ['status'=>..., 'guru'=>..., 'mapel'=>...]]
+        $kbmKosong = [];
+
+        foreach ($jadwalHariIni as $j) {
+            $jamKe = (int)$j->jam_ke;
+            $rombel = $j->nama_rombel;
+            $key = $jamKe . '|' . $j->nama_guru . '|' . $rombel;
+            $izinKey = $j->nama_guru . '|' . $j->id_rombel . '|' . $jamKe;
+
+            if (!isset($rombelJadwal[$rombel])) {
+                $rombelJadwal[$rombel] = [];
+            }
+
+            $status = 'belum'; // default
+            $keterangan = '';
+
+            if (isset($catatanAll[$key])) {
+                $catatan = $catatanAll[$key];
+                $statusKehadiran = $catatan->status_kehadiran;
+                if ($statusKehadiran === 'Hadir Tepat Waktu') {
+                    $status = 'tepat_waktu';
+                } elseif ($statusKehadiran === 'Hadir Terlambat') {
+                    $status = 'terlambat';
+                } elseif ($statusKehadiran === 'Izin') {
+                    $status = 'izin';
+                    $keterangan = 'Izin';
+                } elseif ($statusKehadiran === 'Tanpa Keterangan') {
+                    $status = 'tanpa_keterangan';
+                    $keterangan = 'Tanpa Keterangan';
+                }
+            } elseif (isset($izinGuruHariIni[$izinKey])) {
+                $status = 'izin';
+                $keterangan = 'Izin';
+            }
+
+            $rombelJadwal[$rombel][$jamKe] = [
+                'status' => $status,
+                'guru' => $j->nama_guru,
+                'mapel' => $j->nama_mapel,
+            ];
+
+            // KBM Kosong: izin or tanpa keterangan
+            if (in_array($status, ['izin', 'tanpa_keterangan'])) {
+                $kbmKosong[] = [
+                    'rombel' => $rombel,
+                    'jam_ke' => $jamKe,
+                    'mapel' => $j->nama_mapel,
+                    'guru' => $j->nama_guru,
+                    'keterangan' => $keterangan,
+                ];
+            }
+        }
+
+        // Natural sort rombel
+        uksort($rombelJadwal, 'strnatcmp');
+
+        // Get kepala sekolah name
+        $kepalaSekolah = '';
+        if (Schema::hasTable('profil_sekolah')) {
+            $profil = DB::table('profil_sekolah')->first();
+            $kepalaSekolah = $profil->kepala_sekolah ?? '';
+        }
+
+        return view('guru.catatan-piket-cetak', compact(
+            'guru',
+            'hariIni',
+            'tanggalHariIni',
+            'maxJam',
+            'rombelJadwal',
+            'kbmKosong',
+            'semuaPiketHariIni',
+            'kepalaSekolah'
+        ));
+    }
 }

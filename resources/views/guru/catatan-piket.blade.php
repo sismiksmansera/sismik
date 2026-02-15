@@ -423,10 +423,17 @@
                         <span class="header-badge testing"><i class="fas fa-flask"></i> Testing</span>
                     @endif
                 </div>
-                <a href="{{ route('guru.tugas-tambahan') }}" class="btn-back-header">
-                    <i class="fas fa-arrow-left"></i> Kembali
-                </a>
             </div>
+        </div>
+
+        {{-- Action Buttons --}}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <a href="{{ route('guru.tugas-tambahan') }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #374151; background: white; border: 1px solid #d1d5db; text-decoration: none; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <i class="fas fa-arrow-left"></i> Kembali
+            </a>
+            <a href="{{ route('guru.catatan-piket.cetak') }}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; color: white; background: linear-gradient(135deg, #059669, #047857); border: none; text-decoration: none; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <i class="fas fa-print"></i> Cetak Laporan
+            </a>
         </div>
 
         <!-- Piket Team -->
