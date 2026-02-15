@@ -21,7 +21,21 @@ class JadwalPelajaran extends Model
         'nama_guru',
         'tahun_pelajaran',
         'semester',
+        'tanggal_mulai',
+        'tanggal_akhir',
     ];
+
+    /**
+     * Scope: only jadwal active on the given date
+     */
+    public function scopeActiveOn($query, $date)
+    {
+        return $query->where('tanggal_mulai', '<=', $date)
+                     ->where(function ($q) use ($date) {
+                         $q->whereNull('tanggal_akhir')
+                           ->orWhere('tanggal_akhir', '>=', $date);
+                     });
+    }
 
     /**
      * Get the mata pelajaran

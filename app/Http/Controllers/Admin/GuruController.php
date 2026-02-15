@@ -336,8 +336,14 @@ class GuruController extends Controller
             
             // Group by hari
             $jadwalPerHari = [];
+            $tglMulai = null;
+            $tglAkhir = null;
             foreach ($jadwalData as $j) {
                 $jadwalPerHari[$j->hari][] = (int) $j->jam_ke;
+                if ($tglMulai === null) {
+                    $tglMulai = $j->tanggal_mulai ?? null;
+                    $tglAkhir = $j->tanggal_akhir ?? null;
+                }
             }
             
             // Count jam
@@ -364,6 +370,8 @@ class GuruController extends Controller
                 'semester' => $p->semester,
                 'jadwal' => $jadwalFormatted,
                 'jam_count' => $jamCount,
+                'tanggal_mulai' => $tglMulai,
+                'tanggal_akhir' => $tglAkhir,
             ];
         }
         
@@ -435,6 +443,15 @@ class GuruController extends Controller
             $idRombel = $request->input('id_rombel');
             $idMapel = $request->input('id_mapel');
             $jadwal = $request->input('jadwal', []);
+            $tanggalMulai = $request->input('tanggal_mulai');
+            $tanggalAkhir = $request->input('tanggal_akhir');
+            
+            if (empty($tanggalMulai)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Tanggal mulai berlaku wajib diisi!'
+                ]);
+            }
             
             // Get active period
             $periodeAktif = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
@@ -459,7 +476,9 @@ class GuruController extends Controller
                         'jam_ke' => $jam,
                         'nama_guru' => $namaGuru,
                         'tahun_pelajaran' => $tahunAktif,
-                        'semester' => $semesterAktif
+                        'semester' => $semesterAktif,
+                        'tanggal_mulai' => $tanggalMulai,
+                        'tanggal_akhir' => $tanggalAkhir ?: null,
                     ]);
                 }
             }

@@ -782,6 +782,15 @@
                                     <span class="periode-badge">
                                         {{ $assignment['tahun_pelajaran'] }} - {{ ucfirst($assignment['semester']) }}
                                     </span>
+                                    <span class="periode-badge" style="font-size: 10px; background: rgba(255,255,255,0.15);">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        Mulai: {{ $assignment['tanggal_mulai'] ? \Carbon\Carbon::parse($assignment['tanggal_mulai'])->format('d/m/Y') : '-' }}
+                                        @if($assignment['tanggal_akhir'])
+                                            s/d {{ \Carbon\Carbon::parse($assignment['tanggal_akhir'])->format('d/m/Y') }}
+                                        @else
+                                            <span style="color: #86efac;">(Aktif)</span>
+                                        @endif
+                                    </span>
                                 </div>
                             </div>
 

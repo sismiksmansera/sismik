@@ -453,6 +453,18 @@
     /* Form in Modal */
     .form-group { margin-bottom: 20px; }
     .form-label { display: block; font-weight: 600; margin-bottom: 8px; color: #374151; }
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        background: white;
+        transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .date-row { display: flex; gap: 16px; }
+    .date-row .form-group { flex: 1; margin-bottom: 0; }
     .form-select {
         width: 100%;
         padding: 12px 16px;
@@ -742,6 +754,15 @@
                                         <div class="periode-info">
                                             {{ $p['tahun_pelajaran'] }} - {{ ucfirst($p['semester']) }}
                                         </div>
+                                        <div style="margin-top: 4px; font-size: 11px; color: #6b7280;">
+                                            <i class="fas fa-calendar-alt" style="color: #3b82f6; margin-right: 2px;"></i>
+                                            Mulai: {{ $p['tanggal_mulai'] ? \Carbon\Carbon::parse($p['tanggal_mulai'])->format('d/m/Y') : '-' }}
+                                            @if($p['tanggal_akhir'])
+                                                &nbsp;s/d {{ \Carbon\Carbon::parse($p['tanggal_akhir'])->format('d/m/Y') }}
+                                            @else
+                                                &nbsp;<span style="color: #10b981;">(Aktif)</span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="mapel-info">
@@ -841,6 +862,17 @@
                 </select>
             </div>
             
+            <div class="date-row" style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-calendar-alt" style="color: #3b82f6;"></i> Tanggal Mulai Berlaku <span style="color: #ef4444;">*</span></label>
+                    <input type="date" id="inputTanggalMulai" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-calendar-check" style="color: #6b7280;"></i> Tanggal Akhir Berlaku <span style="color: #9ca3af; font-weight: 400;">(Opsional)</span></label>
+                    <input type="date" id="inputTanggalAkhir" class="form-input">
+                </div>
+            </div>
+
             <div class="form-group" id="jadwalSection" style="display: none;">
                 <label class="form-label"><i class="fas fa-clock" style="color: #3b82f6;"></i> Jadwal Pelajaran</label>
                 <div class="jadwal-table-wrapper">
@@ -967,6 +999,8 @@
     function resetJadwalForm() {
         document.getElementById('selectRombel').value = '';
         document.getElementById('selectMapel').value = '';
+        document.getElementById('inputTanggalMulai').value = '';
+        document.getElementById('inputTanggalAkhir').value = '';
         document.getElementById('jadwalSection').style.display = 'none';
         document.querySelectorAll('.jadwal-checkbox').forEach(cb => {
             cb.checked = false;
@@ -1049,7 +1083,9 @@
             body: JSON.stringify({
                 id_rombel: idRombel,
                 id_mapel: idMapel,
-                jadwal: jadwal
+                jadwal: jadwal,
+                tanggal_mulai: document.getElementById('inputTanggalMulai').value,
+                tanggal_akhir: document.getElementById('inputTanggalAkhir').value || null
             })
         })
         .then(res => res.json())

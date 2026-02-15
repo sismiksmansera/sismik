@@ -93,7 +93,7 @@ class TugasMengajarController extends Controller
 
             // Get jadwal for this assignment
             $jadwalItems = DB::select("
-                SELECT hari, jam_ke, tahun_pelajaran, semester
+                SELECT hari, jam_ke, tahun_pelajaran, semester, tanggal_mulai, tanggal_akhir
                 FROM jadwal_pelajaran
                 $jadwalConditions
                 ORDER BY FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'), jam_ke ASC
@@ -101,8 +101,14 @@ class TugasMengajarController extends Controller
 
             // Group by hari
             $jadwalPerHari = [];
+            $tglMulai = null;
+            $tglAkhir = null;
             foreach ($jadwalItems as $j) {
                 $jadwalPerHari[$j->hari][] = (int) $j->jam_ke;
+                if ($tglMulai === null) {
+                    $tglMulai = $j->tanggal_mulai ?? null;
+                    $tglAkhir = $j->tanggal_akhir ?? null;
+                }
             }
 
             // Count jam
@@ -133,6 +139,8 @@ class TugasMengajarController extends Controller
                 'semester' => $row->semester,
                 'jadwal' => $jadwalFormatted,
                 'jam_count' => $jamCount,
+                'tanggal_mulai' => $tglMulai,
+                'tanggal_akhir' => $tglAkhir,
             ];
         }
 
