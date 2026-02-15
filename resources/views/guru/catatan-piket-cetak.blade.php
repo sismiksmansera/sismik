@@ -126,7 +126,7 @@
         @media print {
             body { padding: 10mm 15mm; }
             .no-print { display: none !important; }
-            @page { size: landscape; margin: 10mm 15mm; }
+            @page { size: A4 portrait; margin: 10mm 15mm; }
         }
     </style>
 </head>
