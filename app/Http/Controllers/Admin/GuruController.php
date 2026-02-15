@@ -747,7 +747,7 @@ class GuruController extends Controller
         // ========== KEAKTIFAN PERCENTAGE ==========
         // Get unique jadwal sessions (group by hari + rombel + mapel = 1 session)
         $jadwalSesiPerHari = [];
-        $sesiInfo = []; // store session details: hari => [sesiKey => [mapel, rombel]]
+        $sesiInfo = []; // store session details: hari => [sesiKey => [mapel, rombel, tanggal_mulai, tanggal_akhir]]
         foreach ($listJadwal as $j) {
             $sesiKey = $j->hari . '|' . $j->id_rombel . '|' . strtolower($j->nama_mapel);
             $jadwalSesiPerHari[$j->hari][$sesiKey] = true;
@@ -757,6 +757,8 @@ class GuruController extends Controller
                     'mapel' => $j->nama_mapel,
                     'rombel' => $j->nama_rombel,
                     'id_rombel' => $j->id_rombel,
+                    'tanggal_mulai' => $j->tanggal_mulai ?? null,
+                    'tanggal_akhir' => $j->tanggal_akhir ?? null,
                 ];
             }
         }
@@ -818,6 +820,20 @@ class GuruController extends Controller
                     // For each session on this day
                     foreach ($sesiList as $sesiKey => $v) {
                         $info = $sesiInfo[$sesiKey];
+                        
+                        // Check if this jadwal is active on this date
+                        $jadwalMulai = $info['tanggal_mulai'] ?? null;
+                        $jadwalAkhir = $info['tanggal_akhir'] ?? null;
+                        
+                        if ($jadwalMulai && $dateStr < $jadwalMulai) {
+                            // Jadwal belum berlaku pada tanggal ini
+                            continue;
+                        }
+                        if ($jadwalAkhir && $dateStr > $jadwalAkhir) {
+                            // Jadwal sudah berakhir pada tanggal ini
+                            continue;
+                        }
+                        
                         $presensiKey = $dateStr . '|' . $info['id_rombel'] . '|' . strtolower($info['mapel']);
                         $hadir = isset($presensiLookup[$presensiKey]);
                         
