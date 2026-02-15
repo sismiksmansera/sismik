@@ -57,6 +57,10 @@
             <i class="fas fa-user-clock"></i>
             <span>Piket KBM</span>
         </a>
+        <a href="{{ route('admin.cek-presensi.index') }}" class="menu-item {{ request()->routeIs('admin.cek-presensi.*') ? 'active' : '' }}">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Cek Presensi</span>
+        </a>
         <a href="{{ route('admin.ekstrakurikuler.index') }}" class="menu-item {{ request()->routeIs('admin.ekstrakurikuler.*') ? 'active' : '' }}">
             <i class="fas fa-futbol"></i>
             <span>Ekstrakurikuler</span>

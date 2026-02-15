@@ -179,6 +179,13 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/guru/import-jadwal/download', [GuruController::class, 'downloadBlangkoJadwal'])->name('guru.import-jadwal.download');
     Route::post('/guru/import-jadwal', [GuruController::class, 'importJadwalData'])->name('guru.import-jadwal.import');
     
+    // Cek Presensi Siswa
+    Route::get('/cek-presensi', [\App\Http\Controllers\Admin\CekPresensiController::class, 'index'])->name('cek-presensi.index');
+    Route::get('/cek-presensi/mapel-list', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getMapelList'])->name('cek-presensi.mapel-list');
+    Route::get('/cek-presensi/data', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getData'])->name('cek-presensi.data');
+    Route::get('/cek-presensi/detail', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getDetail'])->name('cek-presensi.detail');
+    Route::post('/cek-presensi/update', [\App\Http\Controllers\Admin\CekPresensiController::class, 'update'])->name('cek-presensi.update');
+    Route::post('/cek-presensi/update-mapel', [\App\Http\Controllers\Admin\CekPresensiController::class, 'updateMapel'])->name('cek-presensi.update-mapel');
     // Guru BK Management
     Route::get('/guru-bk', [GuruBKController::class, 'index'])->name('guru-bk.index');
     Route::get('/guru-bk/create', [GuruBKController::class, 'create'])->name('guru-bk.create');
