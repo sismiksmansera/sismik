@@ -218,4 +218,20 @@ class CekPresensiController extends Controller
             'affected' => $affected,
         ]);
     }
+
+    /**
+     * AJAX: Get all mata pelajaran for picker
+     */
+    public function getAllMapel()
+    {
+        $mapelList = DB::table('mata_pelajaran')
+            ->select('id', 'nama_mapel')
+            ->orderBy('nama_mapel')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $mapelList,
+        ]);
+    }
 }

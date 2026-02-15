@@ -269,6 +269,38 @@
 }
 .btn-save:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(139,92,246,0.3); }
 
+/* CLICKABLE MAPEL CARD */
+.mapel-current-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; border: 2px solid #e5e7eb;
+    border-radius: 12px; cursor: pointer;
+    transition: all 0.3s ease; background: #f9fafb;
+}
+.mapel-current-card:hover {
+    border-color: #f59e0b; background: #fffbeb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245,158,11,0.15);
+}
+.mapel-current-card .mapel-card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 16px; flex-shrink: 0;
+}
+.mapel-current-card .mapel-card-info { flex: 1; }
+.mapel-current-card .mapel-card-name {
+    font-size: 15px; font-weight: 700; color: #1f2937; margin: 0;
+}
+.mapel-current-card .mapel-card-hint {
+    font-size: 11px; color: #9ca3af; margin: 2px 0 0 0;
+}
+.mapel-current-card .mapel-card-arrow {
+    color: #9ca3af; font-size: 16px;
+}
+
+/* STACKED MODAL (higher z-index) */
+.custom-modal-overlay.stacked { z-index: 10001; }
+
 /* LOADING */
 .loading-spinner {
     display: flex; justify-content: center; align-items: center; padding: 40px;
@@ -462,19 +494,29 @@
                 <input type="text" id="editMapelDate" readonly style="background:#f9fafb;">
             </div>
             <div class="edit-form-group">
-                <label>Mapel Saat Ini</label>
-                <input type="text" id="editMapelCurrent" readonly style="background:#f9fafb;">
-            </div>
-            <div class="edit-form-group">
-                <label>Mapel Baru</label>
-                <input type="text" id="editMapelNew" placeholder="Nama mata pelajaran baru...">
+                <label>Mapel Saat Ini <small style="color:#9ca3af;">(klik untuk mengganti)</small></label>
+                <div class="mapel-current-card" onclick="openPilihMapelBaru()">
+                    <div class="mapel-card-icon"><i class="fas fa-book"></i></div>
+                    <div class="mapel-card-info">
+                        <p class="mapel-card-name" id="editMapelCurrentName">-</p>
+                        <p class="mapel-card-hint">Klik untuk pilih mapel baru</p>
+                    </div>
+                    <i class="fas fa-chevron-right mapel-card-arrow"></i>
+                </div>
             </div>
         </div>
-        <div class="edit-modal-footer">
-            <button class="btn-cancel" onclick="closeModal('editMapelModal')">Batal</button>
-            <button class="btn-save" onclick="saveMapel()">
-                <i class="fas fa-save"></i> Simpan
-            </button>
+    </div>
+</div>
+
+<!-- PILIH MAPEL BARU MODAL (stacked on top) -->
+<div class="custom-modal-overlay stacked" id="pilihMapelBaruModal">
+    <div class="custom-modal" style="max-width:600px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-exchange-alt" style="color:#f59e0b;margin-right:8px;"></i> Pilih Mapel Baru</h3>
+            <button class="close-btn" onclick="closeModal('pilihMapelBaruModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="pilihMapelBaruBody">
+            <div class="loading-spinner"><div class="spinner"></div></div>
         </div>
     </div>
 </div>
@@ -744,20 +786,47 @@ function openEditMapelModal(tanggal, currentMapel) {
     document.getElementById('editMapelTanggal').value = tanggal;
     document.getElementById('editMapelOld').value = currentMapel;
     document.getElementById('editMapelDate').value = tglFormatted;
-    document.getElementById('editMapelCurrent').value = currentMapel;
-    document.getElementById('editMapelNew').value = '';
+    document.getElementById('editMapelCurrentName').textContent = currentMapel;
     document.getElementById('editMapelModal').classList.add('show');
 }
 
-function saveMapel() {
+function openPilihMapelBaru() {
+    const body = document.getElementById('pilihMapelBaruBody');
+    body.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+    document.getElementById('pilihMapelBaruModal').classList.add('show');
+
+    fetch(`{{ route("admin.cek-presensi.all-mapel") }}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data.length > 0) {
+                let html = '<div class="modal-option-grid">';
+                data.data.forEach(m => {
+                    html += `
+                        <div class="option-card" onclick="pilihMapelBaruDanSimpan('${escapeAttr(m.nama_mapel)}')">
+                            <div class="option-icon mapel">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <p class="option-name">${escapeHtml(m.nama_mapel)}</p>
+                        </div>`;
+                });
+                html += '</div>';
+                body.innerHTML = html;
+            } else {
+                body.innerHTML = '<div class="empty-state"><i class="fas fa-book-open"></i><h3>Tidak ada mapel</h3></div>';
+            }
+        })
+        .catch(() => {
+            body.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Error</h3></div>';
+        });
+}
+
+function pilihMapelBaruDanSimpan(newMapel) {
     const tanggal = document.getElementById('editMapelTanggal').value;
     const oldMapel = document.getElementById('editMapelOld').value;
-    const newMapel = document.getElementById('editMapelNew').value.trim();
 
-    if (!newMapel) {
-        showToast('Nama mapel baru tidak boleh kosong!', 'error');
-        return;
-    }
+    // Close both modals immediately
+    closeModal('pilihMapelBaruModal');
+    closeModal('editMapelModal');
 
     fetch('{{ route("admin.cek-presensi.update-mapel") }}', {
         method: 'POST',
@@ -773,8 +842,6 @@ function saveMapel() {
     .then(data => {
         if (data.success) {
             showToast(`Mapel berhasil diubah untuk ${data.affected} record`, 'success');
-            closeModal('editMapelModal');
-            // Update selected mapel name if the old one was current
             selectedMapel.name = newMapel;
             document.getElementById('mapelValue').textContent = newMapel;
             loadData();
