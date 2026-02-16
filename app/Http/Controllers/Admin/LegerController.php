@@ -159,6 +159,11 @@ class LegerController extends Controller
                 $previousAverage = $student['rata_rata'];
             }
             unset($student); // Break reference
+            
+            // Re-sort alphabetically by name for display
+            usort($students, function($a, $b) {
+                return strcmp($a['nama_siswa'], $b['nama_siswa']);
+            });
 
             
             return response()->json(['students' => $students, 'mapels' => $mapelDisplayNames]);
@@ -296,6 +301,11 @@ class LegerController extends Controller
             $previousAverage = $student['rata_rata'];
         }
         unset($student);
+        
+        // Re-sort alphabetically by name for display
+        usort($students, function($a, $b) {
+            return strcmp($a['nama_siswa'], $b['nama_siswa']);
+        });
         
         return view('admin.leger.print-leger', [
             'rombelNama' => $rombel->nama_rombel,
