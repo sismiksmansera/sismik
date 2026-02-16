@@ -1660,14 +1660,16 @@ function loadDetail(tanggal) {
                     </div>
                     <table class="detail-table">
                         <thead><tr>
-                            <th>No</th><th>Nama Siswa</th><th>NISN</th><th>Status</th>${canEdit ? '<th>Aksi</th>' : ''}
+                            <th>No</th><th>Nama / NISN</th><th>Status</th>${canEdit ? '<th>Aksi</th>' : ''}
                         </tr></thead><tbody>`;
 
                 data.data.forEach((s, i) => {
                     html += `<tr>
                         <td>${i+1}</td>
-                        <td>${escapeHtml(s.nama_siswa || s.nisn)}</td>
-                        <td>${s.nisn}</td>
+                        <td>
+                            <p style="margin:0; font-weight:600; font-size:13px;">${escapeHtml(s.nama_siswa || s.nisn)}</p>
+                            <p style="margin:2px 0 0; font-size:11px; color:#9ca3af;">${s.nisn}</p>
+                        </td>
                         <td><span class="presensi-status ${s.presensi}">${s.presensi}</span></td>
                         ${canEdit ? `<td><button class="btn-edit-sm" onclick="event.stopPropagation(); openEditPresensi(${s.id}, '${escapeAttr(s.nama_siswa || s.nisn)}', '${s.presensi}')">
                             <i class="fas fa-edit"></i> Edit
