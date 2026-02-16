@@ -604,7 +604,7 @@ function printKatrolResult() {
         <table><thead><tr><th>No</th><th>Nama Siswa</th><th>Mapel</th><th>Nilai Lama</th><th>Nilai Baru</th><th>Selisih</th></tr></thead><tbody>
         ${katrolData.map((row, i) => {
             const selisih = row.nilai_baru - row.nilai_lama;
-            return \`<tr><td>\${i + 1}</td><td style="text-align:left;">\${row.nama_siswa}</td><td style="text-align:left;">\${row.mapel}</td><td>\${row.nilai_lama}</td><td><strong>\${row.nilai_baru}</strong></td><td>\${selisih > 0 ? '+' : ''}\${selisih.toFixed(1)}</td></tr>\`;
+            return `<tr><td>${i + 1}</td><td style="text-align:left;">${row.nama_siswa}</td><td style="text-align:left;">${row.mapel}</td><td>${row.nilai_lama}</td><td><strong>${row.nilai_baru}</strong></td><td>${selisih > 0 ? '+' : ''}${selisih.toFixed(1)}</td></tr>`;
         }).join('')}
         </tbody></table><script>window.onload=function(){window.print();}<\/script></body></html>
     `);
