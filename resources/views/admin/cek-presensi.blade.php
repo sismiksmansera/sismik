@@ -1399,7 +1399,7 @@ function loadDataPerTanggal() {
         .then(r => r.json())
         .then(data => {
             if (data.success && data.data.length > 0) {
-                document.getElementById('tanggalSiswaCount').textContent = data.total_siswa + ' Siswa';
+                document.getElementById('jpSiswaCount').textContent = data.total_siswa + ' Siswa';
                 let html = '';
                 data.data.forEach(row => {
                     html += `<tr>
@@ -1435,7 +1435,7 @@ function loadDataPerTanggal() {
                     <i class="fas fa-clipboard-list"></i><h3>Tidak Ada Data</h3>
                     <p>Belum ada presensi untuk rombel ini pada tanggal tersebut.</p>
                 </div></td></tr>`;
-                document.getElementById('tanggalSiswaCount').textContent = '0 Siswa';
+                document.getElementById('jpSiswaCount').textContent = '0 Siswa';
             }
         })
         .catch(() => {
