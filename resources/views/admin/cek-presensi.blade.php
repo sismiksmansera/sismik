@@ -494,7 +494,7 @@
 
 /* PRINT STYLES - A4 PORTRAIT */
 @media print {
-    @page { size: A4 portrait; margin: 10mm 12mm; }
+    @page { size: A4 portrait; margin: 8mm 10mm; }
     body * { visibility: hidden; }
     #dataSectionTanggal, #dataSectionTanggal * { visibility: visible; }
     #dataSectionTanggal {
@@ -502,14 +502,14 @@
         background: white;
     }
     .sidebar, .navbar, .print-btn, .badge-count { display: none !important; }
-    .section-title { border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
-    .section-title h2 { font-size: 16px; color: #000; }
-    .jp-table { border-collapse: collapse; width: 100%; font-size: 8px; }
-    .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 3px 2px !important; }
-    .jp-table th { background: #f0f0f0 !important; color: #000 !important; font-weight: bold; font-size: 8px; }
-    .jp-table th:nth-child(1) { width: 3%; } /* No */
-    .jp-table th:nth-child(2) { width: 8%; } /* NISN */
-    .jp-table th:nth-child(3) { width: 20%; } /* Nama */
+    .section-title { border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
+    .section-title h2 { font-size: 14px; color: #000; }
+    .jp-table { border-collapse: collapse; width: 100%; font-size: 7px; }
+    .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 2px 1px !important; }
+    .jp-table th { background: #f0f0f0 !important; color: #000 !important; font-weight: bold; font-size: 7px; }
+    .jp-table th:nth-child(1) { width: 2.5%; } /* No */
+    .jp-table th:nth-child(2) { width: 7%; } /* NISN */
+    .jp-table th:nth-child(3) { width: 18%; } /* Nama */
     .jp-table th:nth-child(4),
     .jp-table th:nth-child(5),
     .jp-table th:nth-child(6),
@@ -519,9 +519,9 @@
     .jp-table th:nth-child(10),
     .jp-table th:nth-child(11),
     .jp-table th:nth-child(12),
-    .jp-table th:nth-child(13) { width: 4%; } /* JP 1-10 */
-    .jp-table th:nth-child(14) { width: 7%; } /* % Hadir */
-    .jp-badge { padding: 1px 3px; border-radius: 2px; font-size: 7px; font-weight: bold; }
+    .jp-table th:nth-child(13) { width: 3.8%; } /* JP 1-10 */
+    .jp-table th:nth-child(14) { width: 6%; } /* % Hadir */
+    .jp-badge { padding: 1px 2px; border-radius: 2px; font-size: 6px; font-weight: bold; }
     .jp-badge.H { background: #d1fae5 !important; color: #065f46 !important; }
     .jp-badge.S { background: #dbeafe !important; color: #1e40af !important; }
     .jp-badge.I { background: #fef3c7 !important; color: #92400e !important; }
@@ -529,15 +529,16 @@
     .jp-badge.D { background: #fed7aa !important; color: #9a3412 !important; }
     .jp-badge.B { background: #e9d5ff !important; color: #6b21a8 !important; }
     .jp-badge.empty { background: #f3f4f6 !important; color: #9ca3af !important; }
-    .persen-badge { padding: 2px 4px; border-radius: 3px; font-size: 7px; font-weight: bold; }
+    .persen-badge { padding: 1px 3px; border-radius: 2px; font-size: 6px; font-weight: bold; }
     .persen-badge.high { background: #d1fae5 !important; color: #065f46 !important; }
     .persen-badge.mid { background: #fef3c7 !important; color: #92400e !important; }
     .persen-badge.low { background: #fee2e2 !important; color: #991b1b !important; }
     .persen-badge.none { background: #f3f4f6 !important; color: #9ca3af !important; }
     #printHeader { display: block !important; }
-    #printHeader h3 { font-size: 14px; margin: 0; }
-    #printHeader h4 { font-size: 12px; margin: 3px 0; }
-    #printHeader table { font-size: 9px; margin-top: 8px; }
+    #printHeader h3 { font-size: 13px; margin: 0; }
+    #printHeader h4 { font-size: 11px; margin: 3px 0; }
+    #printHeader table { font-size: 8px; margin-top: 6px; margin-bottom: 8px; }
+}
 }
 
 /* STACKED MODAL (higher z-index) */
