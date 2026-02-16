@@ -112,9 +112,14 @@
                 <div class="filter-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0"><i class="fas fa-table"></i> Leger Nilai Katrol</h5>
-                        <button class="btn btn-sm btn-success" id="btnPrintLeger">
-                            <i class="fas fa-print"></i> Cetak Leger
-                        </button>
+                        <div>
+                            <button class="btn btn-sm btn-success" id="btnPrintLeger">
+                                <i class="fas fa-print"></i> Cetak Leger
+                            </button>
+                            <button class="btn btn-sm btn-primary" id="btnExportLeger" style="margin-left: 5px;">
+                                <i class="fas fa-file-excel"></i> Download Excel
+                            </button>
+                        </div>
                     </div>
                     <div id="legerTableWrapper" style="overflow-x: auto;">
                         <!-- Table will be inserted here via JavaScript -->
@@ -263,6 +268,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const url = `/admin/leger/print?rombel_id=${rombelId}&tahun=${tahun}&semester=${semester}`;
         window.open(url, '_blank', 'width=1200,height=800');
+    });
+    
+    // Export leger to Excel
+    document.getElementById('btnExportLeger').addEventListener('click', function() {
+        const rombelId = rombelInput.value;
+        const tahun = tahunInput.value;
+        const semester = semesterInput.value;
+        
+        if (!rombelId) return;
+        
+        window.location.href = `/admin/leger/export?rombel_id=${rombelId}&tahun=${tahun}&semester=${semester}`;
     });
     
     function displayLeger(data) {

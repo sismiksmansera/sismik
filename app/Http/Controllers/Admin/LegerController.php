@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\DataPeriodik;
 use App\Models\Rombel;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class LegerController extends Controller
 {
@@ -313,6 +318,208 @@ class LegerController extends Controller
             'semester' => $semester,
             'mapels' => $mapelDisplayNames,
             'students' => $students
+        ]);
+    }
+    
+    /**
+     * Export leger to XLSX
+     */
+    public function exportLeger(Request $request)
+    {
+        $rombelId = $request->query('rombel_id');
+        $tahun = $request->query('tahun');
+        $semester = $request->query('semester');
+        
+        $rombel = Rombel::find($rombelId);
+        if (!$rombel) {
+            abort(404, 'Rombel tidak ditemukan');
+        }
+        
+        // Get data (same logic as getLegerData)
+        $katrolData = DB::table('katrol_nilai_leger')
+            ->where('rombel_id', $rombelId)
+            ->where('tahun_pelajaran', $tahun)
+            ->where('semester', $semester)
+            ->orderBy('nama_siswa', 'asc')
+            ->get();
+        
+        $allMapelColumns = [
+            'bahasa_indonesia', 'bahasa_inggris', 'bahasa_inggris_lanjut', 'bahasa_lampung',
+            'biologi', 'ekonomi', 'fisika', 'geografi', 'informatika', 'kimia', 'kka',
+            'matematika', 'matematika_lanjut', 'pendidikan_agama_buddha', 'pendidikan_agama_hindu',
+            'pendidikan_agama_islam', 'pendidikan_agama_katholik', 'pendidikan_agama_kristen',
+            'pendidikan_kewarganegaraan', 'pjok', 'prakarya_dan_kewirausahaan',
+            'sejarah', 'seni_budaya', 'sosiologi', 'ipa', 'ips'
+        ];
+        
+        $activeMapels = [];
+        foreach ($allMapelColumns as $col) {
+            foreach ($katrolData as $row) {
+                if (property_exists($row, $col) && $row->$col !== null && $row->$col !== '') {
+                    $activeMapels[] = $col;
+                    break;
+                }
+            }
+        }
+        
+        // Build students with calculations
+        $students = [];
+        foreach ($katrolData as $row) {
+            $nilai = [];
+            $totalNilai = 0;
+            $countNilai = 0;
+            
+            foreach ($activeMapels as $col) {
+                $nilaiVal = property_exists($row, $col) ? ($row->$col ?? null) : null;
+                $nilai[$col] = $nilaiVal;
+                
+                if ($nilaiVal !== null && is_numeric($nilaiVal) && !in_array($col, ['ipa', 'ips'])) {
+                    $totalNilai += floatval($nilaiVal);
+                    $countNilai++;
+                }
+            }
+            
+            $rataRata = $countNilai > 0 ? $totalNilai / $countNilai : 0;
+            
+            $students[] = [
+                'nisn' => property_exists($row, 'nisn') ? $row->nisn : '-',
+                'nama_siswa' => property_exists($row, 'nama_siswa') ? $row->nama_siswa : 'Unknown',
+                'nilai' => $nilai,
+                'jumlah' => $totalNilai,
+                'rata_rata' => $rataRata,
+                'ranking' => 0
+            ];
+        }
+        
+        // Assign ranking
+        usort($students, function($a, $b) { return $b['rata_rata'] <=> $a['rata_rata']; });
+        $rank = 1; $prevAvg = null; $sameCount = 0;
+        foreach ($students as &$s) {
+            if ($prevAvg !== null && $s['rata_rata'] < $prevAvg) { $rank += $sameCount; $sameCount = 1; } else { $sameCount++; }
+            $s['ranking'] = $rank;
+            $prevAvg = $s['rata_rata'];
+        }
+        unset($s);
+        
+        // Re-sort by name
+        usort($students, function($a, $b) { return strcmp($a['nama_siswa'], $b['nama_siswa']); });
+        
+        // Create spreadsheet
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Leger Nilai');
+        
+        // Title rows
+        $lastColIndex = count($activeMapels) + 6; // No, NISN, Nama, mapels..., Jumlah, Rata-rata, Ranking
+        $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($lastColIndex);
+        
+        $sheet->mergeCells("A1:{$lastCol}1");
+        $sheet->setCellValue('A1', 'LEGER NILAI SISWA (KATROL)');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        
+        $sheet->mergeCells("A2:{$lastCol}2");
+        $sheet->setCellValue('A2', "Kelas: {$rombel->nama_rombel} | Tahun Pelajaran: {$tahun} | Semester: {$semester}");
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        
+        // Header row
+        $headerRow = 4;
+        $col = 1;
+        $headers = ['No', 'NISN', 'Nama Siswa'];
+        foreach ($headers as $h) {
+            $sheet->setCellValueByColumnAndRow($col, $headerRow, $h);
+            $col++;
+        }
+        foreach ($activeMapels as $mapelCol) {
+            $sheet->setCellValueByColumnAndRow($col, $headerRow, ucwords(str_replace('_', ' ', $mapelCol)));
+            $col++;
+        }
+        $sheet->setCellValueByColumnAndRow($col, $headerRow, 'Jumlah'); $col++;
+        $sheet->setCellValueByColumnAndRow($col, $headerRow, 'Rata-rata'); $col++;
+        $sheet->setCellValueByColumnAndRow($col, $headerRow, 'Ranking');
+        
+        // Header styling
+        $headerRange = "A{$headerRow}:{$lastCol}{$headerRow}";
+        $sheet->getStyle($headerRange)->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFF'));
+        $sheet->getStyle($headerRange)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('DC2626');
+        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($headerRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        
+        // Data rows
+        $dataRow = 5;
+        foreach ($students as $index => $student) {
+            $col = 1;
+            $sheet->setCellValueByColumnAndRow($col++, $dataRow, $index + 1);
+            $sheet->setCellValueExplicitByColumnAndRow($col++, $dataRow, $student['nisn'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueByColumnAndRow($col++, $dataRow, $student['nama_siswa']);
+            
+            foreach ($activeMapels as $mapelCol) {
+                $val = $student['nilai'][$mapelCol] ?? '-';
+                if (is_numeric($val)) {
+                    $sheet->setCellValueByColumnAndRow($col, $dataRow, floatval($val));
+                    // Color code
+                    $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+                    if ($val >= 85) {
+                        $sheet->getStyle("{$colLetter}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('DCFCE7');
+                    } elseif ($val >= 75) {
+                        $sheet->getStyle("{$colLetter}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('DBEAFE');
+                    } elseif ($val >= 65) {
+                        $sheet->getStyle("{$colLetter}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FEF9C3');
+                    } else {
+                        $sheet->getStyle("{$colLetter}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FEE2E2');
+                    }
+                } else {
+                    $sheet->setCellValueByColumnAndRow($col, $dataRow, '-');
+                }
+                $col++;
+            }
+            
+            // Jumlah
+            $sheet->setCellValueByColumnAndRow($col, $dataRow, $student['jumlah']);
+            $jCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->getStyle("{$jCol}{$dataRow}")->getFont()->setBold(true);
+            $sheet->getStyle("{$jCol}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FEF3C7');
+            $col++;
+            
+            // Rata-rata
+            $sheet->setCellValueByColumnAndRow($col, $dataRow, round($student['rata_rata'], 2));
+            $rCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->getStyle("{$rCol}{$dataRow}")->getFont()->setBold(true);
+            $sheet->getStyle("{$rCol}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FEF2F2');
+            $col++;
+            
+            // Ranking
+            $sheet->setCellValueByColumnAndRow($col, $dataRow, $student['ranking']);
+            $rkCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->getStyle("{$rkCol}{$dataRow}")->getFont()->setBold(true);
+            $sheet->getStyle("{$rkCol}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F3E8FF');
+            
+            $dataRow++;
+        }
+        
+        // Borders for data
+        $dataRange = "A{$headerRow}:{$lastCol}" . ($dataRow - 1);
+        $sheet->getStyle($dataRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle($dataRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        
+        // Left-align nama column
+        $sheet->getStyle('C5:C' . ($dataRow - 1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        
+        // Auto-width columns
+        for ($i = 1; $i <= $lastColIndex; $i++) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
+            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+        
+        // Output
+        $filename = 'Leger_' . str_replace(' ', '_', $rombel->nama_rombel) . "_{$tahun}_Smt{$semester}.xlsx";
+        
+        $writer = new Xlsx($spreadsheet);
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
     /**

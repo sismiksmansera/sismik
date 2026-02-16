@@ -253,6 +253,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/leger/get-rombels', [\App\Http\Controllers\Admin\LegerController::class, 'getRombels'])->name('leger.get-rombels');
     Route:: get('/leger/data', [\App\Http\Controllers\Admin\LegerController::class, 'getLegerData'])->name('leger.data');
     Route::get('/leger/print', [\App\Http\Controllers\Admin\LegerController::class, 'printLeger'])->name('leger.print');
+    Route::get('/leger/export', [\App\Http\Controllers\Admin\LegerController::class, 'exportLeger'])->name('leger.export');
     Route::get('/leger/print-nilai', [\App\Http\Controllers\Admin\LegerController::class, 'printNilai'])->name('leger.print-nilai');
     Route::get('/leger/print-katrol', [\App\Http\Controllers\Admin\LegerController::class, 'printKatrol'])->name('leger.print-katrol');
     
