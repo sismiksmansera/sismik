@@ -72,7 +72,7 @@ class LegerController extends Controller
                 ->where('rombel_id', $rombelId)
                 ->where('tahun_pelajaran', $tahun)
                 ->where('semester', $semester)
-                ->orderBy('nisn', 'asc') // Order by NISN instead since ranking column doesn't exist
+                ->orderBy('nama_siswa', 'asc') // Sort alphabetically by student name
                 ->get();
             
             if ($katrolData->isEmpty()) {
@@ -176,7 +176,7 @@ class LegerController extends Controller
             ->where('rombel_id', $rombelId)
             ->where('tahun_pelajaran', $tahun)
             ->where('semester', $semester)
-            ->orderBy('nisn', 'asc')
+            ->orderBy('nama_siswa', 'asc') // Sort alphabetically by student name
             ->get();
         
         // Same mapel detection logic

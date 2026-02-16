@@ -103,9 +103,6 @@
                         <button type="button" class="btn btn-show-leger" id="btnShowLeger" disabled>
                             <i class="fas fa-eye"></i> Tampilkan Leger
                         </button>
-                        <button type="button" class="btn btn-success" id="btnPrintLeger" disabled style="margin-left: 10px;">
-                            <i class="fas fa-print"></i> Cetak Leger
-                        </button>
                     </div>
                 </form>
             </div>
@@ -115,8 +112,8 @@
                 <div class="filter-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0"><i class="fas fa-table"></i> Leger Nilai Katrol</h5>
-                        <button class="btn btn-sm btn-primary" onclick="window.print()">
-                            <i class="fas fa-print"></i> Print
+                        <button class="btn btn-sm btn-success" id="btnPrintLeger">
+                            <i class="fas fa-print"></i> Cetak Leger
                         </button>
                     </div>
                     <div id="legerTableWrapper" style="overflow-x: auto;">
@@ -211,9 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Enable buttons when rombel selected
     rombelInput.addEventListener('change', function() {
-        const hasValue = !!this.value;
-        btnShowLeger.disabled = !hasValue;
-        btnPrintLeger.disabled = !hasValue;
+        btnShowLeger.disabled = !this.value;
         legerContainer.style.display = 'none';
     });
     
