@@ -61,7 +61,7 @@ class DashboardController extends Controller
                 ->where('jp.nama_guru', $namaGuru)
                 ->where('jp.tahun_pelajaran', $tahunAktif)
                 ->whereRaw("LOWER(jp.semester) = LOWER(?)", [$semesterAktif])
-                ->join('periode_jadwal as pj', 'jp.kode_jadwal', '=', 'pj.kode')
+                ->join('periode_jadwal as pj', DB::raw('jp.kode_jadwal COLLATE utf8mb4_unicode_ci'), '=', 'pj.kode')
                 ->where('pj.tanggal_mulai', '<=', $tanggalHariIni)
                 ->where(function ($q) use ($tanggalHariIni) {
                     $q->whereNull('pj.tanggal_akhir')
