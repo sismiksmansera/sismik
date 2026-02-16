@@ -558,24 +558,14 @@ class CekPresensiController extends Controller
             return response()->json(['success' => false, 'message' => 'Minimal 2 karakter']);
         }
 
-        $periodik = DataPeriodik::aktif()->first();
-        $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
-        $semesterAktif = $periodik->semester ?? 'Ganjil';
-
-        // Search in siswa table
-        $students = DB::table('siswa as s')
-            ->join('rombel as r', function ($join) use ($tahunPelajaran, $semesterAktif) {
-                $join->on(DB::raw('s.nisn COLLATE utf8mb4_general_ci'), '=', DB::raw('r.nisn COLLATE utf8mb4_general_ci'))
-                     ->where('r.tahun_pelajaran', $tahunPelajaran)
-                     ->where('r.semester', $semesterAktif);
-            })
+        $students = DB::table('siswa')
             ->where(function ($q) use ($query) {
-                $q->where('s.nama', 'LIKE', "%{$query}%")
-                  ->orWhere('s.nisn', 'LIKE', "%{$query}%");
+                $q->where('nama', 'LIKE', "%{$query}%")
+                  ->orWhere('nisn', 'LIKE', "%{$query}%")
+                  ->orWhere('nis', 'LIKE', "%{$query}%");
             })
-            ->select('s.nisn', 's.nama', 'r.nama_rombel')
-            ->groupBy('s.nisn', 's.nama', 'r.nama_rombel')
-            ->orderBy('s.nama')
+            ->select('nisn', 'nama', 'nama_rombel')
+            ->orderBy('nama')
             ->limit(20)
             ->get();
 

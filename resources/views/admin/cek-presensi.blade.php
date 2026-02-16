@@ -765,7 +765,7 @@
                         <span class="card-label">Nama / NISN</span>
                     </div>
                 </div>
-                <div class="selector-card" id="siswaFilterCard">
+                <div class="selector-card" id="siswaFilterCard" onclick="onSiswaFilterChange()">
                     <div class="card-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
                         <i class="fas fa-filter"></i>
                     </div>
