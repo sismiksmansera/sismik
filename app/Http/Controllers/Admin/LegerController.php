@@ -155,6 +155,80 @@ class LegerController extends Controller
             'columns' => $rawData->isNotEmpty() ? array_keys((array)$rawData->first()) : []
         ]);
     }
+    
+    /**
+     * Print leger view
+     */
+    public function printLeger(Request $request)
+    {
+        $rombelId = $request->query('rombel_id');
+        $tahun = $request->query('tahun');
+        $semester = $request->query('semester');
+        
+        // Get rombel info
+        $rombel = \App\Models\Rombel::find($rombelId);
+        if (!$rombel) {
+            abort(404, 'Rombel tidak ditemukan');
+        }
+        
+        // Get leger data (reuse same logic as getLegerData)
+        $katrolData = DB::table('katrol_nilai_leger')
+            ->where('rombel_id', $rombelId)
+            ->where('tahun_pelajaran', $tahun)
+            ->where('semester', $semester)
+            ->orderBy('nisn', 'asc')
+            ->get();
+        
+        // Same mapel detection logic
+        $allMapelColumns = [
+            'bahasa_indonesia', 'bahasa_inggris', 'bahasa_inggris_lanjut', 'bahasa_lampung',
+            'biologi', 'ekonomi', 'fisika', 'geografi', 'informatika', 'kimia', 'kka',
+            'matematika', 'matematika_lanjut', 'pendidikan_agama_buddha', 'pendidikan_agama_hindu',
+            'pendidikan_agama_islam', 'pendidikan_agama_katholik', 'pendidikan_agama_kristen',
+            'pendidikan_kewarganegaraan', 'pjok', 'prakarya_dan_kewirausahaan',
+            'sejarah', 'seni_budaya', 'sosiologi', 'ipa', 'ips'
+        ];
+        
+        $activeMapels = [];
+        foreach ($allMapelColumns as $col) {
+            foreach ($katrolData as $row) {
+                if (property_exists($row, $col) && $row->$col !== null && $row->$col !== '') {
+                    $activeMapels[] = $col;
+                    break;
+                }
+            }
+        }
+        
+        $mapelDisplayNames = [];
+        foreach ($activeMapels as $col) {
+            $mapelDisplayNames[] = ucwords(str_replace('_', ' ', $col));
+        }
+        
+        $students = [];
+        foreach ($katrolData as $row) {
+            $nilai = [];
+            foreach ($activeMapels as $col) {
+                $displayName = ucwords(str_replace('_', ' ', $col));
+                $nilai[$displayName] = property_exists($row, $col) ? ($row->$col ?? '-') : '-';
+            }
+            
+            $students[] = [
+                'nisn' => property_exists($row, 'nisn') ? $row->nisn : '-',
+                'nama_siswa' => property_exists($row, 'nama_siswa') ? $row->nama_siswa : 'Unknown',
+                'nilai' => $nilai,
+                'rata_rata' => '0.00', // Will be calculated in view if needed
+                'ranking' => '-'
+            ];
+        }
+        
+        return view('admin.leger.print-leger', [
+            'rombelNama' => $rombel->nama_rombel,
+            'tahun' => $tahun,
+            'semester' => $semester,
+            'mapels' => $mapelDisplayNames,
+            'students' => $students
+        ]);
+    }
     /**
      * Print Leger Nilai (Original grades)
      */

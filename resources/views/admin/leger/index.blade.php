@@ -103,6 +103,9 @@
                         <button type="button" class="btn btn-show-leger" id="btnShowLeger" disabled>
                             <i class="fas fa-eye"></i> Tampilkan Leger
                         </button>
+                        <button type="button" class="btn btn-success" id="btnPrintLeger" disabled style="margin-left: 10px;">
+                            <i class="fas fa-print"></i> Cetak Leger
+                        </button>
                     </div>
                 </form>
             </div>
@@ -133,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const semesterInput = document.getElementById('semester');
     const rombelInput = document.getElementById('rombel_id');
     const btnShowLeger = document.getElementById('btnShowLeger');
+    const btnPrintLeger = document.getElementById('btnPrintLeger');
     const legerContainer = document.getElementById('legerContainer');
     
     // Load semesters when tahun changes
@@ -205,9 +209,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Enable button when rombel selected
+    // Enable buttons when rombel selected
     rombelInput.addEventListener('change', function() {
-        btnShowLeger.disabled = !this.value;
+        const hasValue = !!this.value;
+        btnShowLeger.disabled = !hasValue;
+        btnPrintLeger.disabled = !hasValue;
         legerContainer.style.display = 'none';
     });
     
@@ -250,6 +256,18 @@ document.addEventListener('DOMContentLoaded', function() {
             btnShowLeger.disabled = false;
             btnShowLeger.innerHTML = '<i class="fas fa-eye"></i> Tampilkan Leger';
         });
+    });
+    
+    // Print leger when button clicked
+    btnPrintLeger.addEventListener('click', function() {
+        const rombelId = rombelInput.value;
+        const tahun = tahunInput.value;
+        const semester = semesterInput.value;
+        
+        if (!rombelId) return;
+        
+        const url = `/admin/leger/print?rombel_id=${rombelId}&tahun=${tahun}&semester=${semester}`;
+        window.open(url, '_blank', 'width=1200,height=800');
     });
     
     function displayLeger(data) {
