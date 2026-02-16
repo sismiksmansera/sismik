@@ -503,7 +503,7 @@
     }
     .sidebar, .navbar, .print-btn, .badge-count, .section-title { display: none !important; }
     .jp-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
-    .jp-table { border-collapse: collapse; width: 100%; font-size: 7px; min-width: 0 !important; table-layout: fixed; }
+    .jp-table { border-collapse: collapse; width: 100%; font-size: 8px; min-width: 0 !important; table-layout: fixed; }
     .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 1px 1px !important; line-height: 1.1; text-align: center; word-wrap: break-word; overflow: hidden; }
     .jp-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 7px; }
     .jp-table col.col-no { width: 1.5%; }
@@ -512,7 +512,7 @@
     .jp-table col.col-jp { width: 2.5%; }
     .jp-table col.col-persen { width: 5%; }
     .jp-table td:nth-child(3) { text-align: left; }
-    .jp-table td strong { font-size: 7px; }
+    .jp-table td strong { font-size: 8px; }
     .jp-badge { padding: 0px 2px; border-radius: 1px; font-size: 6px; font-weight: bold; display: inline-block; }
     .jp-badge.H { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .jp-badge.S { background: #dbeafe !important; color: #1e40af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -521,7 +521,7 @@
     .jp-badge.D { background: #fed7aa !important; color: #9a3412 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .jp-badge.B { background: #e9d5ff !important; color: #6b21a8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .jp-badge.empty { background: #f3f4f6 !important; color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .persen-badge { padding: 0px 2px; border-radius: 1px; font-size: 7px; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .persen-badge { padding: 0px 2px; border-radius: 1px; font-size: 8px; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.high { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.mid { background: #fef3c7 !important; color: #92400e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.low { background: #fee2e2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
