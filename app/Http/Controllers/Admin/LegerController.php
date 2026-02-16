@@ -216,8 +216,8 @@ class LegerController extends Controller
         $tahunAktif = $periodeAktif->tahun_pelajaran ?? $tahunPelajaran;
         $semesterAktif = $periodeAktif->semester ?? $semester;
         
-        // Check if katrol data exists
-        $katrolCount = DB::table('nilai_katrol')
+        // Check if katrol data exists in new leger table
+        $katrolCount = DB::table('katrol_nilai_leger')
             ->where('rombel_id', $rombelId)
             ->where('tahun_pelajaran', $tahunAktif)
             ->where('semester', $semesterAktif)
@@ -317,25 +317,34 @@ class LegerController extends Controller
             $mapelList = $newMapelList;
         }
         
-        // Calculate katrol grades
+        // Get katrol grades from leger table (wide format)
         $legerData = [];
         foreach ($siswaList as $siswa) {
+            // Fetch this student's row from katrol_nilai_leger
+            $katrolRow = DB::table('katrol_nilai_leger')
+                ->where('rombel_id', $rombelId)
+                ->where('tahun_pelajaran', $tahunAktif)
+                ->where('semester', $semesterAktif)
+                ->where('nisn', $siswa->nisn)
+                ->first();
+            
             $nilaiMapel = [];
             $total = 0;
             $count = 0;
             
+            // Extract nilai from columns
             foreach ($mapelList as $mapel) {
                 $mapelNama = $mapel->nama_mapel;
                 
-                $nilaiKatrol = DB::table('nilai_katrol')
-                    ->where('rombel_id', $rombelId)
-                    ->where('tahun_pelajaran', $tahunAktif)
-                    ->where('semester', $semesterAktif)
-                    ->where('nisn', $siswa->nisn)
-                    ->where('mapel', $mapelNama)
-                    ->value('nilai_katrol');
+                // Convert mapel name to column name (lowercase, replace space with underscore)
+                $columnName = strtolower(str_replace(' ', '_', $mapelNama));
                 
-                $nilai = $nilaiKatrol ? floatval($nilaiKatrol) : null;
+                // Get value from the column
+                $nilai = null;
+                if ($katrolRow && isset($katrolRow->$columnName)) {
+                    $nilai = floatval($katrolRow->$columnName);
+                }
+                
                 $nilaiMapel[$mapelNama] = $nilai;
                 
                 // Skip IPA/IPS component subjects for total (Kelas X)
