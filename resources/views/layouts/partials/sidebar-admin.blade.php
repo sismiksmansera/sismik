@@ -71,6 +71,10 @@
         </a>
 
         <div class="menu-label">Laporan</div>
+        <a href="{{ route('admin.leger.index') }}" class="menu-item {{ request()->routeIs('admin.leger.*') ? 'active' : '' }}">
+            <i class="fas fa-table"></i>
+            <span>Leger</span>
+        </a>
         <a href="#" class="menu-item">
             <i class="fas fa-chart-bar"></i>
             <span>Laporan</span>
