@@ -530,14 +530,14 @@
 
     /* Minggu Table */
     .minggu-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
-    .minggu-table { border-collapse: collapse; width: 100%; font-size: 5px; min-width: 0 !important; table-layout: fixed; }
-    .minggu-table th, .minggu-table td { border: 1px solid #000 !important; padding: 0px 1px !important; text-align: center; word-wrap: break-word; overflow: hidden; }
-    .minggu-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 5px; line-height: 1.2; padding: 1px 0px !important; text-align: center !important; }
-    .minggu-table th.date-header { background: #ddd !important; color: #000 !important; font-size: 6px; }
-    .minggu-table td { line-height: 1.2; padding: 1px 0px !important; font-size: 5px; }
+    .minggu-table { border-collapse: collapse; width: 100%; font-size: 9px; min-width: 0 !important; table-layout: fixed; }
+    .minggu-table th, .minggu-table td { border: 1px solid #000 !important; padding: 2px 1px !important; text-align: center; word-wrap: break-word; overflow: hidden; }
+    .minggu-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 9px; line-height: 1.2; padding: 3px 1px !important; text-align: center !important; }
+    .minggu-table th.date-header { background: #ddd !important; color: #000 !important; font-size: 9px; }
+    .minggu-table td { line-height: 1.5; padding: 2px 1px !important; font-size: 10px; }
     .minggu-table td:nth-child(1), .minggu-table td:nth-child(2) { text-align: center !important; }
     .minggu-table td:nth-child(3) { text-align: left !important; }
-    .minggu-table td strong { font-size: 5px; font-weight: bold; }
+    .minggu-table td strong { font-size: 10px; font-weight: bold; }
 
     /* Shared badge styles */
     .jp-badge { width: auto !important; height: auto !important; line-height: 1 !important; padding: 0px 1px !important; border-radius: 1px; font-size: 6px !important; font-weight: bold; display: inline-block; }
@@ -554,9 +554,8 @@
     .persen-badge.low { background: #fee2e2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.none { background: #f3f4f6 !important; color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-    /* Minggu-specific smaller badges */
-    body.print-minggu .jp-badge { font-size: 4px !important; padding: 0px 0px !important; }
-    body.print-minggu .persen-badge { font-size: 5px !important; padding: 0px 1px !important; }
+    /* Minggu-specific badge size (same as tanggal since table is simpler now) */
+    body.print-minggu .persen-badge { font-size: 8px !important; padding: 0px 2px !important; }
 
     /* Print headers & footers */
     .print-header-block { display: block !important; }
@@ -1657,24 +1656,18 @@ function loadDataPerMinggu() {
                 document.getElementById('mingguSiswaCount').textContent = data.total_siswa + ' Siswa';
                 document.getElementById('btnCetakMinggu').style.display = 'inline-block';
                 
-                // Build header with dates
-                let headerHtml = '<tr><th rowspan="2">No</th><th rowspan="2">NISN</th><th rowspan="2">Nama Siswa</th>';
+                // Build header with dates (only percentage per day)
+                let headerHtml = '<tr><th>No</th><th>NISN</th><th>Nama Siswa</th>';
                 data.dates.forEach(date => {
                     const d = new Date(date);
                     const dayName = hariNames[d.getDay()];
                     const formatted = d.toLocaleDateString('id-ID', {day:'2-digit', month:'short'});
-                    headerHtml += `<th colspan="10" class="date-header">${dayName}, ${formatted}</th>`;
+                    headerHtml += `<th class="date-header">${dayName}<br>${formatted}</th>`;
                 });
-                headerHtml += '<th rowspan="2">% Hadir</th></tr><tr>';
-                data.dates.forEach(() => {
-                    for (let jp = 1; jp <= 10; jp++) {
-                        headerHtml += `<th>JP${jp}</th>`;
-                    }
-                });
-                headerHtml += '</tr>';
+                headerHtml += '<th>% Minggu</th></tr>';
                 thead.innerHTML = headerHtml;
 
-                // Build body
+                // Build body - calculate daily percentage from JP data
                 let bodyHtml = '';
                 data.data.forEach(row => {
                     bodyHtml += `<tr>
@@ -1683,18 +1676,28 @@ function loadDataPerMinggu() {
                         <td><strong>${escapeHtml(row.nama)}</strong></td>`;
                     
                     data.dates.forEach(date => {
+                        let totalJp = 0, hadirJp = 0;
                         for (let jp = 1; jp <= 10; jp++) {
                             const key = `${date}_jp_${jp}`;
                             const val = row[key];
                             if (val && val !== '-' && val !== '') {
-                                bodyHtml += `<td><span class="jp-badge ${val}">${val}</span></td>`;
-                            } else {
-                                bodyHtml += `<td><span class="jp-badge empty">-</span></td>`;
+                                totalJp++;
+                                if (val === 'H') hadirJp++;
                             }
+                        }
+                        if (totalJp > 0) {
+                            const pct = Math.round((hadirJp / totalJp) * 100);
+                            let pClass = 'none';
+                            if (pct >= 80) pClass = 'high';
+                            else if (pct >= 50) pClass = 'mid';
+                            else pClass = 'low';
+                            bodyHtml += `<td><span class="persen-badge ${pClass}">${pct}%</span></td>`;
+                        } else {
+                            bodyHtml += `<td><span class="persen-badge none">-</span></td>`;
                         }
                     });
 
-                    // Percentage
+                    // Weekly percentage
                     if (row.prosentase !== null) {
                         let pClass = 'none';
                         if (row.prosentase >= 80) pClass = 'high';
@@ -1766,7 +1769,7 @@ function printPerMinggu() {
         styleEl.id = 'printPageStyle';
         document.head.appendChild(styleEl);
     }
-    styleEl.textContent = '@media print { @page { size: A4 landscape; margin: 6mm 8mm; } }';
+    styleEl.textContent = '@media print { @page { size: A4 portrait; margin: 6mm 15mm; } }';
     
     // Trigger print
     document.body.classList.add('print-minggu');
