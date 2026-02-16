@@ -939,6 +939,7 @@
 </div>
 
 <!-- EDIT PRESENSI MODAL -->
+@if(($routePrefix ?? 'admin') === 'admin')
 <div class="custom-modal-overlay" id="editPresensiModal">
     <div class="custom-modal" style="max-width:400px;">
         <div class="modal-header">
@@ -1013,6 +1014,7 @@
         </div>
     </div>
 </div>
+@endif
 
 <!-- TOAST -->
 <div class="toast-notification" id="toast"></div>
@@ -1021,6 +1023,7 @@
 
 @push('scripts')
 <script>
+const canEdit = {{ ($routePrefix ?? 'admin') === 'admin' ? 'true' : 'false' }};
 const csrfToken = '{{ csrf_token() }}';
 let selectedMethod = null;
 let selectedRombel = null;
@@ -1278,13 +1281,13 @@ function loadDetail(tanggal) {
                 let html = `
                     <div class="detail-header">
                         <h4>Detail Presensi — ${tglFormatted}</h4>
-                        <button class="btn-edit-mapel" onclick="event.stopPropagation(); openEditMapelModal('${tanggal}', '${escapeAttr(selectedMapel.name)}')">
+                        ${canEdit ? `<button class="btn-edit-mapel" onclick="event.stopPropagation(); openEditMapelModal('${tanggal}', '${escapeAttr(selectedMapel.name)}')">
                             <i class="fas fa-edit"></i> Edit Mapel
-                        </button>
+                        </button>` : ''}
                     </div>
                     <table class="detail-table">
                         <thead><tr>
-                            <th>No</th><th>Nama Siswa</th><th>NISN</th><th>Status</th><th>Aksi</th>
+                            <th>No</th><th>Nama Siswa</th><th>NISN</th><th>Status</th>${canEdit ? '<th>Aksi</th>' : ''}
                         </tr></thead><tbody>`;
 
                 data.data.forEach((s, i) => {
@@ -1293,9 +1296,9 @@ function loadDetail(tanggal) {
                         <td>${escapeHtml(s.nama_siswa || s.nisn)}</td>
                         <td>${s.nisn}</td>
                         <td><span class="presensi-status ${s.presensi}">${s.presensi}</span></td>
-                        <td><button class="btn-edit-sm" onclick="event.stopPropagation(); openEditPresensi(${s.id}, '${escapeAttr(s.nama_siswa || s.nisn)}', '${s.presensi}')">
+                        ${canEdit ? `<td><button class="btn-edit-sm" onclick="event.stopPropagation(); openEditPresensi(${s.id}, '${escapeAttr(s.nama_siswa || s.nisn)}', '${s.presensi}')">
                             <i class="fas fa-edit"></i> Edit
-                        </button></td>
+                        </button></td>` : ''}
                     </tr>`;
                 });
 
