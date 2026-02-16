@@ -427,16 +427,16 @@ class LegerController extends Controller
         $col = 1;
         $headers = ['No', 'NISN', 'Nama Siswa'];
         foreach ($headers as $h) {
-            $sheet->setCellValueByColumnAndRow($col, $headerRow, $h);
+            $sheet->getCell([$col, $headerRow])->setValue($h);
             $col++;
         }
         foreach ($activeMapels as $mapelCol) {
-            $sheet->setCellValueByColumnAndRow($col, $headerRow, ucwords(str_replace('_', ' ', $mapelCol)));
+            $sheet->getCell([$col, $headerRow])->setValue(ucwords(str_replace('_', ' ', $mapelCol)));
             $col++;
         }
-        $sheet->setCellValueByColumnAndRow($col, $headerRow, 'Jumlah'); $col++;
-        $sheet->setCellValueByColumnAndRow($col, $headerRow, 'Rata-rata'); $col++;
-        $sheet->setCellValueByColumnAndRow($col, $headerRow, 'Ranking');
+        $sheet->getCell([$col, $headerRow])->setValue('Jumlah'); $col++;
+        $sheet->getCell([$col, $headerRow])->setValue('Rata-rata'); $col++;
+        $sheet->getCell([$col, $headerRow])->setValue('Ranking');
         
         // Header styling
         $headerRange = "A{$headerRow}:{$lastCol}{$headerRow}";
@@ -449,14 +449,15 @@ class LegerController extends Controller
         $dataRow = 5;
         foreach ($students as $index => $student) {
             $col = 1;
-            $sheet->setCellValueByColumnAndRow($col++, $dataRow, $index + 1);
-            $sheet->setCellValueExplicitByColumnAndRow($col++, $dataRow, $student['nisn'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-            $sheet->setCellValueByColumnAndRow($col++, $dataRow, $student['nama_siswa']);
+            $sheet->getCell([$col++, $dataRow])->setValue($index + 1);
+            $sheet->getCell([$col, $dataRow])->setValueExplicit($student['nisn'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $col++;
+            $sheet->getCell([$col++, $dataRow])->setValue($student['nama_siswa']);
             
             foreach ($activeMapels as $mapelCol) {
                 $val = $student['nilai'][$mapelCol] ?? '-';
                 if (is_numeric($val)) {
-                    $sheet->setCellValueByColumnAndRow($col, $dataRow, floatval($val));
+                    $sheet->getCell([$col, $dataRow])->setValue(floatval($val));
                     // Color code
                     $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
                     if ($val >= 85) {
@@ -469,27 +470,27 @@ class LegerController extends Controller
                         $sheet->getStyle("{$colLetter}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FEE2E2');
                     }
                 } else {
-                    $sheet->setCellValueByColumnAndRow($col, $dataRow, '-');
+                    $sheet->getCell([$col, $dataRow])->setValue('-');
                 }
                 $col++;
             }
             
             // Jumlah
-            $sheet->setCellValueByColumnAndRow($col, $dataRow, $student['jumlah']);
+            $sheet->getCell([$col, $dataRow])->setValue($student['jumlah']);
             $jCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
             $sheet->getStyle("{$jCol}{$dataRow}")->getFont()->setBold(true);
             $sheet->getStyle("{$jCol}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FEF3C7');
             $col++;
             
             // Rata-rata
-            $sheet->setCellValueByColumnAndRow($col, $dataRow, round($student['rata_rata'], 2));
+            $sheet->getCell([$col, $dataRow])->setValue(round($student['rata_rata'], 2));
             $rCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
             $sheet->getStyle("{$rCol}{$dataRow}")->getFont()->setBold(true);
             $sheet->getStyle("{$rCol}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FEF2F2');
             $col++;
             
             // Ranking
-            $sheet->setCellValueByColumnAndRow($col, $dataRow, $student['ranking']);
+            $sheet->getCell([$col, $dataRow])->setValue($student['ranking']);
             $rkCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
             $sheet->getStyle("{$rkCol}{$dataRow}")->getFont()->setBold(true);
             $sheet->getStyle("{$rkCol}{$dataRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F3E8FF');
