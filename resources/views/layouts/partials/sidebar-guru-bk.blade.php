@@ -47,6 +47,12 @@
             <span>Tugas Tambahan</span>
         </a>
 
+        <div class="menu-label">Presensi</div>
+        <a href="{{ route('guru_bk.cek-presensi.index') }}" class="menu-item {{ request()->routeIs('guru_bk.cek-presensi*') ? 'active' : '' }}">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Cek Presensi</span>
+        </a>
+
         <div class="menu-label">Pengaduan</div>
         <a href="{{ route('guru_bk.pengaduan') }}" class="menu-item {{ request()->routeIs('guru_bk.pengaduan*') ? 'active' : '' }}">
             <i class="fas fa-exclamation-triangle"></i>

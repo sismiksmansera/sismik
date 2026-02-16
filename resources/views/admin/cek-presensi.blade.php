@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends($layout ?? 'layouts.app')
 
 @section('title', 'Cek Presensi Siswa | SISMIK')
 
@@ -1145,7 +1145,7 @@ function loadMapelOptions() {
     const body = document.getElementById('mapelModalBody');
     body.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
 
-    fetch(`{{ route("admin.cek-presensi.mapel-list") }}?id_rombel=${selectedRombel.id}`)
+    fetch(`{{ route("{$routePrefix}.cek-presensi.mapel-list") }}?id_rombel=${selectedRombel.id}`)
         .then(r => r.json())
         .then(data => {
             if (data.success && data.data.length > 0) {
@@ -1194,7 +1194,7 @@ function loadData() {
     section.classList.add('show');
     tbody.innerHTML = '<tr><td colspan="5"><div class="loading-spinner"><div class="spinner"></div></div></td></tr>';
 
-    fetch(`{{ route("admin.cek-presensi.data") }}?id_rombel=${selectedRombel.id}&mapel=${encodeURIComponent(selectedMapel.name)}`)
+    fetch(`{{ route("{$routePrefix}.cek-presensi.data") }}?id_rombel=${selectedRombel.id}&mapel=${encodeURIComponent(selectedMapel.name)}`)
         .then(r => r.json())
         .then(data => {
             if (data.success && data.data.length > 0) {
@@ -1269,7 +1269,7 @@ function loadDetail(tanggal) {
     const container = document.getElementById('detail-inner-' + tanggal);
     container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
 
-    fetch(`{{ route("admin.cek-presensi.detail") }}?id_rombel=${selectedRombel.id}&mapel=${encodeURIComponent(selectedMapel.name)}&tanggal=${tanggal}`)
+    fetch(`{{ route("{$routePrefix}.cek-presensi.detail") }}?id_rombel=${selectedRombel.id}&mapel=${encodeURIComponent(selectedMapel.name)}&tanggal=${tanggal}`)
         .then(r => r.json())
         .then(data => {
             if (data.success && data.data.length > 0) {
@@ -1321,7 +1321,7 @@ function savePresensi() {
     const id = document.getElementById('editPresensiId').value;
     const presensi = document.getElementById('editPresensiStatus').value;
 
-    fetch('{{ route("admin.cek-presensi.update") }}', {
+    fetch('{{ route("{$routePrefix}.cek-presensi.update") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify({ id, presensi })
@@ -1356,7 +1356,7 @@ function openPilihMapelBaru() {
     body.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
     document.getElementById('pilihMapelBaruModal').classList.add('show');
 
-    fetch(`{{ route("admin.cek-presensi.all-mapel") }}`)
+    fetch(`{{ route("{$routePrefix}.cek-presensi.all-mapel") }}`)
         .then(r => r.json())
         .then(data => {
             if (data.success && data.data.length > 0) {
@@ -1389,7 +1389,7 @@ function pilihMapelBaruDanSimpan(newMapel) {
     closeModal('pilihMapelBaruModal');
     closeModal('editMapelModal');
 
-    fetch('{{ route("admin.cek-presensi.update-mapel") }}', {
+    fetch('{{ route("{$routePrefix}.cek-presensi.update-mapel") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify({
@@ -1479,7 +1479,7 @@ function selectRombelTanggal(id, name) {
     closeModal('rombelModal');
 
     // Fetch hari libur to set date restrictions
-    fetch(`{{ route("admin.cek-presensi.hari-libur") }}`)
+    fetch(`{{ route("{$routePrefix}.cek-presensi.hari-libur") }}`)
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -1526,7 +1526,7 @@ function loadDataPerTanggal() {
     section.classList.add('show');
     tbody.innerHTML = '<tr><td colspan="14"><div class="loading-spinner"><div class="spinner"></div></div></td></tr>';
 
-    fetch(`{{ route("admin.cek-presensi.data-per-tanggal") }}?id_rombel=${selectedRombelTanggal.id}&tanggal=${selectedTanggal}`)
+    fetch(`{{ route("{$routePrefix}.cek-presensi.data-per-tanggal") }}?id_rombel=${selectedRombelTanggal.id}&tanggal=${selectedTanggal}`)
         .then(r => r.json())
         .then(data => {
             if (data.success && data.data.length > 0) {
@@ -1621,7 +1621,7 @@ function selectRombelMinggu(id, name) {
     closeModal('rombelModal');
 
     // Fetch week ranges
-    fetch(`{{ route("admin.cek-presensi.week-ranges") }}`)
+    fetch(`{{ route("{$routePrefix}.cek-presensi.week-ranges") }}`)
         .then(r => r.json())
         .then(data => {
             if (data.success && data.data.length > 0) {
@@ -1666,7 +1666,7 @@ function loadDataPerMinggu() {
     tbody.innerHTML = '<tr><td colspan="50"><div class="loading-spinner"><div class="spinner"></div></div></td></tr>';
     thead.innerHTML = '';
 
-    fetch(`{{ route("admin.cek-presensi.data-per-minggu") }}?id_rombel=${selectedRombelMinggu.id}&week_start=${selectedWeekStart}&week_end=${selectedWeekEnd}`)
+    fetch(`{{ route("{$routePrefix}.cek-presensi.data-per-minggu") }}?id_rombel=${selectedRombelMinggu.id}&week_start=${selectedWeekStart}&week_end=${selectedWeekEnd}`)
         .then(r => r.json())
         .then(data => {
             if (data.success && data.data.length > 0) {

@@ -487,6 +487,19 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     Route::put('/pelanggaran/{id}', [\App\Http\Controllers\GuruBK\PelanggaranController::class, 'update'])->name('pelanggaran.update');
     Route::delete('/pelanggaran/{id}', [\App\Http\Controllers\GuruBK\PelanggaranController::class, 'destroy'])->name('pelanggaran.destroy');
     Route::post('/pelanggaran/search-siswa', [\App\Http\Controllers\GuruBK\PelanggaranController::class, 'searchSiswa'])->name('pelanggaran.search-siswa');
+    
+    // Cek Presensi routes
+    Route::get('/cek-presensi', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'index'])->name('cek-presensi.index');
+    Route::get('/cek-presensi/mapel-list', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getMapelList'])->name('cek-presensi.mapel-list');
+    Route::get('/cek-presensi/data', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getData'])->name('cek-presensi.data');
+    Route::get('/cek-presensi/detail', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getDetail'])->name('cek-presensi.detail');
+    Route::post('/cek-presensi/update', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'update'])->name('cek-presensi.update');
+    Route::post('/cek-presensi/update-mapel', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'updateMapel'])->name('cek-presensi.update-mapel');
+    Route::get('/cek-presensi/all-mapel', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getAllMapel'])->name('cek-presensi.all-mapel');
+    Route::get('/cek-presensi/hari-libur', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getHariLibur'])->name('cek-presensi.hari-libur');
+    Route::get('/cek-presensi/data-per-tanggal', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getDataPerTanggal'])->name('cek-presensi.data-per-tanggal');
+    Route::get('/cek-presensi/week-ranges', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getWeekRanges'])->name('cek-presensi.week-ranges');
+    Route::get('/cek-presensi/data-per-minggu', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getDataPerMinggu'])->name('cek-presensi.data-per-minggu');
 });
 
 // Siswa Routes

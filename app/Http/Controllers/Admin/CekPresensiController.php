@@ -30,7 +30,7 @@ class CekPresensiController extends Controller
             ->orderBy('nama_rombel')
             ->get();
 
-        return view('admin.cek-presensi', compact('tahunPelajaran', 'semesterAktif', 'rombelList'));
+        return view('admin.cek-presensi', compact('tahunPelajaran', 'semesterAktif', 'rombelList'))->with('routePrefix', 'admin');
     }
 
     /**
