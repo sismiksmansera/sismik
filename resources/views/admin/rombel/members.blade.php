@@ -224,7 +224,7 @@
             <div class="section-header">
                 <h2><i class="fas fa-list-alt"></i> Daftar Siswa</h2>
                 <div class="action-buttons-group">
-                    <a href="javascript:void(0)" onclick="showKatrolModal()" class="btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
+                    <a href="javascript:void(0)" class="btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;" data-bs-toggle="modal" data-bs-target="#modalKatrol">
                         <i class="fas fa-sliders-h"></i> Katrol Nilai
                     </a>
                     <a href="{{ route('admin.leger.print-katrol', ['rombel_id' => $rombel->id, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" 
@@ -492,15 +492,8 @@ let modalKatrol;
 let selectedNisn = '';
 
 document.addEventListener('DOMContentLoaded', function() {
-    const katrolEl = document.getElementById('modalKatrol');
-    if (katrolEl) {
-        modalKatrol = new bootstrap.Modal(katrolEl);
-    }
+    // Modal is handled via data-bs-toggle attributes
 });
-
-function showKatrolModal() {
-    if (modalKatrol) modalKatrol.show();
-}
 
 function generateKatrolPreview() {
     const minBaru = parseFloat(document.getElementById('nilaiMinBaru').value);
