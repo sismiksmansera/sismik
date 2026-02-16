@@ -26,6 +26,7 @@ class CekPresensiController extends Controller
             ->where('semester', $semesterAktif)
             ->groupBy('nama_rombel')
             ->orderByRaw('MIN(tingkat)')
+            ->orderByRaw("CAST(REGEXP_SUBSTR(nama_rombel, '[0-9]+$') AS UNSIGNED)")
             ->orderBy('nama_rombel')
             ->get();
 
