@@ -509,10 +509,10 @@
     .jp-table col.col-no { width: 1.5%; }
     .jp-table col.col-nisn { width: 10%; }
     .jp-table col.col-nama { width: 25%; }
-    .jp-table col.col-jp { width: 2%; }
-    .jp-table col.col-persen { width: 5.5%; }
+    .jp-table col.col-jp { width: 2.5%; }
+    .jp-table col.col-persen { width: 5%; }
     .jp-table td:nth-child(3) { text-align: left; }
-    .jp-table td strong { font-size: 6px; }
+    .jp-table td strong { font-size: 7px; }
     .jp-badge { padding: 0px 2px; border-radius: 1px; font-size: 6px; font-weight: bold; display: inline-block; }
     .jp-badge.H { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .jp-badge.S { background: #dbeafe !important; color: #1e40af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -521,7 +521,7 @@
     .jp-badge.D { background: #fed7aa !important; color: #9a3412 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .jp-badge.B { background: #e9d5ff !important; color: #6b21a8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .jp-badge.empty { background: #f3f4f6 !important; color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .persen-badge { padding: 0px 2px; border-radius: 1px; font-size: 6px; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .persen-badge { padding: 0px 2px; border-radius: 1px; font-size: 7px; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.high { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.mid { background: #fef3c7 !important; color: #92400e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.low { background: #fee2e2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
