@@ -19,9 +19,12 @@ class CekPresensiController extends Controller
         $tahunPelajaran = $periodik->tahun_pelajaran ?? date('Y') . '/' . (date('Y') + 1);
         $semesterAktif = $periodik->semester ?? 'Ganjil';
 
-        // Get all rombel
+        // Get all rombel for active period (unique only)
         $rombelList = DB::table('rombel')
             ->select('id', 'nama_rombel', 'tingkat')
+            ->where('tahun_pelajaran', $tahunPelajaran)
+            ->where('semester', $semesterAktif)
+            ->groupBy('nama_rombel')
             ->orderBy('tingkat')
             ->orderBy('nama_rombel')
             ->get();
