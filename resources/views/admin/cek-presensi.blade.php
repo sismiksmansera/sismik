@@ -687,7 +687,23 @@
                         </tbody>
                     </table>
                 </div>
-            </div>\n\n            <!-- DATA SECTION (per minggu - wide table with multiple dates) -->\n            <div id=\"dataSectionMinggu\">\n                <div class=\"section-title\">\n                    <h2><i class=\"fas fa-calendar-week\"></i> Presensi per Minggu</h2>\n                    <span class=\"badge-count\" id=\"mingguSiswaCount\">0 Siswa</span>\n                </div>\n                <div class=\"minggu-table-wrapper\">\n                    <table class=\"minggu-table\" id=\"mingguTable\">\n                        <thead id=\"mingguTableHeader\">\n                        </thead>\n                        <tbody id=\"mingguTableBody\">\n                        </tbody>\n                    </table>\n                </div>\n            </div>
+            </div>
+
+            <!-- DATA SECTION (per minggu - wide table with multiple dates) -->
+            <div id="dataSectionMinggu">
+                <div class="section-title">
+                    <h2><i class="fas fa-calendar-week"></i> Presensi per Minggu</h2>
+                    <span class="badge-count" id="mingguSiswaCount">0 Siswa</span>
+                </div>
+                <div class="minggu-table-wrapper">
+                    <table class="minggu-table" id="mingguTable">
+                        <thead id="mingguTableHeader">
+                        </thead>
+                        <tbody id="mingguTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
