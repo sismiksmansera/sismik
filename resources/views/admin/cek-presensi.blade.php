@@ -623,8 +623,10 @@
 @endpush
 
 @section('content')
+@if(($routePrefix ?? 'admin') === 'admin')
 <div class="layout">
-    @include('layouts.partials.sidebar-' . (($routePrefix ?? 'admin') === 'guru_bk' ? 'guru-bk' : 'admin'))
+    @include('layouts.partials.sidebar-admin')
+@endif
 
     <div class="main-content">
         <div class="cek-presensi-page">
@@ -1129,7 +1131,9 @@
             </div>
         </div>
     </div>
+@if(($routePrefix ?? 'admin') === 'admin')
 </div>
+@endif
 
 <!-- PILIH MAPEL BARU MODAL (stacked on top) -->
 <div class="custom-modal-overlay stacked" id="pilihMapelBaruModal">
