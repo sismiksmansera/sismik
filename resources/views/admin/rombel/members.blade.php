@@ -496,8 +496,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function generateKatrolPreview() {
+    console.log('generateKatrolPreview() called');
     const minBaru = parseFloat(document.getElementById('nilaiMinBaru').value);
     const maxBaru = parseFloat(document.getElementById('nilaiMaxBaru').value);
+    console.log('min:', minBaru, 'max:', maxBaru);
 
     if (minBaru >= maxBaru) {
         alert('Nilai minimum harus lebih kecil dari nilai maksimum!');
