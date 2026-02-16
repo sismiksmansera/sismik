@@ -269,44 +269,62 @@ class CekPresensiController extends Controller
         $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
         $semesterAktif = strtolower($periodik->semester ?? 'ganjil');
 
+        // Get nama_rombel from the selected id
+        $namaRombel = DB::table('rombel')->where('id', $idRombel)->value('nama_rombel');
+
+        // Get ALL rombel IDs with same nama_rombel (different periods may have different IDs)
+        $allRombelIds = DB::table('rombel')
+            ->where('nama_rombel', $namaRombel)
+            ->pluck('id')
+            ->toArray();
+
         // Get all students in this rombel
         $siswaList = DB::table('siswa')
-            ->where('nama_rombel', function($query) use ($idRombel) {
-                $query->select('nama_rombel')
-                    ->from('rombel')
-                    ->where('id', $idRombel)
-                    ->limit(1);
-            })
+            ->where('nama_rombel', $namaRombel)
             ->where('status_siswa', 'Aktif')
             ->select('nisn', 'nama')
             ->orderBy('nama')
             ->get();
 
-        // Get presensi records for this rombel and date
+        // Get presensi records for all matching rombel IDs and date
         $presensiRecords = DB::table('presensi_siswa')
-            ->where('id_rombel', $idRombel)
+            ->whereIn('id_rombel', $allRombelIds)
             ->where('tanggal_presensi', $tanggal)
             ->where('tahun_pelajaran', $tahunPelajaran)
             ->whereRaw('LOWER(semester) = ?', [$semesterAktif])
             ->get();
 
-        // Build lookup: nisn => record data
+        // Build lookup: nisn => merged JP data (across multiple mapel records)
         $presensiByNisn = [];
         foreach ($presensiRecords as $rec) {
-            $presensiByNisn[$rec->nisn] = $rec;
+            $nisn = $rec->nisn;
+            if (!isset($presensiByNisn[$nisn])) {
+                $presensiByNisn[$nisn] = [];
+                for ($jp = 1; $jp <= 10; $jp++) {
+                    $presensiByNisn[$nisn]["jam_ke_{$jp}"] = null;
+                }
+            }
+            // Merge JP values: take the non-null value from each record
+            for ($jp = 1; $jp <= 10; $jp++) {
+                $field = "jam_ke_{$jp}";
+                $val = $rec->$field ?? null;
+                if ($val !== null && $val !== '' && $val !== '-') {
+                    $presensiByNisn[$nisn][$field] = $val;
+                }
+            }
         }
 
         // Build result with JP 1-10
         $result = [];
         foreach ($siswaList as $index => $siswa) {
-            $rec = $presensiByNisn[$siswa->nisn] ?? null;
+            $jpMerged = $presensiByNisn[$siswa->nisn] ?? null;
             $jpData = [];
             $totalJpFilled = 0;
             $totalHadir = 0;
 
             for ($jp = 1; $jp <= 10; $jp++) {
                 $field = "jam_ke_{$jp}";
-                $val = $rec ? ($rec->$field ?? null) : null;
+                $val = $jpMerged ? ($jpMerged[$field] ?? null) : null;
                 $jpData["jp_{$jp}"] = $val;
 
                 if ($val !== null && $val !== '' && $val !== '-') {
@@ -323,7 +341,6 @@ class CekPresensiController extends Controller
                 'no' => $index + 1,
                 'nisn' => $siswa->nisn,
                 'nama' => $siswa->nama,
-                'presensi_utama' => $rec ? ($rec->presensi ?? null) : null,
                 'prosentase' => $prosentase,
             ], $jpData);
         }
