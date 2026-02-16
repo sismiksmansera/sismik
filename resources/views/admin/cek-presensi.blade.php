@@ -640,6 +640,7 @@
             <!-- METHOD SELECTION -->
             <div class="method-section">
                 <h3><i class="fas fa-th-large"></i> Pilih Jenis Cek Presensi</h3>
+                @if(($routePrefix ?? 'admin') === 'admin')
                 <div class="method-grid">
                     <div class="method-card" id="methodMapel" onclick="selectMethod('mapel')">
                         <div class="method-icon mapel-bg"><i class="fas fa-book"></i></div>
@@ -657,6 +658,16 @@
                         <p class="method-desc">Cek presensi berdasarkan rombel dan minggu</p>
                     </div>
                 </div>
+                @else
+                <div class="method-grid" style="grid-template-columns: 1fr;">
+                    <div class="method-card" id="methodSelector" onclick="document.getElementById('methodModal').classList.add('show')" style="cursor:pointer;">
+                        <div class="method-icon" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);"><i class="fas fa-list-ul"></i></div>
+                        <p class="method-title" id="selectedMethodLabel">Klik untuk memilih jenis presensi</p>
+                        <p class="method-desc" id="selectedMethodDesc">Pilih jenis cek presensi: Per Mapel, Per Tanggal, atau Per Minggu</p>
+                        <span class="method-badge"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                </div>
+                @endif
             </div>
 
             <!-- SELECTOR CARDS (hidden until method chosen) -->
@@ -903,6 +914,43 @@
     </div>
 </div>
 
+<!-- METHOD SELECTION MODAL (Guru BK only) -->
+@if(($routePrefix ?? 'admin') !== 'admin')
+<div class="custom-modal-overlay" id="methodModal">
+    <div class="custom-modal" style="max-width:500px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-th-large" style="color:#8b5cf6;margin-right:8px;"></i> Pilih Jenis Cek Presensi</h3>
+            <button class="close-btn" onclick="closeModal('methodModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-option-grid">
+                <div class="option-card" onclick="selectMethodFromModal('mapel')">
+                    <div class="option-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <p class="option-name">Per Rombel per Mapel</p>
+                    <p style="font-size:11px; color:#6b7280; margin:4px 0 0;">Cek berdasarkan rombel & mata pelajaran</p>
+                </div>
+                <div class="option-card" onclick="selectMethodFromModal('tanggal')">
+                    <div class="option-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <p class="option-name">Per Rombel per Tanggal</p>
+                    <p style="font-size:11px; color:#6b7280; margin:4px 0 0;">Cek berdasarkan rombel & tanggal</p>
+                </div>
+                <div class="option-card" onclick="selectMethodFromModal('minggu')">
+                    <div class="option-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <p class="option-name">Per Rombel per Minggu</p>
+                    <p style="font-size:11px; color:#6b7280; margin:4px 0 0;">Cek berdasarkan rombel & minggu</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <!-- ROMBEL MODAL -->
 <div class="custom-modal-overlay" id="rombelModal">
     <div class="custom-modal">
@@ -1039,12 +1087,17 @@ let selectedWeekEnd = null;
 function selectMethod(method) {
     selectedMethod = method;
 
-    // Highlight active card
+    // Highlight active card (admin only, elements may not exist for guru_bk)
     document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
     let activeMethod = 'methodMapel';
     if (method === 'tanggal') activeMethod = 'methodTanggal';
     else if (method === 'minggu') activeMethod = 'methodMinggu';
-    document.getElementById(activeMethod).classList.add('active');
+    const activeEl = document.getElementById(activeMethod);
+    if (activeEl) activeEl.classList.add('active');
+
+    // For guru_bk: highlight the selector card
+    const selectorEl = document.getElementById('methodSelector');
+    if (selectorEl) selectorEl.classList.add('active');
 
     // Hide all sections first
     document.getElementById('selectorRow').style.display = 'none';
@@ -1095,6 +1148,33 @@ function selectMethod(method) {
         document.getElementById('weekSelectWrapper').style.display = 'none';
         document.getElementById('weekSelect').innerHTML = '<option value="">-- Pilih Minggu --</option>';
     }
+}
+
+// Guru BK: select method from modal
+function selectMethodFromModal(method) {
+    closeModal('methodModal');
+
+    // Update the selector card label
+    const labelEl = document.getElementById('selectedMethodLabel');
+    const descEl = document.getElementById('selectedMethodDesc');
+    const iconEl = document.getElementById('methodSelector');
+    if (labelEl && descEl && iconEl) {
+        const methodInfo = {
+            mapel: { label: 'Per Rombel per Mapel', desc: 'Cek presensi berdasarkan rombel & mata pelajaran', icon: 'fa-book', color: '#8b5cf6' },
+            tanggal: { label: 'Per Rombel per Tanggal', desc: 'Cek presensi berdasarkan rombel & tanggal', icon: 'fa-calendar-day', color: '#3b82f6' },
+            minggu: { label: 'Per Rombel per Minggu', desc: 'Cek presensi berdasarkan rombel & minggu', icon: 'fa-calendar-week', color: '#10b981' }
+        };
+        const info = methodInfo[method];
+        labelEl.textContent = info.label;
+        descEl.textContent = info.desc;
+        const iconDiv = iconEl.querySelector('.method-icon');
+        if (iconDiv) {
+            iconDiv.style.background = `linear-gradient(135deg, ${info.color}, ${info.color}dd)`;
+            iconDiv.innerHTML = `<i class="fas ${info.icon}"></i>`;
+        }
+    }
+
+    selectMethod(method);
 }
 
 const hariNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
