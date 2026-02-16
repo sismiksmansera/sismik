@@ -514,33 +514,48 @@ class RombelController extends Controller
                 }
             }
 
-            // === CREATE HISTORY RECORD ===
-            $uniqueMapels = array_unique(array_column($resultData, 'mapel'));
-            $uniqueSiswa = array_unique(array_column($resultData, 'nisn'));
-            
-            $historyId = DB::table('katrol_nilai_history')->insertGetId([
-                'rombel_id' => $id,
-                'tahun_pelajaran' => $tahunAktif,
-                'semester' => $semesterAktif,
-                'nilai_min_baru' => $minBaru,
-                'nilai_max_baru' => $maxBaru,
-                'total_siswa' => count($uniqueSiswa),
-                'total_mapel' => count($uniqueMapels),
-                'total_records' => count($resultData),
-                'generated_by' => auth()->user()->name ?? 'System',
-                'generated_at' => now()
-            ]);
-
-            // === SAVE DETAILS TO HISTORY ===
+            // === SAVE TO LEGER TABLE (WIDE FORMAT) ===
+            // Group data by student
+            $studentData = [];
             foreach ($resultData as $row) {
-                DB::table('katrol_nilai_details')->insert([
-                    'history_id' => $historyId,
-                    'nisn' => $row['nisn'],
-                    'mapel' => $row['mapel'],
-                    'nilai_asli' => $row['nilai_lama'],
-                    'nilai_katrol' => $row['nilai_baru'],
-                    'created_at' => now()
-                ]);
+                $nisn = $row['nisn'];
+                if (!isset($studentData[$nisn])) {
+                    $studentData[$nisn] = [
+                        'nama_siswa' => $row['nama_siswa'],
+                        'mapel' => []
+                    ];
+                }
+                // Convert mapel name to column name (lowercase, replace spaces with underscores)
+                $columnName = strtolower(str_replace(' ', '_', $row['mapel']));
+                $studentData[$nisn]['mapel'][$columnName] = $row['nilai_baru'];
+            }
+
+            // Insert/Update each student's row in leger table
+            foreach ($studentData as $nisn => $data) {
+                // Build column-value array
+                $legerData = [
+                    'rombel_id' => $id,
+                    'tahun_pelajaran' => $tahunAktif,
+                    'semester' => $semesterAktif,
+                    'nisn' => $nisn,
+                    'nama_siswa' => $data['nama_siswa'],
+                    'nilai_min_baru' => $minBaru,
+                    'nilai_max_baru' => $maxBaru,
+                    'generated_by' => auth()->user()->name ?? 'System'
+                ];
+                
+                // Add all mapel columns
+                foreach ($data['mapel'] as $mapelCol => $nilai) {
+                    $legerData[$mapelCol] = $nilai;
+                }
+                
+                // Insert or update
+                DB::statement("
+                    INSERT INTO katrol_nilai_leger (" . implode(',', array_keys($legerData)) . ")
+                    VALUES (" . implode(',', array_fill(0, count($legerData), '?')) . ")
+                    ON DUPLICATE KEY UPDATE " . 
+                    implode(',', array_map(fn($k) => "$k = VALUES($k)", array_keys($legerData)))
+                , array_values($legerData));
             }
 
             // Sort by mapel then nama
