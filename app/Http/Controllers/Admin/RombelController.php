@@ -515,47 +515,79 @@ class RombelController extends Controller
             }
 
             // === SAVE TO LEGER TABLE (WIDE FORMAT) ===
-            // Group data by student
-            $studentData = [];
+            // Group data by student (nisn) and prepare mapel values
+            $studentDataLeger = [];
             foreach ($resultData as $row) {
                 $nisn = $row['nisn'];
-                if (!isset($studentData[$nisn])) {
-                    $studentData[$nisn] = [
+                if (!isset($studentDataLeger[$nisn])) {
+                    $studentDataLeger[$nisn] = [
                         'nama_siswa' => $row['nama_siswa'],
-                        'mapel' => []
+                        'values' => []
                     ];
                 }
-                // Convert mapel name to column name (lowercase, replace spaces with underscores)
+                // Convert mapel name to column name
                 $columnName = strtolower(str_replace(' ', '_', $row['mapel']));
-                $studentData[$nisn]['mapel'][$columnName] = $row['nilai_baru'];
+                $studentDataLeger[$nisn]['values'][$columnName] = $row['nilai_baru'];
+            }
+
+            // Calculate and add IPA/IPS for each student
+            $nilaiPerSiswaLeger = [];
+            foreach ($resultData as $row) {
+                $nilaiPerSiswaLeger[$row['nisn']]['nilai'][$row['mapel']] = $row['nilai_baru'];
+            }
+
+            foreach ($nilaiPerSiswaLeger as $nisn => $siswaData) {
+                $ipaMapels = ['Biologi', 'Fisika', 'Kimia'];
+                $ipsMapels = ['Sejarah', 'Ekonomi', 'Sosiologi', 'Geografi'];
+                
+                // Calculate IPA average
+                $ipaValues = [];
+                foreach ($ipaMapels as $m) {
+                    if (isset($siswaData['nilai'][$m])) $ipaValues[] = $siswaData['nilai'][$m];
+                }
+                if (!empty($ipaValues)) {
+                    $ipaAvg = round(array_sum($ipaValues) / count($ipaValues), 1);
+                    $studentDataLeger[$nisn]['values']['ipa'] = $ipaAvg;
+                }
+
+                // Calculate IPS average
+                $ipsValues = [];
+                foreach ($ipsMapels as $m) {
+                    if (isset($siswaData['nilai'][$m])) $ipsValues[] = $siswaData['nilai'][$m];
+                }
+                if (!empty($ipsValues)) {
+                    $ipsAvg = round(array_sum($ipsValues) / count($ipsValues), 1);
+                    $studentDataLeger[$nisn]['values']['ips'] = $ipsAvg;
+                }
             }
 
             // Insert/Update each student's row in leger table
-            foreach ($studentData as $nisn => $data) {
-                // Build column-value array
-                $legerData = [
-                    'rombel_id' => $id,
-                    'tahun_pelajaran' => $tahunAktif,
-                    'semester' => $semesterAktif,
-                    'nisn' => $nisn,
-                    'nama_siswa' => $data['nama_siswa'],
-                    'nilai_min_baru' => $minBaru,
-                    'nilai_max_baru' => $maxBaru,
-                    'generated_by' => auth()->user()->name ?? 'System'
-                ];
+            foreach ($studentDataLeger as $nisn => $data) {
+                // Build the data array for this student
+                $legerRow = array_merge(
+                    [
+                        'rombel_id' => $id,
+                        'tahun_pelajaran' => $tahunAktif,
+                        'semester' => $semesterAktif,
+                        'nisn' => $nisn,
+                        'nama_siswa' => $data['nama_siswa'],
+                        'nilai_min_baru' => $minBaru,
+                        'nilai_max_baru' => $maxBaru,
+                        'generated_by' => auth()->user()->name ?? 'System',
+                    ],
+                    $data['values'] // Add all mapel column values
+                );
                 
-                // Add all mapel columns
-                foreach ($data['mapel'] as $mapelCol => $nilai) {
-                    $legerData[$mapelCol] = $nilai;
-                }
-                
-                // Insert or update
-                DB::statement("
-                    INSERT INTO katrol_nilai_leger (" . implode(',', array_keys($legerData)) . ")
-                    VALUES (" . implode(',', array_fill(0, count($legerData), '?')) . ")
-                    ON DUPLICATE KEY UPDATE " . 
-                    implode(',', array_map(fn($k) => "$k = VALUES($k)", array_keys($legerData)))
-                , array_values($legerData));
+                // Use updateOrInsert for clean upsert
+                DB::table('katrol_nilai_leger')->updateOrInsert(
+                    [
+                        'rombel_id' => $id,
+                        'tahun_pelajaran' => $tahunAktif,
+                        'semester' => $semesterAktif,
+                        'nisn' => $nisn
+                    ],
+                    $legerRow
+                );
             }
 
             // Sort by mapel then nama
