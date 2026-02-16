@@ -67,8 +67,15 @@ class LegerController extends Controller
             $tahun = $request->query('tahun');
             $semester = $request->query('semester');
             
+            // Get rombel name from ID (since rombel_id changes per period)
+            $rombel = \App\Models\Rombel::find($rombelId);
+            if (!$rombel) {
+                return response()->json(['students' => [], 'mapels' => [], 'message' => 'Rombel tidak ditemukan']);
+            }
+            
+            // Query using nama_rombel instead of rombel_id
             $katrolData = DB::table('katrol_nilai_leger')
-                ->where('rombel_id', $rombelId)
+                ->where('nama_rombel', $rombel->nama_rombel)
                 ->where('tahun_pelajaran', $tahun)
                 ->where('semester', $semester)
                 ->orderBy('ranking', 'asc')
