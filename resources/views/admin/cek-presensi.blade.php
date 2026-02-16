@@ -839,11 +839,6 @@ let selectedWeekStart = null;
 let selectedWeekEnd = null;
 
 function selectMethod(method) {
-    if (method === 'minggu') {
-        showToast('Fitur ini akan segera hadir!', 'error');
-        return;
-    }
-
     selectedMethod = method;
 
     // Highlight active card
