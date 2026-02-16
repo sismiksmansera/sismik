@@ -492,16 +492,28 @@
 .print-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
 .print-btn i { margin-right: 6px; }
 
-/* PRINT STYLES - A4 PORTRAIT */
+/* PRINT STYLES */
 @media print {
-    @page { size: A4 portrait; margin: 6mm 15mm; }
     body * { visibility: hidden; }
-    #dataSectionTanggal, #dataSectionTanggal * { visibility: visible; }
-    #dataSectionTanggal {
+    .sidebar, .navbar, .print-btn, .badge-count, .section-title { display: none !important; }
+
+    /* === PER TANGGAL (Portrait) === */
+    body.print-tanggal #dataSectionTanggal, body.print-tanggal #dataSectionTanggal * { visibility: visible; }
+    body.print-tanggal #dataSectionTanggal {
         position: absolute; left: 0; top: 0; width: 100%;
         background: white;
     }
-    .sidebar, .navbar, .print-btn, .badge-count, .section-title { display: none !important; }
+    body.print-tanggal { }
+    @page { size: A4 portrait; margin: 6mm 15mm; }
+
+    /* === PER MINGGU (Landscape) === */
+    body.print-minggu #dataSectionMinggu, body.print-minggu #dataSectionMinggu * { visibility: visible; }
+    body.print-minggu #dataSectionMinggu {
+        position: absolute; left: 0; top: 0; width: 100%;
+        background: white;
+    }
+
+    /* JP Table (Tanggal) */
     .jp-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
     .jp-table { border-collapse: collapse; width: 100%; font-size: 8px; min-width: 0 !important; table-layout: fixed; }
     .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 0px 1px !important; text-align: center; word-wrap: break-word; overflow: hidden; }
@@ -515,6 +527,19 @@
     .jp-table td:nth-child(1), .jp-table td:nth-child(2) { text-align: center !important; }
     .jp-table td:nth-child(3) { text-align: left !important; }
     .jp-table td strong { font-size: 10px; font-weight: bold; }
+
+    /* Minggu Table */
+    .minggu-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
+    .minggu-table { border-collapse: collapse; width: 100%; font-size: 5px; min-width: 0 !important; table-layout: fixed; }
+    .minggu-table th, .minggu-table td { border: 1px solid #000 !important; padding: 0px 1px !important; text-align: center; word-wrap: break-word; overflow: hidden; }
+    .minggu-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 5px; line-height: 1.2; padding: 1px 0px !important; text-align: center !important; }
+    .minggu-table th.date-header { background: #ddd !important; color: #000 !important; font-size: 6px; }
+    .minggu-table td { line-height: 1.2; padding: 1px 0px !important; font-size: 5px; }
+    .minggu-table td:nth-child(1), .minggu-table td:nth-child(2) { text-align: center !important; }
+    .minggu-table td:nth-child(3) { text-align: left !important; }
+    .minggu-table td strong { font-size: 5px; font-weight: bold; }
+
+    /* Shared badge styles */
     .jp-badge { width: auto !important; height: auto !important; line-height: 1 !important; padding: 0px 1px !important; border-radius: 1px; font-size: 6px !important; font-weight: bold; display: inline-block; }
     .jp-badge.H { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .jp-badge.S { background: #dbeafe !important; color: #1e40af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -528,14 +553,20 @@
     .persen-badge.mid { background: #fef3c7 !important; color: #92400e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.low { background: #fee2e2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.none { background: #f3f4f6 !important; color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    #printHeader { display: block !important; }
-    #printHeader h3 { font-size: 12px; margin: 0; }
-    #printHeader h4 { font-size: 10px; margin: 2px 0; }
-    #printHeader table { font-size: 8px; margin-top: 4px; margin-bottom: 6px; }
-    #printHeader table td { border: none !important; }
-    #printFooter { display: block !important; margin-top: 15px; font-size: 9px; }
-    #printFooter table { width: 100%; border: none; }
-    #printFooter table td { border: none !important; text-align: center; vertical-align: top; padding: 0; }
+
+    /* Minggu-specific smaller badges */
+    body.print-minggu .jp-badge { font-size: 4px !important; padding: 0px 0px !important; }
+    body.print-minggu .persen-badge { font-size: 5px !important; padding: 0px 1px !important; }
+
+    /* Print headers & footers */
+    .print-header-block { display: block !important; }
+    .print-header-block h3 { font-size: 12px; margin: 0; }
+    .print-header-block h4 { font-size: 10px; margin: 2px 0; }
+    .print-header-block table { font-size: 8px; margin-top: 4px; margin-bottom: 6px; }
+    .print-header-block table td { border: none !important; }
+    .print-footer-block { display: block !important; margin-top: 15px; font-size: 9px; }
+    .print-footer-block table { width: 100%; border: none; }
+    .print-footer-block table td { border: none !important; text-align: center; vertical-align: top; padding: 0; }
 }
 
 /* STACKED MODAL (higher z-index) */
@@ -734,7 +765,7 @@
                 </div>
                 
                 <!-- PRINT HEADER (hidden on screen, visible in print) -->
-                <div id="printHeader" style="display:none; margin-bottom:20px;">
+                <div id="printHeader" class="print-header-block" style="display:none; margin-bottom:20px;">
                     <h3 style="text-align:center; margin:0; font-size:16px;">PRESENSI HARIAN SISWA</h3>
                     <h4 style="text-align:center; margin:5px 0; font-size:14px;">SMAN 1 SEPUTIH RAMAN</h4>
                     <div style="margin-top:10px; font-size:11px;">
@@ -779,7 +810,7 @@
                 </div>
 
                 <!-- PRINT FOOTER - Signatures (hidden on screen, visible in print) -->
-                <div id="printFooter" style="display:none;">
+                <div id="printFooter" class="print-footer-block" style="display:none;">
                     <table>
                         <tr>
                             <td style="width:50%;">
@@ -802,7 +833,10 @@
             <div id="dataSectionMinggu">
                 <div class="section-title">
                     <h2><i class="fas fa-calendar-week"></i> Presensi per Minggu</h2>
-                    <span class="badge-count" id="mingguSiswaCount">0 Siswa</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="badge-count" id="mingguSiswaCount">0 Siswa</span>
+                        <button class="print-btn" onclick="printPerMinggu()" style="display:none;" id="btnCetakMinggu"><i class="fas fa-print"></i> Cetak</button>
+                    </div>
                 </div>
                 <div class="minggu-table-wrapper">
                     <table class="minggu-table" id="mingguTable">
@@ -810,6 +844,42 @@
                         </thead>
                         <tbody id="mingguTableBody">
                         </tbody>
+                    </table>
+                </div>
+
+                <!-- PRINT HEADER MINGGU (hidden on screen) -->
+                <div id="printHeaderMinggu" class="print-header-block" style="display:none; margin-bottom:15px;">
+                    <h3 style="text-align:center; margin:0; font-size:16px;">PRESENSI MINGGUAN SISWA</h3>
+                    <h4 style="text-align:center; margin:5px 0; font-size:14px;">SMAN 1 SEPUTIH RAMAN</h4>
+                    <div style="margin-top:10px; font-size:11px;">
+                        <table style="width:100%; border:none;">
+                            <tr>
+                                <td style="width:20%; border:none;">Rombel</td>
+                                <td style="width:1%; border:none;">:</td>
+                                <td style="border:none;"><strong id="printRombelMinggu"></strong></td>
+                                <td style="width:20%; border:none; text-align:right;">Periode</td>
+                                <td style="width:1%; border:none;">:</td>
+                                <td style="width:30%; border:none;"><strong id="printPeriodeMinggu"></strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PRINT FOOTER MINGGU (hidden on screen) -->
+                <div id="printFooterMinggu" class="print-footer-block" style="display:none;">
+                    <table>
+                        <tr>
+                            <td style="width:50%;">
+                                <p style="margin:0;">Wali Kelas,</p>
+                                <br><br><br>
+                                <p style="margin:0;">( ........................................................... )</p>
+                            </td>
+                            <td style="width:50%;">
+                                <p style="margin:0;">Ketua Kelas,</p>
+                                <br><br><br>
+                                <p style="margin:0;">( ........................................................... )</p>
+                            </td>
+                        </tr>
                     </table>
                 </div>
             </div>
@@ -1585,6 +1655,7 @@ function loadDataPerMinggu() {
         .then(data => {
             if (data.success && data.data.length > 0) {
                 document.getElementById('mingguSiswaCount').textContent = data.total_siswa + ' Siswa';
+                document.getElementById('btnCetakMinggu').style.display = 'inline-block';
                 
                 // Build header with dates
                 let headerHtml = '<tr><th rowspan="2">No</th><th rowspan="2">NISN</th><th rowspan="2">Nama Siswa</th>';
@@ -1668,7 +1739,40 @@ function printPerTanggal() {
     document.getElementById('printTanggal').textContent = `${dayName}, ${formatted}`;
     
     // Trigger print
+    document.body.classList.add('print-tanggal');
     window.print();
+    document.body.classList.remove('print-tanggal');
+}
+
+// Print function for per-minggu
+function printPerMinggu() {
+    if (!selectedRombelMinggu || !selectedWeekStart) {
+        showToast('Pilih rombel dan minggu terlebih dahulu', 'error');
+        return;
+    }
+    
+    // Populate print header
+    document.getElementById('printRombelMinggu').textContent = selectedRombelMinggu.name;
+    const dStart = new Date(selectedWeekStart);
+    const dEnd = new Date(selectedWeekEnd);
+    const fStart = dStart.toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'});
+    const fEnd = dEnd.toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'});
+    document.getElementById('printPeriodeMinggu').textContent = `${fStart} - ${fEnd}`;
+    
+    // Set page to landscape for minggu
+    let styleEl = document.getElementById('printPageStyle');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'printPageStyle';
+        document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = '@media print { @page { size: A4 landscape; margin: 6mm 8mm; } }';
+    
+    // Trigger print
+    document.body.classList.add('print-minggu');
+    window.print();
+    document.body.classList.remove('print-minggu');
+    styleEl.textContent = '';
 }
 </script>
 @endpush
