@@ -538,6 +538,11 @@
     .minggu-table td:nth-child(1), .minggu-table td:nth-child(2) { text-align: center !important; }
     .minggu-table td:nth-child(3) { text-align: left !important; }
     .minggu-table td strong { font-size: 10px; font-weight: bold; }
+    /* Print table column widths */
+    #mingguPrintTable { table-layout: fixed; }
+    #mingguPrintTable th:nth-child(1), #mingguPrintTable td:nth-child(1) { width: 4%; }
+    #mingguPrintTable th:nth-child(2), #mingguPrintTable td:nth-child(2) { width: 12%; }
+    #mingguPrintTable th:nth-child(3), #mingguPrintTable td:nth-child(3) { width: 30%; }
 
     /* Shared badge styles */
     .jp-badge { width: auto !important; height: auto !important; line-height: 1 !important; padding: 0px 1px !important; border-radius: 1px; font-size: 6px !important; font-weight: bold; display: inline-block; }
@@ -848,15 +853,6 @@
                     </table>
                 </div>
                 <!-- Print-only simplified table (hidden on screen) -->
-                <div class="minggu-table-wrapper" id="mingguTableWrapperPrint" style="display:none;">
-                    <table class="minggu-table" id="mingguPrintTable">
-                        <thead id="mingguPrintHeader">
-                        </thead>
-                        <tbody id="mingguPrintBody">
-                        </tbody>
-                    </table>
-                </div>
-
                 <!-- PRINT HEADER MINGGU (hidden on screen) -->
                 <div id="printHeaderMinggu" class="print-header-block" style="display:none; margin-bottom:15px;">
                     <h3 style="text-align:center; margin:0; font-size:16px;">PRESENSI MINGGUAN SISWA</h3>
@@ -873,6 +869,16 @@
                             </tr>
                         </table>
                     </div>
+                </div>
+
+                <!-- Print-only simplified table -->
+                <div class="minggu-table-wrapper" id="mingguTableWrapperPrint" style="display:none;">
+                    <table class="minggu-table" id="mingguPrintTable">
+                        <thead id="mingguPrintHeader">
+                        </thead>
+                        <tbody id="mingguPrintBody">
+                        </tbody>
+                    </table>
                 </div>
 
                 <!-- PRINT FOOTER MINGGU (hidden on screen) -->
