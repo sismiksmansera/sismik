@@ -863,9 +863,9 @@
                                 <td style="width:20%; border:none;">Rombel</td>
                                 <td style="width:1%; border:none;">:</td>
                                 <td style="border:none;"><strong id="printRombelMinggu"></strong></td>
-                                <td style="width:20%; border:none; text-align:right;">Periode</td>
+                                <td style="width:30%; border:none; text-align:right;">Periode</td>
                                 <td style="width:1%; border:none;">:</td>
-                                <td style="width:30%; border:none;"><strong id="printPeriodeMinggu"></strong></td>
+                                <td style="width:40%; border:none; text-align:left;"><strong id="printPeriodeMinggu"></strong></td>
                             </tr>
                         </table>
                     </div>
