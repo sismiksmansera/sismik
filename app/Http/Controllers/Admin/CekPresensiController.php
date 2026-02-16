@@ -350,4 +350,202 @@ class CekPresensiController extends Controller
             'total_siswa' => count($result),
         ]);
     }
+
+    /**
+     * AJAX: Get week ranges (Mon-Fri) from semester start to today
+     */
+    public function getWeekRanges()
+    {
+        $periodik = DataPeriodik::aktif()->first();
+        
+        if (!$periodik) {
+            return response()->json(['success' => false, 'data' => []]);
+        }
+
+        // Get semester start date from data_periodik
+        $semesterStart = $periodik->tanggal_mulai ?? null;
+        
+        // If no tanggal_mulai, estimate based on semester and tahun_pelajaran
+        if (!$semesterStart) {
+            $tahun = explode('/', $periodik->tahun_pelajaran)[0];
+            $semesterStart = $periodik->semester === 'Ganjil' 
+                ? "{$tahun}-07-01"  // Ganjil starts ~July
+                : ($tahun + 1) . "-01-01"; // Genap starts ~January
+        }
+
+        $startDate = new \DateTime($semesterStart);
+        $today = new \DateTime();
+        
+        // Adjust to the first Monday
+        if ($startDate->format('N') != 1) {
+            $startDate->modify('next monday');
+        }
+
+        $weeks = [];
+        $current = clone $startDate;
+
+        while ($current <= $today) {
+            $monday = clone $current;
+            $friday = clone $current;
+            $friday->modify('+4 days'); // Monday + 4 = Friday
+
+            // Don't include future weeks beyond today
+            if ($monday > $today) {
+                break;
+            }
+
+            $weeks[] = [
+                'start' => $monday->format('Y-m-d'),
+                'end' => min($friday, $today)->format('Y-m-d'),
+                'label' => sprintf(
+                    '%s %s - %s %s',
+                    $monday->format('d/m/Y'),
+                    'Senin',
+                    min($friday, $today)->format('d/m/Y'),
+                    min($friday, $today)->format('N') == 5 ? 'Jumat' : $this->getDayName(min($friday, $today)->format('N'))
+                ),
+            ];
+
+            $current->modify('+7 days');
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => array_reverse($weeks), // Most recent first
+        ]);
+    }
+
+    /**
+     * AJAX: Get presensi data per minggu for a rombel (all students, all dates in week with JP 1-10)
+     */
+    public function getDataPerMinggu(Request $request)
+    {
+        $idRombel = $request->query('id_rombel');
+        $weekStart = $request->query('week_start');
+        $weekEnd = $request->query('week_end');
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
+        $semesterAktif = strtolower($periodik->semester ?? 'ganjil');
+
+        // Get nama_rombel from the selected id
+        $namaRombel = DB::table('rombel')->where('id', $idRombel)->value('nama_rombel');
+        
+        // Get ALL rombel IDs with same nama_rombel
+        $allRombelIds = DB::table('rombel')
+            ->where('nama_rombel', $namaRombel)
+            ->pluck('id')
+            ->toArray();
+
+        // Get all dates in the week range (weekdays only)
+        $dates = [];
+        $current = new \DateTime($weekStart);
+        $end = new \DateTime($weekEnd);
+        
+        while ($current <= $end) {
+            $dayOfWeek = (int)$current->format('N'); // 1=Mon, 7=Sun
+            if ($dayOfWeek >= 1 && $dayOfWeek <= 5) { // Mon-Fri only
+                $dates[] = $current->format('Y-m-d');
+            }
+            $current->modify('+1 day');
+        }
+
+        // Get presensi records for all dates in range
+        $presensiRecords = DB::table('presensi_siswa as ps')
+            ->leftJoin('siswa as s', function ($join) {
+                $join->on(DB::raw('ps.nisn COLLATE utf8mb4_general_ci'), '=', DB::raw('s.nisn COLLATE utf8mb4_general_ci'));
+            })
+            ->whereIn('ps.id_rombel', $allRombelIds)
+            ->whereBetween('ps.tanggal_presensi', [$weekStart, $weekEnd])
+            ->where('ps.tahun_pelajaran', $tahunPelajaran)
+            ->whereRaw('LOWER(ps.semester) = ?', [$semesterAktif])
+            ->select(
+                'ps.nisn',
+                's.nama as nama_siswa',
+                'ps.tanggal_presensi',
+                'ps.jam_ke_1', 'ps.jam_ke_2', 'ps.jam_ke_3', 'ps.jam_ke_4', 'ps.jam_ke_5',
+                'ps.jam_ke_6', 'ps.jam_ke_7', 'ps.jam_ke_8', 'ps.jam_ke_9', 'ps.jam_ke_10'
+            )
+            ->orderBy('s.nama')
+            ->get();
+
+        // Group by NISN and date
+        $grouped = [];
+        foreach ($presensiRecords as $rec) {
+            $nisn = $rec->nisn;
+            $tgl = $rec->tanggal_presensi;
+            
+            if (!isset($grouped[$nisn])) {
+                $grouped[$nisn] = [
+                    'nisn' => $nisn,
+                    'nama' => $rec->nama_siswa ?? $nisn,
+                    'dates' => [],
+                ];
+            }
+            
+            if (!isset($grouped[$nisn]['dates'][$tgl])) {
+                $grouped[$nisn]['dates'][$tgl] = [];
+                for ($jp = 1; $jp <= 10; $jp++) {
+                    $grouped[$nisn]['dates'][$tgl]["jp_{$jp}"] = null;
+                }
+            }
+            
+            // Merge JP values from multiple records (multiple mapel on same day)
+            for ($jp = 1; $jp <= 10; $jp++) {
+                $field = "jam_ke_{$jp}";
+                $val = $rec->$field ?? null;
+                if ($val !== null && $val !== '' && $val !== '-') {
+                    $grouped[$nisn]['dates'][$tgl]["jp_{$jp}"] = $val;
+                }
+            }
+        }
+
+        // Build result with all dates and percentage
+        $result = [];
+        $no = 1;
+        foreach ($grouped as $student) {
+            $row = [
+                'no' => $no++,
+                'nisn' => $student['nisn'],
+                'nama' => $student['nama'],
+            ];
+
+            $totalHadir = 0;
+            $totalJpFilled = 0;
+
+            // Add JP data for each date
+            foreach ($dates as $date) {
+                $jpData = $student['dates'][$date] ?? null;
+                
+                for ($jp = 1; $jp <= 10; $jp++) {
+                    $key = "{$date}_jp_{$jp}";
+                    $val = $jpData ? ($jpData["jp_{$jp}"] ?? null) : null;
+                    $row[$key] = $val;
+
+                    if ($val !== null && $val !== '' && $val !== '-') {
+                        $totalJpFilled++;
+                        if ($val === 'H') {
+                            $totalHadir++;
+                        }
+                    }
+                }
+            }
+
+            $row['prosentase'] = $totalJpFilled > 0 ? round(($totalHadir / $totalJpFilled) * 100, 1) : null;
+            $result[] = $row;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $result,
+            'dates' => $dates,
+            'total_siswa' => count($result),
+        ]);
+    }
+
+    private function getDayName($dayNum)
+    {
+        $days = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        return $days[(int)$dayNum] ?? '';
+    }
 }

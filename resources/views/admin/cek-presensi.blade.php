@@ -423,6 +423,65 @@
 .persen-badge.low { background: #fee2e2; color: #dc2626; }
 .persen-badge.none { background: #f3f4f6; color: #9ca3af; }
 
+/* MINGGU SELECTOR */
+.minggu-selector-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+    display: none;
+}
+@media (max-width: 768px) { .minggu-selector-row { grid-template-columns: 1fr; } }
+.minggu-selector-row .selector-card { cursor: pointer; }
+.week-select-wrapper {
+    position: relative;
+}
+.week-select-wrapper select {
+    width: 100%; padding: 10px 12px; border: 2px solid #e5e7eb;
+    border-radius: 8px; font-size: 14px; font-weight: 600;
+    color: #1f2937; background: white;
+    cursor: pointer;
+}
+.week-select-wrapper select:focus {
+    outline: none; border-color: #3b82f6;
+}
+
+/* PER-MINGGU DATA TABLE */
+#dataSectionMinggu { display: none; }
+#dataSectionMinggu.show { display: block; }
+.minggu-table-wrapper {
+    background: white; border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    overflow-x: auto;
+}
+.minggu-table {
+    width: 100%; border-collapse: collapse;
+    min-width: 1200px;
+}
+.minggu-table thead th {
+    padding: 10px 6px; background: #f8fafc;
+    font-size: 10px; font-weight: 600; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    border-bottom: 2px solid #e5e7eb; text-align: center;
+    white-space: nowrap;
+}
+.minggu-table thead th.date-header {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white; font-size: 11px;
+}
+.minggu-table thead th:nth-child(1),
+.minggu-table thead th:nth-child(2),
+.minggu-table thead th:nth-child(3) { text-align: left; }
+.minggu-table tbody td {
+    padding: 6px; font-size: 12px; color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    text-align: center;
+}
+.minggu-table tbody td:nth-child(1),
+.minggu-table tbody td:nth-child(2),
+.minggu-table tbody td:nth-child(3) { text-align: left; }
+.minggu-table tbody tr:hover { background: #f5f3ff; }
+
 /* STACKED MODAL (higher z-index) */
 .custom-modal-overlay.stacked { z-index: 10001; }
 
@@ -503,7 +562,6 @@
                         <div class="method-icon minggu-bg"><i class="fas fa-calendar-week"></i></div>
                         <p class="method-title">Per Rombel per Minggu</p>
                         <p class="method-desc">Cek presensi berdasarkan rombel dan minggu</p>
-                        <span class="method-badge">Segera Hadir</span>
                     </div>
                 </div>
             </div>
@@ -528,6 +586,33 @@
                         <p class="card-value" id="mapelValue" style="display:none;"></p>
                         <p class="card-placeholder" id="mapelPlaceholder">Pilih Mata Pelajaran...</p>
                         <span class="card-label">Mata Pelajaran</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MINGGU SELECTOR (for per-minggu method) -->
+            <div class="minggu-selector-row" id="mingguSelectorRow">
+                <div class="selector-card" id="rombelCardMinggu" onclick="openRombelModalMinggu()">
+                    <div class="card-icon rombel-icon"><i class="fas fa-users"></i></div>
+                    <div class="card-content">
+                        <p class="card-value" id="rombelValueMinggu" style="display:none;"></p>
+                        <p class="card-placeholder" id="rombelPlaceholderMinggu">Pilih Rombel...</p>
+                        <span class="card-label">Rombel</span>
+                    </div>
+                </div>
+                <div class="selector-card disabled" id="weekCard">
+                    <div class="card-icon" style="background:linear-gradient(135deg,#10b981,#059669);">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <div class="card-content">
+                        <p class="card-value" id="weekValue" style="display:none;"></p>
+                        <p class="card-placeholder" id="weekPlaceholder">Pilih Minggu...</p>
+                        <span class="card-label">Minggu</span>
+                        <div class="week-select-wrapper" id="weekSelectWrapper" style="display:none; margin-top:8px;">
+                            <select id="weekSelect" onchange="onWeekSelected()">
+                                <option value="">-- Pilih Minggu --</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -602,7 +687,7 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div>\n\n            <!-- DATA SECTION (per minggu - wide table with multiple dates) -->\n            <div id=\"dataSectionMinggu\">\n                <div class=\"section-title\">\n                    <h2><i class=\"fas fa-calendar-week\"></i> Presensi per Minggu</h2>\n                    <span class=\"badge-count\" id=\"mingguSiswaCount\">0 Siswa</span>\n                </div>\n                <div class=\"minggu-table-wrapper\">\n                    <table class=\"minggu-table\" id=\"mingguTable\">\n                        <thead id=\"mingguTableHeader\">\n                        </thead>\n                        <tbody id=\"mingguTableBody\">\n                        </tbody>\n                    </table>\n                </div>\n            </div>
         </div>
     </div>
 </div>
@@ -733,6 +818,9 @@ let expandedDate = null;
 let selectedRombelTanggal = null;
 let selectedTanggal = null;
 let hariLiburList = [];
+let selectedRombelMinggu = null;
+let selectedWeekStart = null;
+let selectedWeekEnd = null;
 
 function selectMethod(method) {
     if (method === 'minggu') {
@@ -744,13 +832,18 @@ function selectMethod(method) {
 
     // Highlight active card
     document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
-    document.getElementById(method === 'mapel' ? 'methodMapel' : 'methodTanggal').classList.add('active');
+    let activeMethod = 'methodMapel';
+    if (method === 'tanggal') activeMethod = 'methodTanggal';
+    else if (method === 'minggu') activeMethod = 'methodMinggu';
+    document.getElementById(activeMethod).classList.add('active');
 
     // Hide all sections first
     document.getElementById('selectorRow').style.display = 'none';
     document.getElementById('tanggalSelectorRow').style.display = 'none';
+    document.getElementById('mingguSelectorRow').style.display = 'none';
     document.getElementById('dataSection').classList.remove('show');
     document.getElementById('dataSectionTanggal').classList.remove('show');
+    document.getElementById('dataSectionMinggu').classList.remove('show');
 
     if (method === 'mapel') {
         document.getElementById('selectorRow').style.display = 'grid';
@@ -778,6 +871,20 @@ function selectMethod(method) {
         document.getElementById('tanggalValue').style.display = 'none';
         document.getElementById('tanggalInputWrapper').style.display = 'none';
         document.getElementById('tanggalInput').value = '';
+    } else if (method === 'minggu') {
+        document.getElementById('mingguSelectorRow').style.display = 'grid';
+        // Reset minggu selections
+        selectedRombelMinggu = null;
+        selectedWeekStart = null;
+        selectedWeekEnd = null;
+        document.getElementById('rombelCardMinggu').classList.remove('selected');
+        document.getElementById('rombelPlaceholderMinggu').style.display = 'block';
+        document.getElementById('rombelValueMinggu').style.display = 'none';
+        document.getElementById('weekCard').classList.add('disabled');
+        document.getElementById('weekPlaceholder').style.display = 'block';
+        document.getElementById('weekValue').style.display = 'none';
+        document.getElementById('weekSelectWrapper').style.display = 'none';
+        document.getElementById('weekSelect').innerHTML = '<option value="">-- Pilih Minggu --</option>';
     }
 }
 
@@ -1258,6 +1365,168 @@ function loadDataPerTanggal() {
         })
         .catch(() => {
             tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i><h3>Error</h3>
+                <p>Gagal memuat data presensi.</p>
+            </div></td></tr>`;
+        });
+}
+
+// ==========================================
+// PER-MINGGU METHOD FUNCTIONS
+// ==========================================
+
+function openRombelModalMinggu() {
+    const modal = document.getElementById('rombelModal');
+    const options = modal.querySelectorAll('.option-card');
+    options.forEach(opt => {
+        const origOnclick = opt.getAttribute('onclick');
+        const match = origOnclick.match(/selectRombel\((\d+),\s*'(.+?)'\)/);
+        if (match) {
+            opt.setAttribute('data-orig-onclick', origOnclick);
+            opt.setAttribute('onclick', `selectRombelMinggu(${match[1]}, '${match[2]}')`);
+        }
+    });
+    modal.classList.add('show');
+}
+
+function selectRombelMinggu(id, name) {
+    selectedRombelMinggu = { id, name };
+    selectedWeekStart = null;
+    selectedWeekEnd = null;
+
+    document.getElementById('rombelCardMinggu').classList.add('selected');
+    document.getElementById('rombelPlaceholderMinggu').style.display = 'none';
+    document.getElementById('rombelValueMinggu').textContent = name;
+    document.getElementById('rombelValueMinggu').style.display = 'block';
+
+    // Enable week card
+    document.getElementById('weekCard').classList.remove('disabled');
+    document.getElementById('weekPlaceholder').style.display = 'none';
+    document.getElementById('weekSelectWrapper').style.display = 'block';
+    document.getElementById('weekValue').style.display = 'none';
+    document.getElementById('dataSectionMinggu').classList.remove('show');
+
+    // Restore original rombel modal onclick handlers
+    const modal = document.getElementById('rombelModal');
+    modal.querySelectorAll('.option-card[data-orig-onclick]').forEach(opt => {
+        opt.setAttribute('onclick', opt.getAttribute('data-orig-onclick'));
+        opt.removeAttribute('data-orig-onclick');
+    });
+    closeModal('rombelModal');
+
+    // Fetch week ranges
+    fetch(`{{ route("admin.cek-presensi.week-ranges") }}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data.length > 0) {
+                const select = document.getElementById('weekSelect');
+                let html = '<option value="">-- Pilih Minggu --</option>';
+                data.data.forEach(week => {
+                    html += `<option value="${week.start}|${week.end}">${week.label}</option>`;
+                });
+                select.innerHTML = html;
+            } else {
+                showToast('Tidak ada minggu yang tersedia', 'error');
+            }
+        })
+        .catch(() => {
+            showToast('Gagal memuat daftar minggu', 'error');
+        });
+}
+
+function onWeekSelected() {
+    const select = document.getElementById('weekSelect');
+    const val = select.value;
+    if (!val) return;
+
+    const [start, end] = val.split('|');
+    selectedWeekStart = start;
+    selectedWeekEnd = end;
+
+    // Update display
+    const selectedText = select.options[select.selectedIndex].text;
+    document.getElementById('weekValue').textContent = selectedText;
+    document.getElementById('weekValue').style.display = 'block';
+    document.getElementById('weekCard').classList.add('selected');
+
+    loadDataPerMinggu();
+}
+
+function loadDataPerMinggu() {
+    const section = document.getElementById('dataSectionMinggu');
+    const tbody = document.getElementById('mingguTableBody');
+    const thead = document.getElementById('mingguTableHeader');
+    section.classList.add('show');
+    tbody.innerHTML = '<tr><td colspan="50"><div class="loading-spinner"><div class="spinner"></div></div></td></tr>';
+    thead.innerHTML = '';
+
+    fetch(`{{ route("admin.cek-presensi.data-per-minggu") }}?id_rombel=${selectedRombelMinggu.id}&week_start=${selectedWeekStart}&week_end=${selectedWeekEnd}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data.length > 0) {
+                document.getElementById('mingguSiswaCount').textContent = data.total_siswa + ' Siswa';
+                
+                // Build header with dates
+                let headerHtml = '<tr><th rowspan="2">No</th><th rowspan="2">NISN</th><th rowspan="2">Nama Siswa</th>';
+                data.dates.forEach(date => {
+                    const d = new Date(date);
+                    const dayName = hariNames[d.getDay()];
+                    const formatted = d.toLocaleDateString('id-ID', {day:'2-digit', month:'short'});
+                    headerHtml += `<th colspan="10" class="date-header">${dayName}, ${formatted}</th>`;
+                });
+                headerHtml += '<th rowspan="2">% Hadir</th></tr><tr>';
+                data.dates.forEach(() => {
+                    for (let jp = 1; jp <= 10; jp++) {
+                        headerHtml += `<th>JP${jp}</th>`;
+                    }
+                });
+                headerHtml += '</tr>';
+                thead.innerHTML = headerHtml;
+
+                // Build body
+                let bodyHtml = '';
+                data.data.forEach(row => {
+                    bodyHtml += `<tr>
+                        <td>${row.no}</td>
+                        <td>${escapeHtml(row.nisn)}</td>
+                        <td><strong>${escapeHtml(row.nama)}</strong></td>`;
+                    
+                    data.dates.forEach(date => {
+                        for (let jp = 1; jp <= 10; jp++) {
+                            const key = `${date}_jp_${jp}`;
+                            const val = row[key];
+                            if (val && val !== '-' && val !== '') {
+                                bodyHtml += `<td><span class="jp-badge ${val}">${val}</span></td>`;
+                            } else {
+                                bodyHtml += `<td><span class="jp-badge empty">-</span></td>`;
+                            }
+                        }
+                    });
+
+                    // Percentage
+                    if (row.prosentase !== null) {
+                        let pClass = 'none';
+                        if (row.prosentase >= 80) pClass = 'high';
+                        else if (row.prosentase >= 50) pClass = 'mid';
+                        else pClass = 'low';
+                        bodyHtml += `<td><span class="persen-badge ${pClass}">${row.prosentase}%</span></td>`;
+                    } else {
+                        bodyHtml += `<td><span class="persen-badge none">-</span></td>`;
+                    }
+
+                    bodyHtml += '</tr>';
+                });
+                tbody.innerHTML = bodyHtml;
+            } else {
+                tbody.innerHTML = `<tr><td colspan="50"><div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i><h3>Tidak Ada Data</h3>
+                    <p>Belum ada presensi untuk rombel ini pada minggu tersebut.</p>
+                </div></td></tr>`;
+                document.getElementById('mingguSiswaCount').textContent = '0 Siswa';
+            }
+        })
+        .catch(() => {
+            tbody.innerHTML = `<tr><td colspan="50"><div class="empty-state">
                 <i class="fas fa-exclamation-triangle"></i><h3>Error</h3>
                 <p>Gagal memuat data presensi.</p>
             </div></td></tr>`;
