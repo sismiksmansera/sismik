@@ -494,51 +494,38 @@
 
 /* PRINT STYLES - A4 PORTRAIT */
 @media print {
-    @page { size: A4 portrait; margin: 8mm 10mm; }
+    @page { size: A4 portrait; margin: 6mm 8mm; }
     body * { visibility: hidden; }
     #dataSectionTanggal, #dataSectionTanggal * { visibility: visible; }
     #dataSectionTanggal {
         position: absolute; left: 0; top: 0; width: 100%;
         background: white;
     }
-    .sidebar, .navbar, .print-btn, .badge-count { display: none !important; }
-    .section-title { border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
-    .section-title h2 { font-size: 14px; color: #000; }
-    .jp-table { border-collapse: collapse; width: 100%; font-size: 7px; }
-    .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 2px 1px !important; }
-    .jp-table th { background: #f0f0f0 !important; color: #000 !important; font-weight: bold; font-size: 7px; }
-    .jp-table th:nth-child(1) { width: 2.5%; } /* No */
-    .jp-table th:nth-child(2) { width: 7%; } /* NISN */
-    .jp-table th:nth-child(3) { width: 18%; } /* Nama */
-    .jp-table th:nth-child(4),
-    .jp-table th:nth-child(5),
-    .jp-table th:nth-child(6),
-    .jp-table th:nth-child(7),
-    .jp-table th:nth-child(8),
-    .jp-table th:nth-child(9),
-    .jp-table th:nth-child(10),
-    .jp-table th:nth-child(11),
-    .jp-table th:nth-child(12),
-    .jp-table th:nth-child(13) { width: 3.8%; } /* JP 1-10 */
-    .jp-table th:nth-child(14) { width: 6%; } /* % Hadir */
-    .jp-badge { padding: 1px 2px; border-radius: 2px; font-size: 6px; font-weight: bold; }
-    .jp-badge.H { background: #d1fae5 !important; color: #065f46 !important; }
-    .jp-badge.S { background: #dbeafe !important; color: #1e40af !important; }
-    .jp-badge.I { background: #fef3c7 !important; color: #92400e !important; }
-    .jp-badge.A { background: #fee2e2 !important; color: #991b1b !important; }
-    .jp-badge.D { background: #fed7aa !important; color: #9a3412 !important; }
-    .jp-badge.B { background: #e9d5ff !important; color: #6b21a8 !important; }
-    .jp-badge.empty { background: #f3f4f6 !important; color: #9ca3af !important; }
-    .persen-badge { padding: 1px 3px; border-radius: 2px; font-size: 6px; font-weight: bold; }
-    .persen-badge.high { background: #d1fae5 !important; color: #065f46 !important; }
-    .persen-badge.mid { background: #fef3c7 !important; color: #92400e !important; }
-    .persen-badge.low { background: #fee2e2 !important; color: #991b1b !important; }
-    .persen-badge.none { background: #f3f4f6 !important; color: #9ca3af !important; }
+    .sidebar, .navbar, .print-btn, .badge-count, .section-title { display: none !important; }
+    .jp-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
+    .jp-table { border-collapse: collapse; width: 100%; font-size: 7px; min-width: 0 !important; table-layout: fixed; }
+    .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 1px 1px !important; line-height: 1.1; text-align: center; word-wrap: break-word; overflow: hidden; }
+    .jp-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 7px; }
+    .jp-table td:nth-child(3) { text-align: left; }
+    .jp-table td strong { font-size: 6px; }
+    .jp-badge { padding: 0px 2px; border-radius: 1px; font-size: 6px; font-weight: bold; display: inline-block; }
+    .jp-badge.H { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .jp-badge.S { background: #dbeafe !important; color: #1e40af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .jp-badge.I { background: #fef3c7 !important; color: #92400e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .jp-badge.A { background: #fee2e2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .jp-badge.D { background: #fed7aa !important; color: #9a3412 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .jp-badge.B { background: #e9d5ff !important; color: #6b21a8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .jp-badge.empty { background: #f3f4f6 !important; color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .persen-badge { padding: 0px 2px; border-radius: 1px; font-size: 6px; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .persen-badge.high { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .persen-badge.mid { background: #fef3c7 !important; color: #92400e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .persen-badge.low { background: #fee2e2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .persen-badge.none { background: #f3f4f6 !important; color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #printHeader { display: block !important; }
-    #printHeader h3 { font-size: 13px; margin: 0; }
-    #printHeader h4 { font-size: 11px; margin: 3px 0; }
-    #printHeader table { font-size: 8px; margin-top: 6px; margin-bottom: 8px; }
-}
+    #printHeader h3 { font-size: 12px; margin: 0; }
+    #printHeader h4 { font-size: 10px; margin: 2px 0; }
+    #printHeader table { font-size: 8px; margin-top: 4px; margin-bottom: 6px; }
+    #printHeader table td { border: none !important; }
 }
 
 /* STACKED MODAL (higher z-index) */
