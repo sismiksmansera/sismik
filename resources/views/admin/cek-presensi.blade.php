@@ -753,6 +753,49 @@
                 </div>
             </div>
 
+            <!-- SISWA SELECTOR ROW -->
+            <div class="selector-row" id="siswaSelectorRow" style="display:none;">
+                <div class="selector-card" id="siswaCard" onclick="openSearchSiswaModal()">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="card-content">
+                        <p class="card-value" id="siswaValue" style="display:none;"></p>
+                        <p class="card-placeholder" id="siswaPlaceholder">Cari Siswa...</p>
+                        <span class="card-label">Nama / NISN</span>
+                    </div>
+                </div>
+                <div class="selector-card" id="siswaFilterCard">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <div class="card-content">
+                        <p class="card-value" id="siswaFilterValue" style="display:none;"></p>
+                        <p class="card-placeholder" id="siswaFilterPlaceholder">Tampilkan Semua</p>
+                        <span class="card-label">Filter Data</span>
+                        <div class="tanggal-input-wrapper" id="siswaDateWrapper" style="display:none; margin-top:8px;">
+                            <input type="date" id="siswaFilterDate" onchange="loadDataPerSiswa()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SISWA DATA SECTION -->
+            <div id="dataSectionSiswa" style="display:none;">
+                <div id="siswaInfoCard" style="display:none; background:linear-gradient(135deg,#fef3c7,#fde68a); border-radius:12px; padding:16px; margin-bottom:16px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-user-graduate" style="color:#fff;font-size:20px;"></i>
+                        </div>
+                        <div>
+                            <p style="margin:0;font-weight:700;font-size:16px;color:#92400e;" id="siswaInfoNama">-</p>
+                            <p style="margin:2px 0 0;font-size:13px;color:#a16207;"><span id="siswaInfoNisn">-</span> &bull; <span id="siswaInfoRombel">-</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div id="siswaCardsContainer"></div>
+            </div>
+
             <!-- DATA SECTION (per mapel) -->
             <div id="dataSection">
                 <div class="section-title">
@@ -921,54 +964,7 @@
     </div>
 </div>
 
-<!-- SISWA SELECTOR ROW -->
-<div class="selector-row" id="siswaSelectorRow" style="display:none;">
-    <div class="selector-card" id="siswaCard" onclick="openSearchSiswaModal()">
-        <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-            <i class="fas fa-search"></i>
-        </div>
-        <div class="card-content">
-            <p class="card-value" id="siswaValue" style="display:none;"></p>
-            <p class="card-placeholder" id="siswaPlaceholder">Cari Siswa...</p>
-            <p class="card-label">Nama / NISN</p>
-        </div>
-    </div>
-    <div class="selector-card" id="siswaFilterCard">
-        <div class="card-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
-            <i class="fas fa-filter"></i>
-        </div>
-        <div class="card-content">
-            <select id="siswaFilterType" onchange="onSiswaFilterChange()" style="width:100%; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; color:#374151; background:#fff;">
-                <option value="all">Tampilkan Semua</option>
-                <option value="tanggal">Tanggal Tertentu</option>
-            </select>
-            <input type="date" id="siswaFilterDate" style="display:none; width:100%; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; color:#374151; margin-top:6px;" onchange="loadDataPerSiswa()">
-            <p class="card-label">Filter Data</p>
-        </div>
-    </div>
-</div>
 
-<!-- SISWA DATA SECTION -->
-<div class="data-section" id="dataSectionSiswa">
-    <div class="data-section-inner">
-        <div class="section-header">
-            <h3><i class="fas fa-user-graduate" style="color:#f59e0b;"></i> Data Presensi Siswa</h3>
-            <span class="student-count" id="siswaHariCount">0 hari</span>
-        </div>
-        <div id="siswaInfoCard" style="display:none; background:linear-gradient(135deg,#fef3c7,#fde68a); border-radius:12px; padding:16px; margin-bottom:16px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;">
-                    <i class="fas fa-user-graduate" style="color:#fff;font-size:20px;"></i>
-                </div>
-                <div>
-                    <p style="margin:0;font-weight:700;font-size:16px;color:#92400e;" id="siswaInfoNama">-</p>
-                    <p style="margin:2px 0 0;font-size:13px;color:#a16207;"><span id="siswaInfoNisn">-</span> &bull; <span id="siswaInfoRombel">-</span></p>
-                </div>
-            </div>
-        </div>
-        <div id="siswaCardsContainer"></div>
-    </div>
-</div>
 
 <!-- SEARCH SISWA MODAL -->
 <div class="custom-modal-overlay" id="searchSiswaModal">
@@ -1170,6 +1166,7 @@ let selectedWeekStart = null;
 let selectedWeekEnd = null;
 let selectedSiswa = null;
 let searchSiswaTimer = null;
+let selectedSiswaFilterType = 'all';
 
 function selectMethod(method) {
     selectedMethod = method;
@@ -1195,7 +1192,7 @@ function selectMethod(method) {
     document.getElementById('dataSection').classList.remove('show');
     document.getElementById('dataSectionTanggal').classList.remove('show');
     document.getElementById('dataSectionMinggu').classList.remove('show');
-    document.getElementById('dataSectionSiswa').classList.remove('show');
+    document.getElementById('dataSectionSiswa').style.display = 'none';
 
     if (method === 'mapel') {
         document.getElementById('selectorRow').style.display = 'grid';
@@ -1241,14 +1238,19 @@ function selectMethod(method) {
         document.getElementById('siswaSelectorRow').style.display = 'grid';
         // Reset siswa selections
         selectedSiswa = null;
+        selectedSiswaFilterType = 'all';
         document.getElementById('siswaCard').classList.remove('selected');
         document.getElementById('siswaPlaceholder').style.display = 'block';
         document.getElementById('siswaValue').style.display = 'none';
-        document.getElementById('siswaFilterType').value = 'all';
-        document.getElementById('siswaFilterDate').style.display = 'none';
+        document.getElementById('siswaFilterCard').classList.remove('selected');
+        document.getElementById('siswaFilterPlaceholder').style.display = 'block';
+        document.getElementById('siswaFilterPlaceholder').textContent = 'Tampilkan Semua';
+        document.getElementById('siswaFilterValue').style.display = 'none';
+        document.getElementById('siswaDateWrapper').style.display = 'none';
         document.getElementById('siswaFilterDate').value = '';
         document.getElementById('siswaCardsContainer').innerHTML = '';
         document.getElementById('siswaInfoCard').style.display = 'none';
+        document.getElementById('dataSectionSiswa').style.display = 'none';
     }
 }
 
@@ -1340,14 +1342,21 @@ function selectSiswa(nisn, nama, rombel) {
 }
 
 function onSiswaFilterChange() {
-    const filterType = document.getElementById('siswaFilterType').value;
-    const dateInput = document.getElementById('siswaFilterDate');
-    if (filterType === 'tanggal') {
-        dateInput.style.display = 'block';
-        // Don't load yet — wait for date selection
+    if (selectedSiswaFilterType === 'all') {
+        selectedSiswaFilterType = 'tanggal';
+        document.getElementById('siswaFilterCard').classList.add('selected');
+        document.getElementById('siswaFilterPlaceholder').style.display = 'none';
+        document.getElementById('siswaFilterValue').style.display = 'block';
+        document.getElementById('siswaFilterValue').textContent = 'Tanggal Tertentu';
+        document.getElementById('siswaDateWrapper').style.display = 'block';
     } else {
-        dateInput.style.display = 'none';
-        dateInput.value = '';
+        selectedSiswaFilterType = 'all';
+        document.getElementById('siswaFilterCard').classList.remove('selected');
+        document.getElementById('siswaFilterPlaceholder').style.display = 'block';
+        document.getElementById('siswaFilterPlaceholder').textContent = 'Tampilkan Semua';
+        document.getElementById('siswaFilterValue').style.display = 'none';
+        document.getElementById('siswaDateWrapper').style.display = 'none';
+        document.getElementById('siswaFilterDate').value = '';
         if (selectedSiswa) loadDataPerSiswa();
     }
 }
@@ -1355,18 +1364,17 @@ function onSiswaFilterChange() {
 function loadDataPerSiswa() {
     if (!selectedSiswa) return;
 
-    const filterType = document.getElementById('siswaFilterType').value;
     const filterDate = document.getElementById('siswaFilterDate').value;
 
-    if (filterType === 'tanggal' && !filterDate) return;
+    if (selectedSiswaFilterType === 'tanggal' && !filterDate) return;
 
     const section = document.getElementById('dataSectionSiswa');
     const container = document.getElementById('siswaCardsContainer');
-    section.classList.add('show');
+    section.style.display = 'block';
     container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
 
     let url = `{{ route("{$routePrefix}.cek-presensi.data-per-siswa") }}?nisn=${selectedSiswa.nisn}`;
-    if (filterType === 'tanggal' && filterDate) {
+    if (selectedSiswaFilterType === 'tanggal' && filterDate) {
         url += `&tanggal=${filterDate}`;
     }
 
