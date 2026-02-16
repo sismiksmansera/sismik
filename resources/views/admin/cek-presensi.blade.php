@@ -504,7 +504,7 @@
     .sidebar, .navbar, .print-btn, .badge-count, .section-title { display: none !important; }
     .jp-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
     .jp-table { border-collapse: collapse; width: 100%; font-size: 8px; min-width: 0 !important; table-layout: fixed; }
-    .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 1px 1px !important; line-height: 1.1; text-align: center; word-wrap: break-word; overflow: hidden; }
+    .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 0px 1px !important; line-height: 0.8; text-align: center; word-wrap: break-word; overflow: hidden; }
     .jp-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 7px; }
     .jp-table col.col-no { width: 1.5%; }
     .jp-table col.col-nisn { width: 10%; }
