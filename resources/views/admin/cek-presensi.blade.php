@@ -494,7 +494,7 @@
 
 /* PRINT STYLES - A4 PORTRAIT */
 @media print {
-    @page { size: A4 portrait; margin: 6mm 8mm; }
+    @page { size: A4 portrait; margin: 6mm 15mm; }
     body * { visibility: hidden; }
     #dataSectionTanggal, #dataSectionTanggal * { visibility: visible; }
     #dataSectionTanggal {
@@ -505,16 +505,16 @@
     .jp-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
     .jp-table { border-collapse: collapse; width: 100%; font-size: 8px; min-width: 0 !important; table-layout: fixed; }
     .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 0px 1px !important; text-align: center; word-wrap: break-word; overflow: hidden; }
-    .jp-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 7px; line-height: 1.2; padding: 3px 1px !important; }
-    .jp-table td { line-height: 1.2; padding: 2px 1px !important; font-size: 8px; }
+    .jp-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 10px; line-height: 1.2; padding: 3px 1px !important; text-align: center !important; }
+    .jp-table td { line-height: 1.5; padding: 2px 1px !important; font-size: 10px; }
     .jp-table col.col-no { width: 2%; }
-    .jp-table col.col-nisn { width: 10%; }
+    .jp-table col.col-nisn { width: 8%; }
     .jp-table col.col-nama { width: 25%; }
     .jp-table col.col-jp { width: 2.5%; }
-    .jp-table col.col-persen { width: 4.5%; }
+    .jp-table col.col-persen { width: 6.5%; }
     .jp-table td:nth-child(1), .jp-table td:nth-child(2) { text-align: center !important; }
     .jp-table td:nth-child(3) { text-align: left !important; }
-    .jp-table td strong { font-size: 8px; font-weight: bold; }
+    .jp-table td strong { font-size: 10px; font-weight: bold; }
     .jp-badge { width: auto !important; height: auto !important; line-height: 1 !important; padding: 0px 1px !important; border-radius: 1px; font-size: 6px !important; font-weight: bold; display: inline-block; }
     .jp-badge.H { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .jp-badge.S { background: #dbeafe !important; color: #1e40af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -735,7 +735,7 @@
                 
                 <!-- PRINT HEADER (hidden on screen, visible in print) -->
                 <div id="printHeader" style="display:none; margin-bottom:20px;">
-                    <h3 style="text-align:center; margin:0; font-size:16px;">DAFTAR PRESENSI SISWA</h3>
+                    <h3 style="text-align:center; margin:0; font-size:16px;">PRESENSI HARIAN SISWA</h3>
                     <h4 style="text-align:center; margin:5px 0; font-size:14px;">SMAN 1 SEPUTIH RAMAN</h4>
                     <div style="margin-top:10px; font-size:11px;">
                         <table style="width:100%; border:none;">
@@ -783,14 +783,15 @@
                     <table>
                         <tr>
                             <td style="width:50%;">
-                                <p style="margin:0;">Ketua Kelas,</p>
-                                <br><br><br>
-                                <p style="margin:0;">( ............................ )</p>
-                            </td>
-                            <td style="width:50%;">
                                 <p style="margin:0;">Wali Kelas,</p>
                                 <br><br><br>
-                                <p style="margin:0;">( ............................ )</p>
+                                <p style="margin:0;">( ........................................................... )</p>
+                            </td>
+
+                            <td style="width:50%;">
+                                <p style="margin:0;">Ketua Kelas,</p>
+                                <br><br><br>
+                                <p style="margin:0;">( ........................................................... )</p>
                             </td>
                         </tr>
                     </table>
