@@ -773,8 +773,8 @@
                         <p class="card-value" id="siswaFilterValue" style="display:none;"></p>
                         <p class="card-placeholder" id="siswaFilterPlaceholder">Tampilkan Semua</p>
                         <span class="card-label">Filter Data</span>
-                        <div class="tanggal-input-wrapper" id="siswaDateWrapper" style="display:none; margin-top:8px;">
-                            <input type="date" id="siswaFilterDate" onchange="loadDataPerSiswa()">
+                        <div class="tanggal-input-wrapper" id="siswaDateWrapper" style="display:none; margin-top:8px;" onclick="event.stopPropagation()">
+                            <input type="date" id="siswaFilterDate" onchange="loadDataPerSiswa()" onclick="event.stopPropagation()">
                         </div>
                     </div>
                 </div>
