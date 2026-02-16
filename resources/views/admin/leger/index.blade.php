@@ -304,8 +304,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 html += `<td>${nilai}</td>`;
             });
             
-            html += `<td><strong>${student.rata_rata}</strong></td>`;
-            html += `<td><strong>${student.ranking}</strong></td>`;
+            html += `<td style="font-weight: bold; background: #fef3c7;">${student.jumlah}</td>`;
+            html += `<td style="font-weight: bold; background: #fef2f2;">${student.rata_rata_display}</td>`;
+            html += `<td style="font-weight: bold; background: #f3e8ff;">${student.ranking}</td>`;
             html += '</tr>';
         });
         
