@@ -642,6 +642,11 @@
                 <h3><i class="fas fa-th-large"></i> Pilih Jenis Cek Presensi</h3>
                 @if(($routePrefix ?? 'admin') === 'admin')
                 <div class="method-grid">
+                    <div class="method-card" id="methodSiswa" onclick="selectMethod('siswa')">
+                        <div class="method-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i class="fas fa-user-graduate"></i></div>
+                        <p class="method-title">Per Siswa</p>
+                        <p class="method-desc">Cek presensi individual per siswa</p>
+                    </div>
                     <div class="method-card" id="methodMapel" onclick="selectMethod('mapel')">
                         <div class="method-icon mapel-bg"><i class="fas fa-book"></i></div>
                         <p class="method-title">Per Rombel per Mapel</p>
@@ -914,6 +919,75 @@
     </div>
 </div>
 
+<!-- SISWA SELECTOR ROW -->
+<div class="selector-row" id="siswaSelectorRow" style="display:none;">
+    <div class="selector-card" id="siswaCard" onclick="openSearchSiswaModal()">
+        <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <i class="fas fa-search"></i>
+        </div>
+        <div class="card-content">
+            <p class="card-value" id="siswaValue" style="display:none;"></p>
+            <p class="card-placeholder" id="siswaPlaceholder">Cari Siswa...</p>
+            <p class="card-label">Nama / NISN</p>
+        </div>
+    </div>
+    <div class="selector-card" id="siswaFilterCard">
+        <div class="card-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+            <i class="fas fa-filter"></i>
+        </div>
+        <div class="card-content">
+            <select id="siswaFilterType" onchange="onSiswaFilterChange()" style="width:100%; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; color:#374151; background:#fff;">
+                <option value="all">Tampilkan Semua</option>
+                <option value="tanggal">Tanggal Tertentu</option>
+            </select>
+            <input type="date" id="siswaFilterDate" style="display:none; width:100%; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; color:#374151; margin-top:6px;" onchange="loadDataPerSiswa()">
+            <p class="card-label">Filter Data</p>
+        </div>
+    </div>
+</div>
+
+<!-- SISWA DATA SECTION -->
+<div class="data-section" id="dataSectionSiswa">
+    <div class="data-section-inner">
+        <div class="section-header">
+            <h3><i class="fas fa-user-graduate" style="color:#f59e0b;"></i> Data Presensi Siswa</h3>
+            <span class="student-count" id="siswaHariCount">0 hari</span>
+        </div>
+        <div id="siswaInfoCard" style="display:none; background:linear-gradient(135deg,#fef3c7,#fde68a); border-radius:12px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-user-graduate" style="color:#fff;font-size:20px;"></i>
+                </div>
+                <div>
+                    <p style="margin:0;font-weight:700;font-size:16px;color:#92400e;" id="siswaInfoNama">-</p>
+                    <p style="margin:2px 0 0;font-size:13px;color:#a16207;"><span id="siswaInfoNisn">-</span> &bull; <span id="siswaInfoRombel">-</span></p>
+                </div>
+            </div>
+        </div>
+        <div id="siswaCardsContainer"></div>
+    </div>
+</div>
+
+<!-- SEARCH SISWA MODAL -->
+<div class="custom-modal-overlay" id="searchSiswaModal">
+    <div class="custom-modal" style="max-width:500px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-search" style="color:#f59e0b;margin-right:8px;"></i> Cari Siswa</h3>
+            <button class="close-btn" onclick="closeModal('searchSiswaModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="position:relative; margin-bottom:16px;">
+                <input type="text" id="searchSiswaInput" placeholder="Ketik nama atau NISN siswa..." oninput="debounceSearchSiswa()" autocomplete="off"
+                    style="width:100%; padding:12px 16px 12px 40px; border:2px solid #e5e7eb; border-radius:12px; font-size:14px; outline:none; transition:border-color .2s;">
+                <i class="fas fa-search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#9ca3af;"></i>
+            </div>
+            <div id="searchSiswaResults" style="max-height:350px; overflow-y:auto;">
+                <p style="text-align:center; color:#9ca3af; padding:20px;">Ketik minimal 2 karakter untuk mencari</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- METHOD SELECTION MODAL (Guru BK only) -->
 @if(($routePrefix ?? 'admin') !== 'admin')
 <div class="custom-modal-overlay" id="methodModal">
@@ -924,6 +998,13 @@
         </div>
         <div class="modal-body">
             <div class="modal-option-grid">
+                <div class="option-card" onclick="selectMethodFromModal('siswa')">
+                    <div class="option-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <p class="option-name">Per Siswa</p>
+                    <p style="font-size:11px; color:#6b7280; margin:4px 0 0;">Cek presensi individual per siswa</p>
+                </div>
                 <div class="option-card" onclick="selectMethodFromModal('mapel')">
                     <div class="option-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
                         <i class="fas fa-book"></i>
@@ -1083,6 +1164,8 @@ let hariLiburList = [];
 let selectedRombelMinggu = null;
 let selectedWeekStart = null;
 let selectedWeekEnd = null;
+let selectedSiswa = null;
+let searchSiswaTimer = null;
 
 function selectMethod(method) {
     selectedMethod = method;
@@ -1092,6 +1175,7 @@ function selectMethod(method) {
     let activeMethod = 'methodMapel';
     if (method === 'tanggal') activeMethod = 'methodTanggal';
     else if (method === 'minggu') activeMethod = 'methodMinggu';
+    else if (method === 'siswa') activeMethod = 'methodSiswa';
     const activeEl = document.getElementById(activeMethod);
     if (activeEl) activeEl.classList.add('active');
 
@@ -1103,9 +1187,11 @@ function selectMethod(method) {
     document.getElementById('selectorRow').style.display = 'none';
     document.getElementById('tanggalSelectorRow').style.display = 'none';
     document.getElementById('mingguSelectorRow').style.display = 'none';
+    document.getElementById('siswaSelectorRow').style.display = 'none';
     document.getElementById('dataSection').classList.remove('show');
     document.getElementById('dataSectionTanggal').classList.remove('show');
     document.getElementById('dataSectionMinggu').classList.remove('show');
+    document.getElementById('dataSectionSiswa').classList.remove('show');
 
     if (method === 'mapel') {
         document.getElementById('selectorRow').style.display = 'grid';
@@ -1147,6 +1233,18 @@ function selectMethod(method) {
         document.getElementById('weekValue').style.display = 'none';
         document.getElementById('weekSelectWrapper').style.display = 'none';
         document.getElementById('weekSelect').innerHTML = '<option value="">-- Pilih Minggu --</option>';
+    } else if (method === 'siswa') {
+        document.getElementById('siswaSelectorRow').style.display = 'grid';
+        // Reset siswa selections
+        selectedSiswa = null;
+        document.getElementById('siswaCard').classList.remove('selected');
+        document.getElementById('siswaPlaceholder').style.display = 'block';
+        document.getElementById('siswaValue').style.display = 'none';
+        document.getElementById('siswaFilterType').value = 'all';
+        document.getElementById('siswaFilterDate').style.display = 'none';
+        document.getElementById('siswaFilterDate').value = '';
+        document.getElementById('siswaCardsContainer').innerHTML = '';
+        document.getElementById('siswaInfoCard').style.display = 'none';
     }
 }
 
@@ -1160,6 +1258,7 @@ function selectMethodFromModal(method) {
     const iconEl = document.getElementById('methodSelector');
     if (labelEl && descEl && iconEl) {
         const methodInfo = {
+            siswa: { label: 'Per Siswa', desc: 'Cek presensi individual per siswa', icon: 'fa-user-graduate', color: '#f59e0b' },
             mapel: { label: 'Per Rombel per Mapel', desc: 'Cek presensi berdasarkan rombel & mata pelajaran', icon: 'fa-book', color: '#8b5cf6' },
             tanggal: { label: 'Per Rombel per Tanggal', desc: 'Cek presensi berdasarkan rombel & tanggal', icon: 'fa-calendar-day', color: '#3b82f6' },
             minggu: { label: 'Per Rombel per Minggu', desc: 'Cek presensi berdasarkan rombel & minggu', icon: 'fa-calendar-week', color: '#10b981' }
@@ -1175,6 +1274,163 @@ function selectMethodFromModal(method) {
     }
 
     selectMethod(method);
+}
+
+// === SISWA FUNCTIONS ===
+
+function openSearchSiswaModal() {
+    document.getElementById('searchSiswaInput').value = '';
+    document.getElementById('searchSiswaResults').innerHTML = '<p style="text-align:center; color:#9ca3af; padding:20px;">Ketik minimal 2 karakter untuk mencari</p>';
+    document.getElementById('searchSiswaModal').classList.add('show');
+    setTimeout(() => document.getElementById('searchSiswaInput').focus(), 200);
+}
+
+function debounceSearchSiswa() {
+    clearTimeout(searchSiswaTimer);
+    searchSiswaTimer = setTimeout(() => {
+        const q = document.getElementById('searchSiswaInput').value.trim();
+        if (q.length < 2) {
+            document.getElementById('searchSiswaResults').innerHTML = '<p style="text-align:center; color:#9ca3af; padding:20px;">Ketik minimal 2 karakter untuk mencari</p>';
+            return;
+        }
+        document.getElementById('searchSiswaResults').innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+        fetch(`{{ route("{$routePrefix}.cek-presensi.search-siswa") }}?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.data.length > 0) {
+                    let html = '';
+                    data.data.forEach(s => {
+                        html += `<div class="option-card" onclick="selectSiswa('${s.nisn}', '${escapeAttr(s.nama)}', '${escapeAttr(s.nama_rombel)}')" style="cursor:pointer; margin-bottom:8px;">
+                            <div class="option-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706); width:36px; height:36px; min-width:36px;">
+                                <i class="fas fa-user" style="font-size:14px;"></i>
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <p class="option-name" style="margin:0; font-size:14px;">${escapeHtml(s.nama)}</p>
+                                <p style="margin:2px 0 0; font-size:12px; color:#6b7280;">${s.nisn} &bull; ${escapeHtml(s.nama_rombel)}</p>
+                            </div>
+                        </div>`;
+                    });
+                    document.getElementById('searchSiswaResults').innerHTML = html;
+                } else {
+                    document.getElementById('searchSiswaResults').innerHTML = '<p style="text-align:center; color:#9ca3af; padding:20px;">Tidak ada siswa ditemukan</p>';
+                }
+            })
+            .catch(() => {
+                document.getElementById('searchSiswaResults').innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Gagal mencari siswa</p>';
+            });
+    }, 400);
+}
+
+function selectSiswa(nisn, nama, rombel) {
+    selectedSiswa = { nisn, nama, rombel };
+    closeModal('searchSiswaModal');
+
+    // Update card
+    document.getElementById('siswaCard').classList.add('selected');
+    document.getElementById('siswaPlaceholder').style.display = 'none';
+    document.getElementById('siswaValue').style.display = 'block';
+    document.getElementById('siswaValue').textContent = nama;
+
+    // Load data
+    loadDataPerSiswa();
+}
+
+function onSiswaFilterChange() {
+    const filterType = document.getElementById('siswaFilterType').value;
+    const dateInput = document.getElementById('siswaFilterDate');
+    if (filterType === 'tanggal') {
+        dateInput.style.display = 'block';
+        // Don't load yet — wait for date selection
+    } else {
+        dateInput.style.display = 'none';
+        dateInput.value = '';
+        if (selectedSiswa) loadDataPerSiswa();
+    }
+}
+
+function loadDataPerSiswa() {
+    if (!selectedSiswa) return;
+
+    const filterType = document.getElementById('siswaFilterType').value;
+    const filterDate = document.getElementById('siswaFilterDate').value;
+
+    if (filterType === 'tanggal' && !filterDate) return;
+
+    const section = document.getElementById('dataSectionSiswa');
+    const container = document.getElementById('siswaCardsContainer');
+    section.classList.add('show');
+    container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+
+    let url = `{{ route("{$routePrefix}.cek-presensi.data-per-siswa") }}?nisn=${selectedSiswa.nisn}`;
+    if (filterType === 'tanggal' && filterDate) {
+        url += `&tanggal=${filterDate}`;
+    }
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data.length > 0) {
+                // Update info card
+                document.getElementById('siswaInfoCard').style.display = 'block';
+                document.getElementById('siswaInfoNama').textContent = data.nama_siswa;
+                document.getElementById('siswaInfoNisn').textContent = data.nisn;
+                document.getElementById('siswaInfoRombel').textContent = data.rombel;
+                document.getElementById('siswaHariCount').textContent = data.total_hari + ' hari';
+
+                // Build cards
+                let html = '<div style="display:grid; gap:12px;">';
+                data.data.forEach(row => {
+                    const d = new Date(row.tanggal);
+                    const dayName = hariNames[d.getDay()];
+                    const tglFormatted = d.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'});
+                    const pct = row.prosentase;
+                    const pctColor = pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+                    const pctBg = pct >= 80 ? '#ecfdf5' : pct >= 50 ? '#fffbeb' : '#fef2f2';
+
+                    // Build JP badges
+                    let jpHtml = '';
+                    for (let jp = 1; jp <= 10; jp++) {
+                        const val = row['jp_' + jp];
+                        if (val && val !== '-') {
+                            let badgeColor = '#6b7280'; let badgeBg = '#f3f4f6';
+                            if (val === 'H') { badgeColor = '#059669'; badgeBg = '#ecfdf5'; }
+                            else if (val === 'S') { badgeColor = '#d97706'; badgeBg = '#fffbeb'; }
+                            else if (val === 'I') { badgeColor = '#2563eb'; badgeBg = '#eff6ff'; }
+                            else if (val === 'A') { badgeColor = '#dc2626'; badgeBg = '#fef2f2'; }
+                            jpHtml += `<span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:26px;border-radius:6px;font-size:11px;font-weight:600;background:${badgeBg};color:${badgeColor};border:1px solid ${badgeColor}20;">JP${jp}<br>${val}</span>`;
+                        }
+                    }
+
+                    html += `
+                    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,.06);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <div>
+                                <p style="margin:0; font-weight:700; font-size:14px; color:#1f2937;">${dayName}, ${tglFormatted}</p>
+                                <p style="margin:2px 0 0; font-size:12px; color:#6b7280;">${escapeHtml(row.mapel || '-')}</p>
+                            </div>
+                            <div style="background:${pctBg}; color:${pctColor}; padding:4px 10px; border-radius:20px; font-size:13px; font-weight:700;">
+                                ${pct !== null ? pct + '%' : '-'}
+                            </div>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                            ${jpHtml || '<span style="color:#9ca3af; font-size:12px;">Tidak ada data JP</span>'}
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                document.getElementById('siswaInfoCard').style.display = 'block';
+                document.getElementById('siswaInfoNama').textContent = selectedSiswa.nama;
+                document.getElementById('siswaInfoNisn').textContent = selectedSiswa.nisn;
+                document.getElementById('siswaInfoRombel').textContent = selectedSiswa.rombel;
+                document.getElementById('siswaHariCount').textContent = '0 hari';
+                container.innerHTML = '<div style="text-align:center; padding:40px 20px;"><i class="fas fa-inbox" style="font-size:48px; color:#d1d5db; margin-bottom:12px; display:block;"></i><p style="color:#6b7280; margin:0;">Tidak ada data presensi ditemukan</p></div>';
+            }
+        })
+        .catch(() => {
+            container.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#ef4444;"><i class="fas fa-exclamation-triangle" style="font-size:48px; margin-bottom:12px; display:block;"></i>Gagal memuat data</div>';
+        });
 }
 
 const hariNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];

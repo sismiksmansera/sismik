@@ -548,4 +548,139 @@ class CekPresensiController extends Controller
         $days = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
         return $days[(int)$dayNum] ?? '';
     }
+    /**
+     * AJAX: Search students by name or NISN
+     */
+    public function searchSiswa(Request $request)
+    {
+        $query = $request->query('q', '');
+        if (strlen($query) < 2) {
+            return response()->json(['success' => false, 'message' => 'Minimal 2 karakter']);
+        }
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
+        $semesterAktif = $periodik->semester ?? 'Ganjil';
+
+        // Search in siswa table
+        $students = DB::table('siswa as s')
+            ->join('rombel as r', function ($join) use ($tahunPelajaran, $semesterAktif) {
+                $join->on(DB::raw('s.nisn COLLATE utf8mb4_general_ci'), '=', DB::raw('r.nisn COLLATE utf8mb4_general_ci'))
+                     ->where('r.tahun_pelajaran', $tahunPelajaran)
+                     ->where('r.semester', $semesterAktif);
+            })
+            ->where(function ($q) use ($query) {
+                $q->where('s.nama', 'LIKE', "%{$query}%")
+                  ->orWhere('s.nisn', 'LIKE', "%{$query}%");
+            })
+            ->select('s.nisn', 's.nama', 'r.nama_rombel')
+            ->groupBy('s.nisn', 's.nama', 'r.nama_rombel')
+            ->orderBy('s.nama')
+            ->limit(20)
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $students]);
+    }
+
+    /**
+     * AJAX: Get presensi data per siswa (all dates or a specific date)
+     */
+    public function getDataPerSiswa(Request $request)
+    {
+        $nisn = $request->query('nisn');
+        $tanggal = $request->query('tanggal'); // optional, for filtering
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
+        $semesterAktif = strtolower($periodik->semester ?? 'ganjil');
+
+        $query = DB::table('presensi_siswa as ps')
+            ->leftJoin('siswa as s', function ($join) {
+                $join->on(DB::raw('ps.nisn COLLATE utf8mb4_general_ci'), '=', DB::raw('s.nisn COLLATE utf8mb4_general_ci'));
+            })
+            ->where(DB::raw('ps.nisn COLLATE utf8mb4_general_ci'), '=', $nisn)
+            ->where('ps.tahun_pelajaran', $tahunPelajaran)
+            ->whereRaw('LOWER(ps.semester) = ?', [$semesterAktif]);
+
+        if ($tanggal) {
+            $query->where('ps.tanggal_presensi', $tanggal);
+        }
+
+        $records = $query->select(
+                'ps.tanggal_presensi',
+                'ps.mata_pelajaran',
+                'ps.presensi',
+                'ps.jam_ke_1', 'ps.jam_ke_2', 'ps.jam_ke_3', 'ps.jam_ke_4', 'ps.jam_ke_5',
+                'ps.jam_ke_6', 'ps.jam_ke_7', 'ps.jam_ke_8', 'ps.jam_ke_9', 'ps.jam_ke_10',
+                's.nama as nama_siswa'
+            )
+            ->orderBy('ps.tanggal_presensi', 'desc')
+            ->get();
+
+        // Get student name
+        $namaSiswa = $records->first()->nama_siswa ?? $nisn;
+
+        // Get rombel
+        $rombel = DB::table('rombel')
+            ->where(DB::raw('nisn COLLATE utf8mb4_general_ci'), $nisn)
+            ->where('tahun_pelajaran', $tahunPelajaran)
+            ->where('semester', $periodik->semester ?? 'Ganjil')
+            ->value('nama_rombel') ?? '-';
+
+        // Group by date and merge JP data
+        $grouped = [];
+        foreach ($records as $rec) {
+            $tgl = $rec->tanggal_presensi;
+            if (!isset($grouped[$tgl])) {
+                $grouped[$tgl] = [
+                    'tanggal' => $tgl,
+                    'mapel_list' => [],
+                ];
+                for ($jp = 1; $jp <= 10; $jp++) {
+                    $grouped[$tgl]["jp_{$jp}"] = null;
+                }
+            }
+
+            // Collect mapel
+            if ($rec->mata_pelajaran && !in_array($rec->mata_pelajaran, $grouped[$tgl]['mapel_list'])) {
+                $grouped[$tgl]['mapel_list'][] = $rec->mata_pelajaran;
+            }
+
+            // Merge JP values
+            for ($jp = 1; $jp <= 10; $jp++) {
+                $field = "jam_ke_{$jp}";
+                $val = $rec->$field ?? null;
+                if ($val !== null && $val !== '' && $val !== '-') {
+                    $grouped[$tgl]["jp_{$jp}"] = $val;
+                }
+            }
+        }
+
+        // Calculate percentages
+        $result = [];
+        foreach ($grouped as $row) {
+            $totalJp = 0;
+            $totalHadir = 0;
+            for ($jp = 1; $jp <= 10; $jp++) {
+                $val = $row["jp_{$jp}"];
+                if ($val !== null && $val !== '' && $val !== '-') {
+                    $totalJp++;
+                    if ($val === 'H') $totalHadir++;
+                }
+            }
+            $row['prosentase'] = $totalJp > 0 ? round(($totalHadir / $totalJp) * 100, 1) : null;
+            $row['mapel'] = implode(', ', $row['mapel_list']);
+            unset($row['mapel_list']);
+            $result[] = $row;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $result,
+            'nama_siswa' => $namaSiswa,
+            'nisn' => $nisn,
+            'rombel' => $rombel,
+            'total_hari' => count($result),
+        ]);
+    }
 }

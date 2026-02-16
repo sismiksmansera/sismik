@@ -199,6 +199,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/cek-presensi/data-per-tanggal', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getDataPerTanggal'])->name('cek-presensi.data-per-tanggal');
     Route::get('/cek-presensi/week-ranges', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getWeekRanges'])->name('cek-presensi.week-ranges');
     Route::get('/cek-presensi/data-per-minggu', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getDataPerMinggu'])->name('cek-presensi.data-per-minggu');
+    Route::get('/cek-presensi/search-siswa', [\App\Http\Controllers\Admin\CekPresensiController::class, 'searchSiswa'])->name('cek-presensi.search-siswa');
+    Route::get('/cek-presensi/data-per-siswa', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getDataPerSiswa'])->name('cek-presensi.data-per-siswa');
     // Guru BK Management
     Route::get('/guru-bk', [GuruBKController::class, 'index'])->name('guru-bk.index');
     Route::get('/guru-bk/create', [GuruBKController::class, 'create'])->name('guru-bk.create');
@@ -500,6 +502,8 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     Route::get('/cek-presensi/data-per-tanggal', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getDataPerTanggal'])->name('cek-presensi.data-per-tanggal');
     Route::get('/cek-presensi/week-ranges', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getWeekRanges'])->name('cek-presensi.week-ranges');
     Route::get('/cek-presensi/data-per-minggu', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getDataPerMinggu'])->name('cek-presensi.data-per-minggu');
+    Route::get('/cek-presensi/search-siswa', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'searchSiswa'])->name('cek-presensi.search-siswa');
+    Route::get('/cek-presensi/data-per-siswa', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'getDataPerSiswa'])->name('cek-presensi.data-per-siswa');
 });
 
 // Siswa Routes
