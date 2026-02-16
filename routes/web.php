@@ -154,6 +154,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/siswa/import', [SiswaController::class, 'processImport'])->name('siswa.import.process');
     Route::get('/siswa/import/periodic-template', [SiswaController::class, 'downloadPeriodicTemplate'])->name('siswa.import.periodic-template');
     Route::post('/siswa/import/periodic', [SiswaController::class, 'importPeriodicData'])->name('siswa.import.periodic');
+    Route::get('/siswa/export', [SiswaController::class, 'exportSiswa'])->name('siswa.export');
+    Route::post('/siswa/import-xlsx', [SiswaController::class, 'importSiswaXlsx'])->name('siswa.import.xlsx');
     
     // Login as Siswa (Impersonate)
     Route::get('/impersonate/siswa/{nisn}', [SiswaController::class, 'impersonate'])->name('siswa.impersonate');

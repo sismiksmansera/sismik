@@ -627,6 +627,314 @@ class SiswaController extends Controller
     }
 
     /**
+     * Export all siswa data to XLSX
+     */
+    public function exportSiswa()
+    {
+        $siswaList = Siswa::orderBy('nama', 'asc')->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Siswa');
+
+        // Define export columns (excluding password, foto fields, timestamps)
+        $columns = [
+            'nisn' => 'NISN',
+            'nis' => 'NIS',
+            'nama' => 'Nama',
+            'jk' => 'Jenis Kelamin',
+            'agama' => 'Agama',
+            'tempat_lahir' => 'Tempat Lahir',
+            'tgl_lahir' => 'Tanggal Lahir',
+            'angkatan_masuk' => 'Angkatan Masuk',
+            'nohp_siswa' => 'No HP Siswa',
+            'email' => 'Email',
+            'provinsi' => 'Provinsi',
+            'kota' => 'Kota',
+            'kecamatan' => 'Kecamatan',
+            'kelurahan' => 'Kelurahan',
+            'nama_bapak' => 'Nama Bapak',
+            'pekerjaan_bapak' => 'Pekerjaan Bapak',
+            'nohp_bapak' => 'No HP Bapak',
+            'nama_ibu' => 'Nama Ibu',
+            'pekerjaan_ibu' => 'Pekerjaan Ibu',
+            'nohp_ibu' => 'No HP Ibu',
+            'jml_saudara' => 'Jumlah Saudara',
+            'anak_ke' => 'Anak Ke',
+            'asal_sekolah' => 'Asal Sekolah',
+            'nilai_skl' => 'Nilai SKL',
+            'cita_cita' => 'Cita-cita',
+            'mapel_fav1' => 'Mapel Favorit 1',
+            'mapel_fav2' => 'Mapel Favorit 2',
+            'harapan' => 'Harapan',
+            'nama_rombel' => 'Nama Rombel',
+            'status_siswa' => 'Status Siswa',
+            'rombel_semester_1' => 'Rombel Semester 1',
+            'rombel_semester_2' => 'Rombel Semester 2',
+            'rombel_semester_3' => 'Rombel Semester 3',
+            'rombel_semester_4' => 'Rombel Semester 4',
+            'rombel_semester_5' => 'Rombel Semester 5',
+            'rombel_semester_6' => 'Rombel Semester 6',
+            'bk_semester_1' => 'BK Semester 1',
+            'bk_semester_2' => 'BK Semester 2',
+            'bk_semester_3' => 'BK Semester 3',
+            'bk_semester_4' => 'BK Semester 4',
+            'bk_semester_5' => 'BK Semester 5',
+            'bk_semester_6' => 'BK Semester 6',
+            'guru_wali_sem_1' => 'Guru Wali Sem 1',
+            'guru_wali_sem_2' => 'Guru Wali Sem 2',
+            'guru_wali_sem_3' => 'Guru Wali Sem 3',
+            'guru_wali_sem_4' => 'Guru Wali Sem 4',
+            'guru_wali_sem_5' => 'Guru Wali Sem 5',
+            'guru_wali_sem_6' => 'Guru Wali Sem 6',
+        ];
+
+        // Header row
+        $colIndex = 1;
+        foreach ($columns as $field => $label) {
+            $sheet->getCell([$colIndex, 1])->setValue($label);
+            $colIndex++;
+        }
+
+        // Header styling
+        $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($columns));
+        $headerRange = "A1:{$lastCol}1";
+        $sheet->getStyle($headerRange)->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFF'));
+        $sheet->getStyle($headerRange)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('7C3AED');
+        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($headerRange)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+        // Data rows
+        $row = 2;
+        foreach ($siswaList as $siswa) {
+            $colIndex = 1;
+            foreach ($columns as $field => $label) {
+                $val = $siswa->$field;
+
+                // Format date
+                if ($field === 'tgl_lahir' && $val) {
+                    $val = $val instanceof \Carbon\Carbon ? $val->format('Y-m-d') : $val;
+                }
+
+                // NISN & NIS as text
+                if (in_array($field, ['nisn', 'nis', 'nohp_siswa', 'nohp_bapak', 'nohp_ibu'])) {
+                    $sheet->getCell([$colIndex, $row])->setValueExplicit((string)$val, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                } else {
+                    $sheet->getCell([$colIndex, $row])->setValue($val);
+                }
+                $colIndex++;
+            }
+            $row++;
+        }
+
+        // Borders for data
+        if ($row > 2) {
+            $dataRange = "A1:{$lastCol}" . ($row - 1);
+            $sheet->getStyle($dataRange)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        }
+
+        // Auto-width
+        for ($i = 1; $i <= count($columns); $i++) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
+            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
+        // Freeze header row
+        $sheet->freezePane('A2');
+
+        $filename = 'Data_Siswa_' . date('Y-m-d') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
+     * Import siswa data from XLSX (upsert: update if NISN exists, insert if new)
+     */
+    public function importSiswaXlsx(Request $request)
+    {
+        $request->validate([
+            'file_siswa_xlsx' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
+
+        $file = $request->file('file_siswa_xlsx');
+        $path = $file->getRealPath();
+
+        $inserted = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = [];
+
+        // Column map: header label => database field
+        $columnMap = [
+            'NISN' => 'nisn',
+            'NIS' => 'nis',
+            'Nama' => 'nama',
+            'Jenis Kelamin' => 'jk',
+            'Agama' => 'agama',
+            'Tempat Lahir' => 'tempat_lahir',
+            'Tanggal Lahir' => 'tgl_lahir',
+            'Angkatan Masuk' => 'angkatan_masuk',
+            'No HP Siswa' => 'nohp_siswa',
+            'Email' => 'email',
+            'Provinsi' => 'provinsi',
+            'Kota' => 'kota',
+            'Kecamatan' => 'kecamatan',
+            'Kelurahan' => 'kelurahan',
+            'Nama Bapak' => 'nama_bapak',
+            'Pekerjaan Bapak' => 'pekerjaan_bapak',
+            'No HP Bapak' => 'nohp_bapak',
+            'Nama Ibu' => 'nama_ibu',
+            'Pekerjaan Ibu' => 'pekerjaan_ibu',
+            'No HP Ibu' => 'nohp_ibu',
+            'Jumlah Saudara' => 'jml_saudara',
+            'Anak Ke' => 'anak_ke',
+            'Asal Sekolah' => 'asal_sekolah',
+            'Nilai SKL' => 'nilai_skl',
+            'Cita-cita' => 'cita_cita',
+            'Mapel Favorit 1' => 'mapel_fav1',
+            'Mapel Favorit 2' => 'mapel_fav2',
+            'Harapan' => 'harapan',
+            'Nama Rombel' => 'nama_rombel',
+            'Status Siswa' => 'status_siswa',
+            'Rombel Semester 1' => 'rombel_semester_1',
+            'Rombel Semester 2' => 'rombel_semester_2',
+            'Rombel Semester 3' => 'rombel_semester_3',
+            'Rombel Semester 4' => 'rombel_semester_4',
+            'Rombel Semester 5' => 'rombel_semester_5',
+            'Rombel Semester 6' => 'rombel_semester_6',
+            'BK Semester 1' => 'bk_semester_1',
+            'BK Semester 2' => 'bk_semester_2',
+            'BK Semester 3' => 'bk_semester_3',
+            'BK Semester 4' => 'bk_semester_4',
+            'BK Semester 5' => 'bk_semester_5',
+            'BK Semester 6' => 'bk_semester_6',
+            'Guru Wali Sem 1' => 'guru_wali_sem_1',
+            'Guru Wali Sem 2' => 'guru_wali_sem_2',
+            'Guru Wali Sem 3' => 'guru_wali_sem_3',
+            'Guru Wali Sem 4' => 'guru_wali_sem_4',
+            'Guru Wali Sem 5' => 'guru_wali_sem_5',
+            'Guru Wali Sem 6' => 'guru_wali_sem_6',
+        ];
+
+        try {
+            $spreadsheet = IOFactory::load($path);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            if (empty($rows)) {
+                return redirect()->route('admin.siswa.import')
+                    ->withErrors(['file_siswa_xlsx' => 'File kosong']);
+            }
+
+            // Parse header row to determine column positions
+            $headerRow = array_shift($rows);
+            $fieldPositions = []; // position => db field
+            foreach ($headerRow as $pos => $headerLabel) {
+                $label = trim($headerLabel ?? '');
+                if (isset($columnMap[$label])) {
+                    $fieldPositions[$pos] = $columnMap[$label];
+                }
+            }
+
+            if (empty($fieldPositions)) {
+                return redirect()->route('admin.siswa.import')
+                    ->withErrors(['file_siswa_xlsx' => 'Header tidak dikenali. Gunakan file hasil export sebagai template.']);
+            }
+
+            // Find NISN column position
+            $nisnPos = array_search('nisn', $fieldPositions);
+            if ($nisnPos === false) {
+                return redirect()->route('admin.siswa.import')
+                    ->withErrors(['file_siswa_xlsx' => 'Kolom NISN tidak ditemukan di header.']);
+            }
+
+            foreach ($rows as $index => $rowData) {
+                try {
+                    $nisn = trim($rowData[$nisnPos] ?? '');
+                    if (empty($nisn)) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Build data array from row
+                    $data = [];
+                    foreach ($fieldPositions as $pos => $field) {
+                        if ($field === 'nisn') continue; // NISN handled separately
+                        $val = trim($rowData[$pos] ?? '');
+
+                        // Handle date field
+                        if ($field === 'tgl_lahir') {
+                            if (!empty($val)) {
+                                try {
+                                    $val = date('Y-m-d', strtotime($val));
+                                    if ($val === '1970-01-01') $val = null;
+                                } catch (\Exception $e) {
+                                    $val = null;
+                                }
+                            } else {
+                                $val = null;
+                            }
+                        }
+
+                        // Handle integer fields
+                        if (in_array($field, ['angkatan_masuk', 'jml_saudara', 'anak_ke'])) {
+                            $val = !empty($val) ? intval($val) : null;
+                        }
+
+                        // Handle decimal fields
+                        if ($field === 'nilai_skl') {
+                            $val = !empty($val) ? floatval($val) : null;
+                        }
+
+                        // Empty string to null for non-required fields
+                        if ($val === '' && !in_array($field, ['nama'])) {
+                            $val = null;
+                        }
+
+                        $data[$field] = $val;
+                    }
+
+                    // Check if exists
+                    $existingSiswa = Siswa::where('nisn', $nisn)->first();
+
+                    if ($existingSiswa) {
+                        // Update existing (don't overwrite password)
+                        $existingSiswa->update($data);
+                        $updated++;
+                    } else {
+                        // Insert new
+                        $data['nisn'] = $nisn;
+                        $data['password'] = Hash::make($nisn); // Default password = NISN
+                        if (empty($data['status_siswa'])) {
+                            $data['status_siswa'] = 'Aktif';
+                        }
+                        Siswa::create($data);
+                        $inserted++;
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = "Baris " . ($index + 2) . ": " . $e->getMessage();
+                }
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.siswa.import')
+                ->withErrors(['file_siswa_xlsx' => 'Gagal membaca file: ' . $e->getMessage()]);
+        }
+
+        $message = "Import selesai: $inserted data baru, $updated data diupdate, $skipped dilewati.";
+        if (!empty($errors)) {
+            $message .= " (" . count($errors) . " error)";
+        }
+
+        return redirect()->route('admin.siswa.import')
+            ->with('success', $message);
+    }
+
+    /**
      * Upload photo
      */
     public function uploadPhoto(Request $request, $id)

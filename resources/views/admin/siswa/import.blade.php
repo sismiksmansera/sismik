@@ -230,6 +230,71 @@
             </form>
         </div>
 
+        <!-- Export & Import Data Siswa XLSX -->
+        <div class="import-card" style="margin-top: 30px;">
+            <h2 style="margin-bottom: 20px; font-size: 20px; color: var(--gray-700);">
+                <i class="fas fa-file-excel" style="color: #10B981;"></i> Export & Import Data Siswa (XLSX)
+            </h2>
+            <p style="color: var(--gray-600); margin-bottom: 20px;">
+                Export seluruh data siswa ke Excel, edit di Excel, lalu import kembali untuk update atau tambah data baru.
+            </p>
+
+            <!-- Export Button -->
+            <div class="template-box" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">
+                <div class="template-text">
+                    <h4><i class="fas fa-download"></i> Export Data Siswa</h4>
+                    <p>Download seluruh data siswa ke file Excel (.xlsx)</p>
+                </div>
+                <a href="{{ route('admin.siswa.export') }}" class="btn btn-light" style="color: #059669;">
+                    <i class="fas fa-file-excel"></i> Download Excel
+                </a>
+            </div>
+
+            <form action="{{ route('admin.siswa.import.xlsx') }}" method="POST" enctype="multipart/form-data" id="siswaXlsxImportForm">
+                @csrf
+
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="dropZoneSiswaXlsx" onclick="document.getElementById('fileInputSiswaXlsx').click()" style="border-color: #10B981;">
+                    <i class="fas fa-cloud-upload-alt" style="color: #10B981;"></i>
+                    <h3>Drag & Drop file Excel Data Siswa</h3>
+                    <p>atau klik untuk memilih file</p>
+                    <p style="margin-top: 10px;"><strong>Format: .xlsx</strong> | Maksimal: 10MB</p>
+                </div>
+                <input type="file" name="file_siswa_xlsx" id="fileInputSiswaXlsx" accept=".xlsx,.xls" style="display: none;">
+
+                <!-- File Info -->
+                <div class="file-info" id="fileInfoSiswaXlsx" style="background: #d1fae5;">
+                    <i class="fas fa-file-excel" style="color: #059669;"></i>
+                    <div>
+                        <div class="file-name" id="fileNameSiswaXlsx" style="color: #065f46;">-</div>
+                        <div class="file-size" id="fileSizeSiswaXlsx">-</div>
+                    </div>
+                    <button type="button" onclick="removeFileSiswaXlsx()" style="margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box" style="background: #d1fae5; border-left: 4px solid #10b981;">
+                    <h4 style="color: #065f46;"><i class="fas fa-lightbulb" style="color: #10b981;"></i> Cara Penggunaan</h4>
+                    <ul style="color: #065f46;">
+                        <li><strong>Export</strong> data siswa terlebih dahulu sebagai template</li>
+                        <li>Edit data di Excel (ubah, tambah baris baru)</li>
+                        <li><strong>Import</strong> kembali file yang sudah diedit</li>
+                        <li>Data dengan <strong>NISN yang sudah ada</strong> akan di-<strong>update</strong></li>
+                        <li>Data dengan <strong>NISN baru</strong> akan ditambahkan (password default = NISN)</li>
+                        <li><strong>Jangan ubah header</strong> kolom di baris pertama</li>
+                    </ul>
+                </div>
+
+                <div class="btn-group-action">
+                    <button type="submit" class="btn" style="background: linear-gradient(135deg, #10B981, #059669); color: white;" id="submitBtnSiswaXlsx" disabled>
+                        <i class="fas fa-upload"></i> Import Data Siswa
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <!-- Periodic Data Import Section -->
         <div class="import-card" style="margin-top: 30px;">
             <h2 style="margin-bottom: 20px; font-size: 20px; color: var(--gray-700);">
@@ -412,6 +477,57 @@
         fileInfoPeriodic.classList.remove('show');
         dropZonePeriodic.style.display = 'block';
         submitBtnPeriodic.disabled = true;
+    }
+
+    // ==========================================
+    // SISWA XLSX IMPORT HANDLERS
+    // ==========================================
+    const dropZoneSiswaXlsx = document.getElementById('dropZoneSiswaXlsx');
+    const fileInputSiswaXlsx = document.getElementById('fileInputSiswaXlsx');
+    const fileInfoSiswaXlsx = document.getElementById('fileInfoSiswaXlsx');
+    const submitBtnSiswaXlsx = document.getElementById('submitBtnSiswaXlsx');
+
+    dropZoneSiswaXlsx.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZoneSiswaXlsx.classList.add('dragover');
+    });
+    dropZoneSiswaXlsx.addEventListener('dragleave', () => {
+        dropZoneSiswaXlsx.classList.remove('dragover');
+    });
+    dropZoneSiswaXlsx.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZoneSiswaXlsx.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInputSiswaXlsx.files = e.dataTransfer.files;
+            showFileInfoSiswaXlsx(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInputSiswaXlsx.addEventListener('change', function() {
+        if (this.files.length) {
+            showFileInfoSiswaXlsx(this.files[0]);
+        }
+    });
+
+    function showFileInfoSiswaXlsx(file) {
+        if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+            alert('Hanya file Excel (.xlsx/.xls) yang diperbolehkan!');
+            fileInputSiswaXlsx.value = '';
+            return;
+        }
+
+        document.getElementById('fileNameSiswaXlsx').textContent = file.name;
+        document.getElementById('fileSizeSiswaXlsx').textContent = (file.size / 1024).toFixed(2) + ' KB';
+        fileInfoSiswaXlsx.classList.add('show');
+        dropZoneSiswaXlsx.style.display = 'none';
+        submitBtnSiswaXlsx.disabled = false;
+    }
+
+    function removeFileSiswaXlsx() {
+        fileInputSiswaXlsx.value = '';
+        fileInfoSiswaXlsx.classList.remove('show');
+        dropZoneSiswaXlsx.style.display = 'block';
+        submitBtnSiswaXlsx.disabled = true;
     }
 </script>
 @endpush
