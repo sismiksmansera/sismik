@@ -722,8 +722,8 @@ class CekPresensiController extends Controller
                     'status' => $status, // H, S, I, A, or null (null = belum presensi)
                 ];
 
-                // Count for percentage: only count JP that has jadwal
-                if ($mapel) {
+                // Count for percentage: only count JP where presensi was done
+                if ($status !== null) {
                     $totalJp++;
                     if ($status === 'H') $totalHadir++;
                 }
