@@ -102,6 +102,7 @@
                             {{ $mapel }}
                         </th>
                         @endforeach
+                        <th rowspan="2" style="width: 40px; background: #f59e0b;">Jumlah</th>
                         <th rowspan="2" style="width: 40px; background: #dc2626;">Rata-rata</th>
                         <th rowspan="2" style="width: 35px; background: #7c3aed;">Rank</th>
                     </tr>
@@ -127,7 +128,8 @@
                         <td class="{{ $class }}">{{ $nilai }}</td>
                         @endforeach
                         
-                        <td class="rata-rata-col">{{ $student['rata_rata'] }}</td>
+                        <td class="total-col">{{ $student['jumlah'] }}</td>
+                        <td class="rata-rata-col">{{ $student['rata_rata_display'] }}</td>
                         <td class="ranking-col">{{ $student['ranking'] }}</td>
                     </tr>
                     @endforeach

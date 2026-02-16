@@ -104,22 +104,63 @@ class LegerController extends Controller
                 $mapelDisplayNames[] = ucwords(str_replace('_', ' ', $col));
             }
             
+            
+            // Format student data with calculations
             $students = [];
             foreach ($katrolData as $row) {
                 $nilai = [];
+                $totalNilai = 0;
+                $countNilai = 0;
+                
                 foreach ($activeMapels as $col) {
                     $displayName = ucwords(str_replace('_', ' ', $col));
-                    $nilai[$displayName] = property_exists($row, $col) ? ($row->$col ?? '-') : '-';
+                    $nilaiVal = property_exists($row, $col) ? ($row->$col ?? '-') : '-';
+                    $nilai[$displayName] = $nilaiVal;
+                    
+                    // Calculate total and count for average (exclude IPA/IPS averages)
+                    if ($nilaiVal !== '-' && $nilaiVal !== null && is_numeric($nilaiVal) && !in_array($col, ['ipa', 'ips'])) {
+                        $totalNilai += floatval($nilaiVal);
+                        $countNilai++;
+                    }
                 }
+                
+                // Calculate rata-rata
+                $rataRata = $countNilai > 0 ? $totalNilai / $countNilai : 0;
                 
                 $students[] = [
                     'nisn' => property_exists($row, 'nisn') ? $row->nisn : '-',
-                    'nama_siswa' => property_exists($row, 'nama_siswa') ? $row->nama_siswa : (property_exists($row, 'nama') ? $row->nama : 'Unknown'),
+                    'nama_siswa' => property_exists($row, 'nama_siswa') ? $row->nama_siswa : 'Unknown',
                     'nilai' => $nilai,
-                    'rata_rata' => property_exists($row, 'rata_rata') ? number_format($row->rata_rata, 2) : '0.00',
-                    'ranking' => property_exists($row, 'ranking') ? $row->ranking : '-'
+                    'jumlah' => $totalNilai, // Total sum
+                    'rata_rata' => $rataRata, // Average for sorting
+                    'rata_rata_display' => number_format($rataRata, 2), // Formatted for display
+                    'ranking' => 0 // Will be assigned after sorting
                 ];
             }
+            
+            // Sort by rata-rata descending to assign ranking
+            usort($students, function($a, $b) {
+                return $b['rata_rata'] <=> $a['rata_rata'];
+            });
+            
+            // Assign ranking
+            $currentRank = 1;
+            $previousAverage = null;
+            $sameRankCount = 0;
+            
+            foreach ($students as $index => &$student) {
+                if ($previousAverage !== null && $student['rata_rata'] < $previousAverage) {
+                    $currentRank += $sameRankCount;
+                    $sameRankCount = 1;
+                } else {
+                    $sameRankCount++;
+                }
+                
+                $student['ranking'] = $currentRank;
+                $previousAverage = $student['rata_rata'];
+            }
+            unset($student); // Break reference
+
             
             return response()->json(['students' => $students, 'mapels' => $mapelDisplayNames]);
         } catch (\Exception $e) {
@@ -204,22 +245,58 @@ class LegerController extends Controller
             $mapelDisplayNames[] = ucwords(str_replace('_', ' ', $col));
         }
         
+        // Format student data with calculations
         $students = [];
         foreach ($katrolData as $row) {
             $nilai = [];
+            $totalNilai = 0;
+            $countNilai = 0;
+            
             foreach ($activeMapels as $col) {
                 $displayName = ucwords(str_replace('_', ' ', $col));
-                $nilai[$displayName] = property_exists($row, $col) ? ($row->$col ?? '-') : '-';
+                $nilaiVal = property_exists($row, $col) ? ($row->$col ?? '-') : '-';
+                $nilai[$displayName] = $nilaiVal;
+                
+                if ($nilaiVal !== '-' && $nilaiVal !== null && is_numeric($nilaiVal) && !in_array($col, ['ipa', 'ips'])) {
+                    $totalNilai += floatval($nilaiVal);
+                    $countNilai++;
+                }
             }
+            
+            $rataRata = $countNilai > 0 ? $totalNilai / $countNilai : 0;
             
             $students[] = [
                 'nisn' => property_exists($row, 'nisn') ? $row->nisn : '-',
                 'nama_siswa' => property_exists($row, 'nama_siswa') ? $row->nama_siswa : 'Unknown',
                 'nilai' => $nilai,
-                'rata_rata' => '0.00', // Will be calculated in view if needed
-                'ranking' => '-'
+                'jumlah' => $totalNilai,
+                'rata_rata' => $rataRata,
+                'rata_rata_display' => number_format($rataRata, 2),
+                'ranking' => 0
             ];
         }
+        
+        // Sort by rata-rata descending and assign ranking
+        usort($students, function($a, $b) {
+            return $b['rata_rata'] <=> $a['rata_rata'];
+        });
+        
+        $currentRank = 1;
+        $previousAverage = null;
+        $sameRankCount = 0;
+        
+        foreach ($students as $index => &$student) {
+            if ($previousAverage !== null && $student['rata_rata'] < $previousAverage) {
+                $currentRank += $sameRankCount;
+                $sameRankCount = 1;
+            } else {
+                $sameRankCount++;
+            }
+            
+            $student['ranking'] = $currentRank;
+            $previousAverage = $student['rata_rata'];
+        }
+        unset($student);
         
         return view('admin.leger.print-leger', [
             'rombelNama' => $rombel->nama_rombel,

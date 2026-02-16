@@ -287,6 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `<th rowspan="2">${mapel}</th>`;
         });
         
+        html += '<th rowspan="2">Jumlah</th>';
         html += '<th rowspan="2">Rata-rata</th>';
         html += '<th rowspan="2">Ranking</th>';
         html += '</tr></thead><tbody>';
