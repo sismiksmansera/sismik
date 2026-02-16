@@ -610,27 +610,29 @@ class CekPresensiController extends Controller
                 ->value('id');
         }
 
-        // Get jadwal_pelajaran for this rombel
-        // Structure: $jadwalByHari['Senin'][1] = ['mapel' => '...', 'guru' => '...']
-        $jadwalByHari = [];
+        // Get jadwal_pelajaran for this rombel WITH periode_jadwal for validity
+        // Store with period info so we can filter per-date later
+        // Structure: $jadwalAll[] = ['hari'=>..., 'jam_ke'=>..., 'mapel'=>..., 'guru'=>..., 'mulai'=>..., 'akhir'=>...]
+        $jadwalAll = [];
         if ($rombelId) {
             $jadwalRecords = DB::table('jadwal_pelajaran as jp')
                 ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
+                ->join('periode_jadwal as pj', DB::raw('jp.kode_jadwal COLLATE utf8mb4_unicode_ci'), '=', 'pj.kode')
                 ->where('jp.id_rombel', $rombelId)
                 ->where('jp.tahun_pelajaran', $tahunPelajaran)
                 ->whereRaw('LOWER(jp.semester) = ?', [$semesterAktif])
-                ->select('jp.hari', 'jp.jam_ke', 'mp.nama_mapel', 'jp.nama_guru')
+                ->select('jp.hari', 'jp.jam_ke', 'mp.nama_mapel', 'jp.nama_guru', 'pj.tanggal_mulai', 'pj.tanggal_akhir')
                 ->get();
 
             foreach ($jadwalRecords as $j) {
-                $hari = $j->hari;
-                $jamKe = (int)$j->jam_ke;
-                if (!isset($jadwalByHari[$hari][$jamKe])) {
-                    $jadwalByHari[$hari][$jamKe] = [
-                        'mapel' => $j->nama_mapel,
-                        'guru' => $j->nama_guru,
-                    ];
-                }
+                $jadwalAll[] = [
+                    'hari' => $j->hari,
+                    'jam_ke' => (int)$j->jam_ke,
+                    'mapel' => $j->nama_mapel,
+                    'guru' => $j->nama_guru,
+                    'mulai' => $j->tanggal_mulai,
+                    'akhir' => $j->tanggal_akhir,
+                ];
             }
         }
 
@@ -692,11 +694,22 @@ class CekPresensiController extends Controller
             ]);
         }
 
-        // Build result: for each date, show ALL jadwal JP slots + presensi overlay
+        // Build result: for each date, get jadwal valid FOR THAT DATE + presensi overlay
         $result = [];
         foreach ($presensiByDate as $tgl => $presensiJp) {
             $hari = $dayMap[date('l', strtotime($tgl))] ?? '';
-            $jadwalHari = $jadwalByHari[$hari] ?? [];
+
+            // Filter jadwal entries valid for this specific date and day
+            $jadwalHari = [];
+            foreach ($jadwalAll as $jd) {
+                if ($jd['hari'] !== $hari) continue;
+                if ($jd['mulai'] > $tgl) continue; // jadwal belum berlaku
+                if ($jd['akhir'] !== null && $jd['akhir'] < $tgl) continue; // jadwal sudah expired
+                $jp = $jd['jam_ke'];
+                if (!isset($jadwalHari[$jp])) {
+                    $jadwalHari[$jp] = ['mapel' => $jd['mapel'], 'guru' => $jd['guru']];
+                }
+            }
 
             // Merge: all JP that appear in jadwal OR in presensi
             $allJps = array_unique(array_merge(array_keys($jadwalHari), array_keys($presensiJp)));
