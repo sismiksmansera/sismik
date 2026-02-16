@@ -673,7 +673,7 @@ class GuruController extends Controller
         $listJadwal = \DB::table('jadwal_pelajaran as jp')
             ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
             ->join('rombel as r', 'jp.id_rombel', '=', 'r.id')
-            ->leftJoin('periode_jadwal as pj', DB::raw('jp.kode_jadwal COLLATE utf8mb4_unicode_ci'), '=', 'pj.kode')
+            ->leftJoin('periode_jadwal as pj', \DB::raw('jp.kode_jadwal COLLATE utf8mb4_unicode_ci'), '=', 'pj.kode')
             ->where('jp.nama_guru', $guruNama)
             ->where('jp.tahun_pelajaran', $filterTahun)
             ->where('jp.semester', $semesterJadwal)
