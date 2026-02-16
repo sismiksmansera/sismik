@@ -80,13 +80,12 @@ class LegerController extends Controller
             }
             
             $allMapelColumns = [
-                'pendidikan_agama_dan_budi_pekerti', 'pendidikan_pancasila', 'bahasa_indonesia',
-                'matematika', 'sejarah_indonesia', 'bahasa_inggris', 'seni_budaya',
-                'pendidikan_jasmani_olahraga_dan_kesehatan', 'prakarya_dan_kewirausahaan',
-                'matematika_peminatan', 'biologi', 'fisika', 'kimia', 'ekonomi',
-                'geografi', 'sosiologi', 'sejarah_peminatan', 'bahasa_dan_sastra_indonesia',
-                'bahasa_dan_sastra_inggris', 'antropologi', 'bahasa_dan_sastra_asing_lainnya',
-                'informatika', 'bimbingan_konseling', 'mulok', 'ipa_average', 'ips_average'
+                'bahasa_indonesia', 'bahasa_inggris', 'bahasa_inggris_lanjut', 'bahasa_lampung',
+                'biologi', 'ekonomi', 'fisika', 'geografi', 'informatika', 'kimia', 'kka',
+                'matematika', 'matematika_lanjut', 'pendidikan_agama_buddha', 'pendidikan_agama_hindu',
+                'pendidikan_agama_islam', 'pendidikan_agama_katholik', 'pendidikan_agama_kristen',
+                'pendidikan_kewarganegaraan', 'pjok', 'prakarya_dan_kewirausahaan',
+                'sejarah', 'seni_budaya', 'sosiologi', 'ipa', 'ips'
             ];
             
             $activeMapels = [];
