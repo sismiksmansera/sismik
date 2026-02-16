@@ -506,7 +506,8 @@
     .jp-table { border-collapse: collapse; width: 100%; font-size: 8px; min-width: 0 !important; table-layout: fixed; }
     .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 0px 1px !important; text-align: center; word-wrap: break-word; overflow: hidden; }
     .jp-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 7px; line-height: 1.2; padding: 3px 1px !important; }
-    .jp-table td { line-height: 0.5; }
+    .jp-table tbody tr { height: 12px; }
+    .jp-table td { line-height: 1; padding: 0px 1px !important; font-size: 7px; }
     .jp-table col.col-no { width: 1.5%; }
     .jp-table col.col-nisn { width: 10%; }
     .jp-table col.col-nama { width: 25%; }
