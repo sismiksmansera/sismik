@@ -554,7 +554,9 @@
     .persen-badge.low { background: #fee2e2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .persen-badge.none { background: #f3f4f6 !important; color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-    /* Minggu-specific badge size (same as tanggal since table is simpler now) */
+    /* Minggu-specific: hide screen table, show print table */
+    body.print-minggu #mingguTableWrapperScreen { display: none !important; }
+    body.print-minggu #mingguTableWrapperPrint { display: block !important; }
     body.print-minggu .persen-badge { font-size: 8px !important; padding: 0px 2px !important; }
 
     /* Print headers & footers */
@@ -837,11 +839,20 @@
                         <button class="print-btn" onclick="printPerMinggu()" style="display:none;" id="btnCetakMinggu"><i class="fas fa-print"></i> Cetak</button>
                     </div>
                 </div>
-                <div class="minggu-table-wrapper">
+                <div class="minggu-table-wrapper" id="mingguTableWrapperScreen">
                     <table class="minggu-table" id="mingguTable">
                         <thead id="mingguTableHeader">
                         </thead>
                         <tbody id="mingguTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Print-only simplified table (hidden on screen) -->
+                <div class="minggu-table-wrapper" id="mingguTableWrapperPrint" style="display:none;">
+                    <table class="minggu-table" id="mingguPrintTable">
+                        <thead id="mingguPrintHeader">
+                        </thead>
+                        <tbody id="mingguPrintBody">
                         </tbody>
                     </table>
                 </div>
@@ -1656,18 +1667,27 @@ function loadDataPerMinggu() {
                 document.getElementById('mingguSiswaCount').textContent = data.total_siswa + ' Siswa';
                 document.getElementById('btnCetakMinggu').style.display = 'inline-block';
                 
-                // Build header with dates (only percentage per day)
-                let headerHtml = '<tr><th>No</th><th>NISN</th><th>Nama Siswa</th>';
+                // Store data for print use
+                window.mingguPrintData = data;
+
+                // Build header with dates (detailed JP view for screen)
+                let headerHtml = '<tr><th rowspan="2">No</th><th rowspan="2">NISN</th><th rowspan="2">Nama Siswa</th>';
                 data.dates.forEach(date => {
                     const d = new Date(date);
                     const dayName = hariNames[d.getDay()];
                     const formatted = d.toLocaleDateString('id-ID', {day:'2-digit', month:'short'});
-                    headerHtml += `<th class="date-header">${dayName}<br>${formatted}</th>`;
+                    headerHtml += `<th colspan="10" class="date-header">${dayName}, ${formatted}</th>`;
                 });
-                headerHtml += '<th>% Minggu</th></tr>';
+                headerHtml += '<th rowspan="2">% Hadir</th></tr><tr>';
+                data.dates.forEach(() => {
+                    for (let jp = 1; jp <= 10; jp++) {
+                        headerHtml += `<th>JP${jp}</th>`;
+                    }
+                });
+                headerHtml += '</tr>';
                 thead.innerHTML = headerHtml;
 
-                // Build body - calculate daily percentage from JP data
+                // Build body (detailed JP view for screen)
                 let bodyHtml = '';
                 data.data.forEach(row => {
                     bodyHtml += `<tr>
@@ -1676,28 +1696,18 @@ function loadDataPerMinggu() {
                         <td><strong>${escapeHtml(row.nama)}</strong></td>`;
                     
                     data.dates.forEach(date => {
-                        let totalJp = 0, hadirJp = 0;
                         for (let jp = 1; jp <= 10; jp++) {
                             const key = `${date}_jp_${jp}`;
                             const val = row[key];
                             if (val && val !== '-' && val !== '') {
-                                totalJp++;
-                                if (val === 'H') hadirJp++;
+                                bodyHtml += `<td><span class="jp-badge ${val}">${val}</span></td>`;
+                            } else {
+                                bodyHtml += `<td><span class="jp-badge empty">-</span></td>`;
                             }
-                        }
-                        if (totalJp > 0) {
-                            const pct = Math.round((hadirJp / totalJp) * 100);
-                            let pClass = 'none';
-                            if (pct >= 80) pClass = 'high';
-                            else if (pct >= 50) pClass = 'mid';
-                            else pClass = 'low';
-                            bodyHtml += `<td><span class="persen-badge ${pClass}">${pct}%</span></td>`;
-                        } else {
-                            bodyHtml += `<td><span class="persen-badge none">-</span></td>`;
                         }
                     });
 
-                    // Weekly percentage
+                    // Percentage
                     if (row.prosentase !== null) {
                         let pClass = 'none';
                         if (row.prosentase >= 80) pClass = 'high';
@@ -1754,6 +1764,12 @@ function printPerMinggu() {
         return;
     }
     
+    const data = window.mingguPrintData;
+    if (!data) {
+        showToast('Data belum dimuat', 'error');
+        return;
+    }
+
     // Populate print header
     document.getElementById('printRombelMinggu').textContent = selectedRombelMinggu.name;
     const dStart = new Date(selectedWeekStart);
@@ -1762,7 +1778,60 @@ function printPerMinggu() {
     const fEnd = dEnd.toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'});
     document.getElementById('printPeriodeMinggu').textContent = `${fStart} - ${fEnd}`;
     
-    // Set page to landscape for minggu
+    // Build simplified print table (percentage per day only)
+    let headerHtml = '<tr><th>No</th><th>NISN</th><th>Nama Siswa</th>';
+    data.dates.forEach(date => {
+        const d = new Date(date);
+        const dayName = hariNames[d.getDay()];
+        const formatted = d.toLocaleDateString('id-ID', {day:'2-digit', month:'short'});
+        headerHtml += `<th class="date-header">${dayName}<br>${formatted}</th>`;
+    });
+    headerHtml += '<th>% Minggu</th></tr>';
+    document.getElementById('mingguPrintHeader').innerHTML = headerHtml;
+
+    let bodyHtml = '';
+    data.data.forEach(row => {
+        bodyHtml += `<tr>
+            <td>${row.no}</td>
+            <td>${escapeHtml(row.nisn)}</td>
+            <td><strong>${escapeHtml(row.nama)}</strong></td>`;
+        
+        data.dates.forEach(date => {
+            let totalJp = 0, hadirJp = 0;
+            for (let jp = 1; jp <= 10; jp++) {
+                const key = `${date}_jp_${jp}`;
+                const val = row[key];
+                if (val && val !== '-' && val !== '') {
+                    totalJp++;
+                    if (val === 'H') hadirJp++;
+                }
+            }
+            if (totalJp > 0) {
+                const pct = Math.round((hadirJp / totalJp) * 100);
+                let pClass = 'none';
+                if (pct >= 80) pClass = 'high';
+                else if (pct >= 50) pClass = 'mid';
+                else pClass = 'low';
+                bodyHtml += `<td><span class="persen-badge ${pClass}">${pct}%</span></td>`;
+            } else {
+                bodyHtml += `<td><span class="persen-badge none">-</span></td>`;
+            }
+        });
+
+        if (row.prosentase !== null) {
+            let pClass = 'none';
+            if (row.prosentase >= 80) pClass = 'high';
+            else if (row.prosentase >= 50) pClass = 'mid';
+            else pClass = 'low';
+            bodyHtml += `<td><span class="persen-badge ${pClass}">${row.prosentase}%</span></td>`;
+        } else {
+            bodyHtml += `<td><span class="persen-badge none">-</span></td>`;
+        }
+        bodyHtml += '</tr>';
+    });
+    document.getElementById('mingguPrintBody').innerHTML = bodyHtml;
+    
+    // Set page style for portrait
     let styleEl = document.getElementById('printPageStyle');
     if (!styleEl) {
         styleEl = document.createElement('style');
