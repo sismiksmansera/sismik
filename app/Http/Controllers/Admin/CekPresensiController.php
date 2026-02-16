@@ -21,11 +21,11 @@ class CekPresensiController extends Controller
 
         // Get all rombel for active period (unique only)
         $rombelList = DB::table('rombel')
-            ->select('id', 'nama_rombel', 'tingkat')
+            ->selectRaw('MIN(id) as id, nama_rombel, MIN(tingkat) as tingkat')
             ->where('tahun_pelajaran', $tahunPelajaran)
             ->where('semester', $semesterAktif)
             ->groupBy('nama_rombel')
-            ->orderBy('tingkat')
+            ->orderByRaw('MIN(tingkat)')
             ->orderBy('nama_rombel')
             ->get();
 
