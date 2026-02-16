@@ -412,8 +412,8 @@ class RombelController extends Controller
                 SELECT p.nisn, p.mapel, AVG(p.nilai) as rata_nilai
                 FROM penilaian p
                 WHERE p.nisn COLLATE utf8mb4_general_ci IN ({$nisnIn})
-                  AND p.tahun_pelajaran COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
-                  AND p.semester COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
+                  AND p.tahun_pelajaran COLLATE utf8mb4_general_ci = ?
+                  AND p.semester COLLATE utf8mb4_general_ci = ?
                 GROUP BY p.nisn, p.mapel
                 ORDER BY p.mapel, p.nisn
             ", [$tahunAktif, $semesterAktif]);
