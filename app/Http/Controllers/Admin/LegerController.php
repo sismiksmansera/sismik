@@ -414,7 +414,7 @@ class LegerController extends Controller
         $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($lastColIndex);
         
         $sheet->mergeCells("A1:{$lastCol}1");
-        $sheet->setCellValue('A1', 'LEGER NILAI SISWA (KATROL)');
+        $sheet->setCellValue('A1', 'LEGER NILAI SISWA');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         

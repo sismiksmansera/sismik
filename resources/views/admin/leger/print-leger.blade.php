@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leger Nilai Katrol - {{ $rombelNama }}</title>
+    <title>Leger Nilai - {{ $rombelNama }}</title>
     <style>
         @media print {
             .no-print { display: none !important; }
@@ -85,7 +85,7 @@
         
         <!-- JUDUL -->
         <div style="text-align: center; margin-bottom: 10px;">
-            <h1 style="margin: 0; font-size: 12pt; font-weight: 700; text-decoration: underline;">LEGER NILAI SISWA <span style="color: #dc2626;">(KATROL)</span></h1>
+            <h1 style="margin: 0; font-size: 12pt; font-weight: 700; text-decoration: underline;">LEGER NILAI SISWA</h1>
             <p style="margin: 3px 0; font-size: 9pt;">Kelas: <strong>{{ $rombelNama }}</strong> | Tahun Pelajaran: <strong>{{ $tahun }}</strong> | Semester: <strong>{{ $semester }}</strong></p>
         </div>
         
