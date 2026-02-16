@@ -610,11 +610,9 @@ class CekPresensiController extends Controller
         // Get student name
         $namaSiswa = $records->first()->nama_siswa ?? $nisn;
 
-        // Get rombel
-        $rombel = DB::table('rombel')
-            ->where(DB::raw('nisn COLLATE utf8mb4_general_ci'), $nisn)
-            ->where('tahun_pelajaran', $tahunPelajaran)
-            ->where('semester', $periodik->semester ?? 'Ganjil')
+        // Get rombel from siswa table directly
+        $rombel = DB::table('siswa')
+            ->where('nisn', $nisn)
             ->value('nama_rombel') ?? '-';
 
         // Group by date and merge JP data

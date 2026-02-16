@@ -1387,7 +1387,6 @@ function loadDataPerSiswa() {
                 document.getElementById('siswaInfoNama').textContent = data.nama_siswa;
                 document.getElementById('siswaInfoNisn').textContent = data.nisn;
                 document.getElementById('siswaInfoRombel').textContent = data.rombel;
-                document.getElementById('siswaHariCount').textContent = data.total_hari + ' hari';
 
                 // Build cards
                 let html = '<div style="display:grid; gap:12px;">';
@@ -1436,7 +1435,6 @@ function loadDataPerSiswa() {
                 document.getElementById('siswaInfoNama').textContent = selectedSiswa.nama;
                 document.getElementById('siswaInfoNisn').textContent = selectedSiswa.nisn;
                 document.getElementById('siswaInfoRombel').textContent = selectedSiswa.rombel;
-                document.getElementById('siswaHariCount').textContent = '0 hari';
                 container.innerHTML = '<div style="text-align:center; padding:40px 20px;"><i class="fas fa-inbox" style="font-size:48px; color:#d1d5db; margin-bottom:12px; display:block;"></i><p style="color:#6b7280; margin:0;">Tidak ada data presensi ditemukan</p></div>';
             }
         })
