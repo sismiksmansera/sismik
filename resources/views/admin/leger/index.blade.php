@@ -217,35 +217,52 @@ document.addEventListener('DOMContentLoaded', function() {
         const tahun = tahunInput.value;
         const semester = semesterInput.value;
         
+        console.log('=== LEGER DEBUG ===');
+        console.log('Rombel ID:', rombelId);
+        console.log('Tahun:', tahun);
+        console.log('Semester:', semester);
+        
         if (!rombelId) return;
         
         this.disabled = true;
         this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
         
-        // Fetch leger data
-        fetch(`/admin/leger/data?rombel_id=${rombelId}&tahun=${tahun}&semester=${semester}`)
-        .then(response => response.json())
+        const url = `/admin/leger/data?rombel_id=${rombelId}&tahun=${tahun}&semester=${semester}`;
+        console.log('Fetching from:', url);
+        
+        fetch(url)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Received data:', data);
+            console.log('Students count:', data.students ? data.students.length : 0);
+            console.log('Mapels count:', data.mapels ? data.mapels.length : 0);
             displayLeger(data);
             btnShowLeger.disabled = false;
             btnShowLeger.innerHTML = '<i class="fas fa-eye"></i> Tampilkan Leger';
             legerContainer.style.display = 'block';
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Gagal memuat data leger');
+            console.error('Fetch error:', error);
+            alert('Gagal memuat data leger: ' + error.message);
             btnShowLeger.disabled = false;
             btnShowLeger.innerHTML = '<i class="fas fa-eye"></i> Tampilkan Leger';
         });
     });
     
     function displayLeger(data) {
+        console.log('displayLeger called with:', data);
         const wrapper = document.getElementById('legerTableWrapper');
         
         if (!data.students || data.students.length === 0) {
+            console.log('No students data');
             wrapper.innerHTML = '<p class="text-center text-muted">Tidak ada data leger untuk rombel ini</p>';
             return;
         }
+        
+        console.log('Generating table for', data.students.length, 'students');
         
         let html = '<table class="leger-table"><thead><tr>';
         html += '<th rowspan="2">No</th>';
@@ -265,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data.students.forEach((student, index) => {
             html += '<tr>';
             html += `<td>${index + 1}</td>`;
-            html += `< td>${student.nisn}</td>`;
+            html += `<td>${student.nisn}</td>`;
             html += `<td style="text-align: left;">${student.nama_siswa}</td>`;
             
             data.mapels.forEach(mapel => {

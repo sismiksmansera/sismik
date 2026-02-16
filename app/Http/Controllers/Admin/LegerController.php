@@ -133,6 +133,34 @@ class LegerController extends Controller
             return response()->json(['error' => true, 'message' => $e->getMessage()], 500);
         }
     }
+    
+    /**
+     * Debug endpoint - check raw data
+     */
+    public function debugLegerData(Request $request)
+    {
+        $rombelId = $request->query('rombel_id');
+        $tahun = $request->query('tahun');
+        $semester = $request->query('semester');
+        
+        $rombel = \App\Models\Rombel::find($rombelId);
+        
+        $rawData = DB::table('katrol_nilai_leger')
+            ->where('nama_rombel', $rombel->nama_rombel)
+            ->where('tahun_pelajaran', $tahun)
+            ->where('semester', $semester)
+            ->get();
+        
+        return response()->json([
+            'rombel_id' => $rombelId,
+            'rombel_name' => $rombel->nama_rombel ?? 'NOT FOUND',
+            'tahun' => $tahun,
+            'semester' => $semester,
+            'query_result_count' => $rawData->count(),
+            'raw_data' => $rawData->take(2),
+            'columns' => $rawData->isNotEmpty() ? array_keys((array)$rawData->first()) : []
+        ]);
+    }
     /**
      * Print Leger Nilai (Original grades)
      */
