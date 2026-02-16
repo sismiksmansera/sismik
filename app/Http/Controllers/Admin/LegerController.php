@@ -515,7 +515,8 @@ class LegerController extends Controller
         // Output
         $safeRombel = preg_replace('/[\/\\\\:*?"<>|]/', '_', $rombel->nama_rombel);
         $safeRombel = str_replace(' ', '_', $safeRombel);
-        $filename = "Leger_{$safeRombel}_{$tahun}_Smt{$semester}.xlsx";
+        $safeTahun = str_replace('/', '-', $tahun);
+        $filename = "Leger_{$safeRombel}_{$safeTahun}_Smt{$semester}.xlsx";
         
         $writer = new Xlsx($spreadsheet);
         
