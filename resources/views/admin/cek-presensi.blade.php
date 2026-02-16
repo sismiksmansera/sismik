@@ -298,6 +298,57 @@
     color: #9ca3af; font-size: 16px;
 }
 
+/* METHOD SELECTION */
+.method-section {
+    margin-bottom: 25px;
+}
+.method-section h3 {
+    font-size: 16px; font-weight: 700; color: #1f2937;
+    margin: 0 0 15px 0;
+    display: flex; align-items: center; gap: 8px;
+}
+.method-section h3 i { color: #8b5cf6; }
+.method-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+@media (max-width: 768px) { .method-grid { grid-template-columns: 1fr; } }
+.method-card {
+    background: white;
+    padding: 24px 20px;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 2px solid #e5e7eb;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.method-card:hover {
+    border-color: #8b5cf6;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(139,92,246,0.2);
+}
+.method-card.active {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+}
+.method-card .method-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: white; margin: 0 auto 14px;
+}
+.method-card .method-icon.mapel-bg { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.method-card .method-icon.tanggal-bg { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.method-card .method-icon.minggu-bg { background: linear-gradient(135deg, #10b981, #059669); }
+.method-card .method-title { font-size: 14px; font-weight: 700; color: #1f2937; margin: 0 0 4px 0; }
+.method-card .method-desc { font-size: 12px; color: #6b7280; margin: 0; }
+.method-card .method-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 6px;
+    font-size: 10px; font-weight: 600; margin-top: 10px;
+    background: #fef3c7; color: #92400e;
+}
+
 /* STACKED MODAL (higher z-index) */
 .custom-modal-overlay.stacked { z-index: 10001; }
 
@@ -360,8 +411,32 @@
                 <p class="page-subtitle">{{ $tahunPelajaran }} - Semester {{ ucfirst($semesterAktif) }}</p>
             </div>
 
-            <!-- SELECTOR CARDS -->
-            <div class="selector-row">
+            <!-- METHOD SELECTION -->
+            <div class="method-section">
+                <h3><i class="fas fa-th-large"></i> Pilih Jenis Cek Presensi</h3>
+                <div class="method-grid">
+                    <div class="method-card" id="methodMapel" onclick="selectMethod('mapel')">
+                        <div class="method-icon mapel-bg"><i class="fas fa-book"></i></div>
+                        <p class="method-title">Per Rombel per Mapel</p>
+                        <p class="method-desc">Cek presensi berdasarkan rombel dan mata pelajaran</p>
+                    </div>
+                    <div class="method-card" id="methodTanggal" onclick="selectMethod('tanggal')">
+                        <div class="method-icon tanggal-bg"><i class="fas fa-calendar-day"></i></div>
+                        <p class="method-title">Per Rombel per Tanggal</p>
+                        <p class="method-desc">Cek presensi berdasarkan rombel dan tanggal</p>
+                        <span class="method-badge">Segera Hadir</span>
+                    </div>
+                    <div class="method-card" id="methodMinggu" onclick="selectMethod('minggu')">
+                        <div class="method-icon minggu-bg"><i class="fas fa-calendar-week"></i></div>
+                        <p class="method-title">Per Rombel per Minggu</p>
+                        <p class="method-desc">Cek presensi berdasarkan rombel dan minggu</p>
+                        <span class="method-badge">Segera Hadir</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SELECTOR CARDS (hidden until method chosen) -->
+            <div class="selector-row" id="selectorRow" style="display:none;">
                 <div class="selector-card" id="rombelCard" onclick="openRombelModal()">
                     <div class="card-icon rombel-icon">
                         <i class="fas fa-users"></i>
@@ -529,9 +604,39 @@
 @push('scripts')
 <script>
 const csrfToken = '{{ csrf_token() }}';
+let selectedMethod = null;
 let selectedRombel = null;
 let selectedMapel = null;
 let expandedDate = null;
+
+function selectMethod(method) {
+    if (method !== 'mapel') {
+        showToast('Fitur ini akan segera hadir!', 'error');
+        return;
+    }
+
+    selectedMethod = method;
+
+    // Highlight active card
+    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('methodMapel').classList.add('active');
+
+    // Show selector row
+    document.getElementById('selectorRow').style.display = 'grid';
+
+    // Reset selections
+    selectedRombel = null;
+    selectedMapel = null;
+    document.getElementById('rombelCard').classList.remove('selected');
+    document.getElementById('rombelPlaceholder').style.display = 'block';
+    document.getElementById('rombelValue').style.display = 'none';
+    document.getElementById('mapelCard').classList.add('disabled');
+    document.getElementById('mapelCard').classList.remove('selected');
+    document.getElementById('mapelPlaceholder').style.display = 'block';
+    document.getElementById('mapelPlaceholder').textContent = 'Pilih Mata Pelajaran...';
+    document.getElementById('mapelValue').style.display = 'none';
+    document.getElementById('dataSection').classList.remove('show');
+}
 
 const hariNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 
