@@ -109,6 +109,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::delete('/rombel/{id}', [RombelController::class, 'destroy'])->name('rombel.destroy');
     Route::post('/rombel/copy', [RombelController::class, 'copyRombel'])->name('rombel.copy');
     Route::get('/rombel/{id}/members', [RombelController::class, 'members'])->name('rombel.members');
+    Route::post('/rombel/{id}/katrol-preview', [RombelController::class, 'katrolPreview'])->name('rombel.katrol-preview');
+    Route::post('/rombel/{id}/katrol-toggle-lock', [RombelController::class, 'katrolToggleLock'])->name('rombel.katrol-toggle-lock');
     
     // Mata Pelajaran & Jadwal Management
     Route::get('/rombel/{id}/mata-pelajaran', [MataPelajaranController::class, 'index'])->name('mapel.index');

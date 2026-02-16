@@ -224,7 +224,7 @@
             <div class="section-header">
                 <h2><i class="fas fa-list-alt"></i> Daftar Siswa</h2>
                 <div class="action-buttons-group">
-                    <a href="#" class="btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
+                    <a href="javascript:void(0)" onclick="showKatrolModal()" class="btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
                         <i class="fas fa-sliders-h"></i> Katrol Nilai
                     </a>
                     <a href="{{ route('admin.leger.print-katrol', ['rombel_id' => $rombel->id, 'tahun' => $tahunPelajaran, 'semester' => $semester]) }}" 
@@ -356,6 +356,88 @@
     </div>
 </div>
 
+<!-- MODAL KATROL NILAI -->
+<div class="modal fade" id="modalKatrol" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold"><i class="fas fa-sliders-h me-2"></i>Katrol Nilai</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="background: #f8fafc;">
+                <!-- Settings Panel -->
+                <div class="card border-0 shadow-sm mb-3" style="border-radius: 12px;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-dark m-0"><i class="fas fa-cog me-1"></i> Pengaturan Katrol</h6>
+                            <div class="d-flex gap-2">
+                                <span id="lockStatusBadge" class="badge {{ $isLocked ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger' }}">
+                                    <i class="fas {{ $isLocked ? 'fa-lock' : 'fa-lock-open' }} me-1"></i>
+                                    {{ $isLocked ? 'Terkunci' : 'Terbuka' }}
+                                </span>
+                                <button id="btnToggleLock" onclick="toggleLock()" class="btn btn-sm {{ $isLocked ? 'btn-danger' : 'btn-success' }} fw-bold">
+                                    <i class="fas {{ $isLocked ? 'fa-unlock' : 'fa-lock' }} me-1"></i>
+                                    {{ $isLocked ? 'Buka Kunci' : 'Kunci Setting' }}
+                                </button>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-3">Transformasi nilai secara proporsional ke rentang baru. Kunci setting agar guru hanya melihat hasil.</p>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Nilai Minimum Baru</label>
+                                <input type="number" id="nilaiMinBaru" class="form-control" value="{{ $lockedNilaiMin }}" min="0" max="100">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Nilai Maksimum Baru</label>
+                                <input type="number" id="nilaiMaxBaru" class="form-control" value="{{ $lockedNilaiMax }}" min="0" max="100">
+                            </div>
+                            <div class="col-md-4">
+                                <button onclick="generateKatrolPreview()" class="btn btn-primary w-100 fw-bold">
+                                    <i class="fas fa-eye me-1"></i> Simpan & Preview
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div id="katrolLoading" class="text-center py-5 d-none">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted mt-2">Memproses data nilai...</p>
+                </div>
+
+                <!-- Preview Panel -->
+                <div id="katrolPreviewContainer" style="display: none;">
+                    <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                        <div class="card-header bg-white p-3 d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-table me-2"></i>Preview Hasil</h6>
+                            <div class="d-flex gap-2">
+                                <button onclick="printKatrolResult()" class="btn btn-sm text-white" style="background: #7e22ce;"><i class="fas fa-print me-1"></i> Cetak</button>
+                                <button onclick="exportKatrolExcel()" class="btn btn-sm btn-success text-white"><i class="fas fa-file-excel me-1"></i> Excel</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0 text-center align-middle" style="font-size: 0.9rem;">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>No</th>
+                                        <th class="text-start">Nama Siswa</th>
+                                        <th class="text-start">Mapel</th>
+                                        <th>Nilai Lama</th>
+                                        <th>Nilai Baru</th>
+                                        <th>Selisih</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="katrolTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Login As Siswa -->
 <div id="modalLoginAsSiswa" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; align-items: center; justify-content: center;">
     <div class="modal-content" style="background: white; border-radius: 16px; width: 420px; max-width: 90%; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: slideIn 0.3s ease;">
@@ -405,15 +487,143 @@
 
 @push('scripts')
 <script>
+let katrolData = [];
+let modalKatrol;
 let selectedNisn = '';
+
+document.addEventListener('DOMContentLoaded', function() {
+    const katrolEl = document.getElementById('modalKatrol');
+    if (katrolEl) {
+        modalKatrol = new bootstrap.Modal(katrolEl);
+    }
+});
+
+function showKatrolModal() {
+    if (modalKatrol) modalKatrol.show();
+}
+
+function generateKatrolPreview() {
+    const minBaru = parseFloat(document.getElementById('nilaiMinBaru').value);
+    const maxBaru = parseFloat(document.getElementById('nilaiMaxBaru').value);
+
+    if (minBaru >= maxBaru) {
+        alert('Nilai minimum harus lebih kecil dari nilai maksimum!');
+        return;
+    }
+
+    document.getElementById('katrolLoading').classList.remove('d-none');
+    document.getElementById('katrolPreviewContainer').style.display = 'none';
+
+    fetch('{{ route("admin.rombel.katrol-preview", $rombel->id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: `tahun=${encodeURIComponent('{{ $tahunPelajaran }}')}&semester=${encodeURIComponent('{{ $semester }}')}&min_baru=${minBaru}&max_baru=${maxBaru}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('katrolLoading').classList.add('d-none');
+        if (data.success) {
+            katrolData = data.data;
+            renderKatrolTable(data.data);
+            document.getElementById('katrolPreviewContainer').style.display = 'block';
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(err => {
+        document.getElementById('katrolLoading').classList.add('d-none');
+        alert('Error: ' + err.message);
+    });
+}
+
+function renderKatrolTable(data) {
+    const tbody = document.getElementById('katrolTableBody');
+    tbody.innerHTML = '';
+    let no = 1;
+    data.forEach(row => {
+        const selisih = row.nilai_baru - row.nilai_lama;
+        const selisihClass = selisih > 0 ? 'text-success fw-bold' : (selisih < 0 ? 'text-danger fw-bold' : 'text-muted');
+        const selisihText = selisih > 0 ? '+' + selisih.toFixed(1) : selisih.toFixed(1);
+        tbody.innerHTML += `
+            <tr>
+                <td>${no++}</td>
+                <td class="text-start fw-bold text-dark">${row.nama_siswa}</td>
+                <td class="text-start text-secondary">${row.mapel}</td>
+                <td class="fw-bold">${row.nilai_lama}</td>
+                <td class="fw-bold text-primary">${row.nilai_baru}</td>
+                <td class="${selisihClass}">${selisihText}</td>
+            </tr>
+        `;
+    });
+}
+
+function toggleLock() {
+    const minBaru = document.getElementById('nilaiMinBaru').value;
+    const maxBaru = document.getElementById('nilaiMaxBaru').value;
+
+    if (confirm('Apakah Anda yakin ingin mengubah status kunci pengaturan katrol nilai?')) {
+        fetch('{{ route("admin.rombel.katrol-toggle-lock", $rombel->id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: `tahun=${encodeURIComponent('{{ $tahunPelajaran }}')}&semester=${encodeURIComponent('{{ $semester }}')}&nilai_min=${minBaru}&nilai_max=${maxBaru}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => alert('Error: ' + err.message));
+    }
+}
+
+function printKatrolResult() {
+    const minBaru = document.getElementById('nilaiMinBaru').value;
+    const maxBaru = document.getElementById('nilaiMaxBaru').value;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html><head><title>Hasil Katrol Nilai - {{ $rombel->nama_rombel }}</title>
+        <style>body{font-family:sans-serif;font-size:10pt;}table{width:100%;border-collapse:collapse;margin-top:15px;}th,td{border:1px solid #333;padding:6px;text-align:center;}th{background:#eee;}.header{text-align:center;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px;}</style>
+        </head><body>
+        <div class="header"><h3>HASIL KATROL NILAI</h3><p>{{ $rombel->nama_rombel }} | {{ $tahunPelajaran }} {{ $semester }}</p></div>
+        <div><strong>Parameter:</strong> Min Baru = ${minBaru}, Max Baru = ${maxBaru}</div>
+        <table><thead><tr><th>No</th><th>Nama Siswa</th><th>Mapel</th><th>Nilai Lama</th><th>Nilai Baru</th><th>Selisih</th></tr></thead><tbody>
+        ${katrolData.map((row, i) => {
+            const selisih = row.nilai_baru - row.nilai_lama;
+            return \`<tr><td>\${i + 1}</td><td style="text-align:left;">\${row.nama_siswa}</td><td style="text-align:left;">\${row.mapel}</td><td>\${row.nilai_lama}</td><td><strong>\${row.nilai_baru}</strong></td><td>\${selisih > 0 ? '+' : ''}\${selisih.toFixed(1)}</td></tr>\`;
+        }).join('')}
+        </tbody></table><script>window.onload=function(){window.print();}<\/script></body></html>
+    `);
+    printWindow.document.close();
+}
+
+function exportKatrolExcel() {
+    let csv = 'No,Nama Siswa,Mata Pelajaran,Nilai Lama,Nilai Baru,Selisih\n';
+    katrolData.forEach((row, i) => {
+        const selisih = row.nilai_baru - row.nilai_lama;
+        csv += `${i + 1},"${row.nama_siswa}","${row.mapel}",${row.nilai_lama},${row.nilai_baru},${selisih.toFixed(1)}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Katrol_Nilai_{{ $rombel->nama_rombel }}_{{ $semester }}.csv`;
+    link.click();
+}
 
 function confirmLoginAsSiswa(nisn, nama) {
     selectedNisn = nisn;
     document.getElementById('loginSiswaNama').textContent = nama;
     document.getElementById('loginSiswaNisn').textContent = 'NISN: ' + nisn;
-    
-    const modal = document.getElementById('modalLoginAsSiswa');
-    modal.style.display = 'flex';
+    document.getElementById('modalLoginAsSiswa').style.display = 'flex';
 }
 
 function closeLoginModal() {
@@ -427,11 +637,8 @@ document.getElementById('btnConfirmLogin')?.addEventListener('click', function()
     }
 });
 
-// Close modal on backdrop click
 document.getElementById('modalLoginAsSiswa')?.addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeLoginModal();
-    }
+    if (e.target === this) closeLoginModal();
 });
 </script>
 @endpush
