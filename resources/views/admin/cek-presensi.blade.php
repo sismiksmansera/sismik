@@ -1388,43 +1388,68 @@ function loadDataPerSiswa() {
                 document.getElementById('siswaInfoNisn').textContent = data.nisn;
                 document.getElementById('siswaInfoRombel').textContent = data.rombel;
 
-                // Build cards
-                let html = '<div style="display:grid; gap:12px;">';
+                // Build per-day cards with JP table
+                let html = '<div style="display:grid; gap:16px;">';
                 data.data.forEach(row => {
                     const d = new Date(row.tanggal);
-                    const dayName = hariNames[d.getDay()];
                     const tglFormatted = d.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'});
                     const pct = row.prosentase;
                     const pctColor = pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
                     const pctBg = pct >= 80 ? '#ecfdf5' : pct >= 50 ? '#fffbeb' : '#fef2f2';
 
-                    // Build JP badges
-                    let jpHtml = '';
-                    for (let jp = 1; jp <= 10; jp++) {
-                        const val = row['jp_' + jp];
-                        if (val && val !== '-') {
-                            let badgeColor = '#6b7280'; let badgeBg = '#f3f4f6';
-                            if (val === 'H') { badgeColor = '#059669'; badgeBg = '#ecfdf5'; }
-                            else if (val === 'S') { badgeColor = '#d97706'; badgeBg = '#fffbeb'; }
-                            else if (val === 'I') { badgeColor = '#2563eb'; badgeBg = '#eff6ff'; }
-                            else if (val === 'A') { badgeColor = '#dc2626'; badgeBg = '#fef2f2'; }
-                            jpHtml += `<span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:26px;border-radius:6px;font-size:11px;font-weight:600;background:${badgeBg};color:${badgeColor};border:1px solid ${badgeColor}20;">JP${jp}<br>${val}</span>`;
-                        }
+                    // Build JP table rows
+                    let jpRows = '';
+                    row.jp_list.forEach(jp => {
+                        if (!jp.mapel && !jp.status) return; // skip empty JP slots
+
+                        let statusHtml = '-';
+                        let statusColor = '#9ca3af';
+                        if (jp.status === 'H') { statusHtml = 'H'; statusColor = '#059669'; }
+                        else if (jp.status === 'S') { statusHtml = 'S'; statusColor = '#d97706'; }
+                        else if (jp.status === 'I') { statusHtml = 'I'; statusColor = '#2563eb'; }
+                        else if (jp.status === 'A') { statusHtml = 'A'; statusColor = '#dc2626'; }
+
+                        const statusBadgeBg = jp.status === 'H' ? '#ecfdf5' : jp.status === 'S' ? '#fffbeb' : jp.status === 'I' ? '#eff6ff' : jp.status === 'A' ? '#fef2f2' : '#f9fafb';
+
+                        jpRows += `
+                        <tr style="border-bottom:1px solid #f3f4f6;">
+                            <td style="padding:8px 10px; font-weight:600; font-size:12px; color:#6b7280; white-space:nowrap;">JP ${jp.jp}</td>
+                            <td style="padding:8px 10px; font-size:12px; color:#1f2937;">${escapeHtml(jp.mapel || '-')}</td>
+                            <td style="padding:8px 10px; font-size:12px; color:#6b7280;">${escapeHtml(jp.guru || '-')}</td>
+                            <td style="padding:8px 10px; text-align:center;">
+                                <span style="display:inline-block; width:28px; height:24px; line-height:24px; border-radius:6px; font-size:12px; font-weight:700; background:${statusBadgeBg}; color:${statusColor}; border:1px solid ${statusColor}30; text-align:center;">${statusHtml}</span>
+                            </td>
+                        </tr>`;
+                    });
+
+                    if (!jpRows) {
+                        jpRows = '<tr><td colspan="4" style="padding:16px; text-align:center; color:#9ca3af; font-size:13px;">Tidak ada jadwal pada hari ini</td></tr>';
                     }
 
                     html += `
-                    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,.06);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.06);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#f9fafb; border-bottom:1px solid #e5e7eb;">
                             <div>
-                                <p style="margin:0; font-weight:700; font-size:14px; color:#1f2937;">${dayName}, ${tglFormatted}</p>
-                                <p style="margin:2px 0 0; font-size:12px; color:#6b7280;">${escapeHtml(row.mapel || '-')}</p>
+                                <p style="margin:0; font-weight:700; font-size:14px; color:#1f2937;">${row.hari}, ${tglFormatted}</p>
                             </div>
-                            <div style="background:${pctBg}; color:${pctColor}; padding:4px 10px; border-radius:20px; font-size:13px; font-weight:700;">
+                            <div style="background:${pctBg}; color:${pctColor}; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:700;">
                                 ${pct !== null ? pct + '%' : '-'}
                             </div>
                         </div>
-                        <div style="display:flex; flex-wrap:wrap; gap:4px;">
-                            ${jpHtml || '<span style="color:#9ca3af; font-size:12px;">Tidak ada data JP</span>'}
+                        <div style="overflow-x:auto;">
+                            <table style="width:100%; border-collapse:collapse;">
+                                <thead>
+                                    <tr style="background:#f3f4f6;">
+                                        <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase; width:60px;">Jam</th>
+                                        <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase;">Mapel</th>
+                                        <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase;">Guru</th>
+                                        <th style="padding:8px 10px; text-align:center; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase; width:60px;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${jpRows}
+                                </tbody>
+                            </table>
                         </div>
                     </div>`;
                 });
@@ -1438,7 +1463,8 @@ function loadDataPerSiswa() {
                 container.innerHTML = '<div style="text-align:center; padding:40px 20px;"><i class="fas fa-inbox" style="font-size:48px; color:#d1d5db; margin-bottom:12px; display:block;"></i><p style="color:#6b7280; margin:0;">Tidak ada data presensi ditemukan</p></div>';
             }
         })
-        .catch(() => {
+        .catch((err) => {
+            console.error('loadDataPerSiswa error:', err);
             container.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#ef4444;"><i class="fas fa-exclamation-triangle" style="font-size:48px; margin-bottom:12px; display:block;"></i>Gagal memuat data</div>';
         });
 }

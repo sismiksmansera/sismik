@@ -574,20 +574,53 @@ class CekPresensiController extends Controller
 
     /**
      * AJAX: Get presensi data per siswa (all dates or a specific date)
+     * Returns per-day JP 1-10 with mapel, guru, and presensi status
      */
     public function getDataPerSiswa(Request $request)
     {
         $nisn = $request->query('nisn');
-        $tanggal = $request->query('tanggal'); // optional, for filtering
+        $tanggal = $request->query('tanggal'); // optional
 
         $periodik = DataPeriodik::aktif()->first();
         $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
         $semesterAktif = strtolower($periodik->semester ?? 'ganjil');
 
+        // Get student info
+        $siswa = DB::table('siswa')->where('nisn', $nisn)->first();
+        $namaSiswa = $siswa->nama ?? $nisn;
+        $namaRombel = $siswa->nama_rombel ?? '-';
+
+        // Get rombel IDs for this student's rombel name
+        $rombelIds = DB::table('rombel')
+            ->where('nama_rombel', $namaRombel)
+            ->where('tahun_pelajaran', $tahunPelajaran)
+            ->whereRaw('LOWER(semester) = ?', [$semesterAktif])
+            ->pluck('id')
+            ->toArray();
+
+        // Get jadwal_pelajaran for this rombel (mapel + guru per hari per jam_ke)
+        $jadwalRaw = [];
+        if (!empty($rombelIds)) {
+            $jadwalRecords = DB::table('jadwal_pelajaran as jp')
+                ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
+                ->whereIn('jp.id_rombel', $rombelIds)
+                ->where('jp.tahun_pelajaran', $tahunPelajaran)
+                ->whereRaw('LOWER(jp.semester) = ?', [$semesterAktif])
+                ->select('jp.hari', 'jp.jam_ke', 'mp.nama_mapel', 'jp.nama_guru')
+                ->get();
+
+            foreach ($jadwalRecords as $j) {
+                $hari = $j->hari;
+                $jamKe = (int)$j->jam_ke;
+                $jadwalRaw[$hari][$jamKe] = [
+                    'mapel' => $j->nama_mapel,
+                    'guru' => $j->nama_guru,
+                ];
+            }
+        }
+
+        // Get presensi records
         $query = DB::table('presensi_siswa as ps')
-            ->leftJoin('siswa as s', function ($join) {
-                $join->on(DB::raw('ps.nisn COLLATE utf8mb4_general_ci'), '=', DB::raw('s.nisn COLLATE utf8mb4_general_ci'));
-            })
             ->where(DB::raw('ps.nisn COLLATE utf8mb4_general_ci'), '=', $nisn)
             ->where('ps.tahun_pelajaran', $tahunPelajaran)
             ->whereRaw('LOWER(ps.semester) = ?', [$semesterAktif]);
@@ -597,77 +630,107 @@ class CekPresensiController extends Controller
         }
 
         $records = $query->select(
-                'ps.tanggal_presensi',
-                'ps.mata_pelajaran',
-                'ps.presensi',
+                'ps.tanggal_presensi', 'ps.mata_pelajaran', 'ps.guru_pengajar',
                 'ps.jam_ke_1', 'ps.jam_ke_2', 'ps.jam_ke_3', 'ps.jam_ke_4', 'ps.jam_ke_5',
-                'ps.jam_ke_6', 'ps.jam_ke_7', 'ps.jam_ke_8', 'ps.jam_ke_9', 'ps.jam_ke_10',
-                's.nama as nama_siswa'
+                'ps.jam_ke_6', 'ps.jam_ke_7', 'ps.jam_ke_8', 'ps.jam_ke_9', 'ps.jam_ke_10'
             )
             ->orderBy('ps.tanggal_presensi', 'desc')
             ->get();
 
-        // Get student name
-        $namaSiswa = $records->first()->nama_siswa ?? $nisn;
+        // Indonesian day names for mapping
+        $dayMap = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+                   'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
 
-        // Get rombel from siswa table directly
-        $rombel = DB::table('siswa')
-            ->where('nisn', $nisn)
-            ->value('nama_rombel') ?? '-';
-
-        // Group by date and merge JP data
-        $grouped = [];
+        // Group presensi by date
+        $presensiByDate = [];
         foreach ($records as $rec) {
             $tgl = $rec->tanggal_presensi;
-            if (!isset($grouped[$tgl])) {
-                $grouped[$tgl] = [
-                    'tanggal' => $tgl,
-                    'mapel_list' => [],
-                ];
-                for ($jp = 1; $jp <= 10; $jp++) {
-                    $grouped[$tgl]["jp_{$jp}"] = null;
-                }
+            if (!isset($presensiByDate[$tgl])) {
+                $presensiByDate[$tgl] = [];
             }
-
-            // Collect mapel
-            if ($rec->mata_pelajaran && !in_array($rec->mata_pelajaran, $grouped[$tgl]['mapel_list'])) {
-                $grouped[$tgl]['mapel_list'][] = $rec->mata_pelajaran;
-            }
-
-            // Merge JP values
+            // Merge JP values from this record
             for ($jp = 1; $jp <= 10; $jp++) {
                 $field = "jam_ke_{$jp}";
                 $val = $rec->$field ?? null;
                 if ($val !== null && $val !== '' && $val !== '-') {
-                    $grouped[$tgl]["jp_{$jp}"] = $val;
+                    $presensiByDate[$tgl][$jp] = [
+                        'status' => $val,
+                        'mapel' => $rec->mata_pelajaran ?? null,
+                        'guru' => $rec->guru_pengajar ?? null,
+                    ];
                 }
             }
         }
 
-        // Calculate percentages
+        // If filtering by specific date and no presensi records, still show the jadwal
+        if ($tanggal && !isset($presensiByDate[$tanggal])) {
+            $presensiByDate[$tanggal] = [];
+        }
+
+        // If no date filter and no presensi records at all, return empty
+        if (empty($presensiByDate)) {
+            return response()->json([
+                'success' => true,
+                'data' => [],
+                'nama_siswa' => $namaSiswa,
+                'nisn' => $nisn,
+                'rombel' => $namaRombel,
+                'total_hari' => 0,
+            ]);
+        }
+
+        // Build result: for each date, produce JP 1-10 with jadwal + presensi
         $result = [];
-        foreach ($grouped as $row) {
+        foreach ($presensiByDate as $tgl => $presensiJp) {
+            $hari = $dayMap[date('l', strtotime($tgl))] ?? '';
+            $jadwalHari = $jadwalRaw[$hari] ?? [];
+
+            $jpList = [];
             $totalJp = 0;
             $totalHadir = 0;
+
             for ($jp = 1; $jp <= 10; $jp++) {
-                $val = $row["jp_{$jp}"];
-                if ($val !== null && $val !== '' && $val !== '-') {
+                $jadwal = $jadwalHari[$jp] ?? null;
+                $presensi = $presensiJp[$jp] ?? null;
+
+                $mapel = $presensi['mapel'] ?? ($jadwal['mapel'] ?? null);
+                $guru = $presensi['guru'] ?? ($jadwal['guru'] ?? null);
+                $status = $presensi['status'] ?? null;
+
+                $jpList[] = [
+                    'jp' => $jp,
+                    'mapel' => $mapel,
+                    'guru' => $guru,
+                    'status' => $status, // H, S, I, A, or null
+                ];
+
+                if ($mapel || $status) {
                     $totalJp++;
-                    if ($val === 'H') $totalHadir++;
+                    if ($status === 'H') $totalHadir++;
                 }
             }
-            $row['prosentase'] = $totalJp > 0 ? round(($totalHadir / $totalJp) * 100, 1) : null;
-            $row['mapel'] = implode(', ', $row['mapel_list']);
-            unset($row['mapel_list']);
-            $result[] = $row;
+
+            $prosentase = $totalJp > 0 ? round(($totalHadir / $totalJp) * 100, 1) : null;
+
+            $result[] = [
+                'tanggal' => $tgl,
+                'hari' => $hari,
+                'jp_list' => $jpList,
+                'prosentase' => $prosentase,
+            ];
         }
+
+        // Sort by date descending
+        usort($result, function ($a, $b) {
+            return strcmp($b['tanggal'], $a['tanggal']);
+        });
 
         return response()->json([
             'success' => true,
             'data' => $result,
             'nama_siswa' => $namaSiswa,
             'nisn' => $nisn,
-            'rombel' => $rombel,
+            'rombel' => $namaRombel,
             'total_hari' => count($result),
         ]);
     }
