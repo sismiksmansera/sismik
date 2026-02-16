@@ -1414,8 +1414,10 @@ function loadDataPerSiswa() {
                         jpRows += `
                         <tr style="border-bottom:1px solid #f3f4f6;">
                             <td style="padding:8px 10px; font-weight:600; font-size:12px; color:#6b7280; white-space:nowrap;">JP ${jp.jp}</td>
-                            <td style="padding:8px 10px; font-size:12px; color:#1f2937;">${escapeHtml(jp.mapel || '-')}</td>
-                            <td style="padding:8px 10px; font-size:12px; color:#6b7280;">${escapeHtml(jp.guru || '-')}</td>
+                            <td style="padding:8px 10px;">
+                                <p style="margin:0; font-size:12px; font-weight:600; color:#1f2937;">${escapeHtml(jp.mapel || '-')}</p>
+                                <p style="margin:2px 0 0; font-size:11px; color:#9ca3af;">${escapeHtml(jp.guru || '-')}</p>
+                            </td>
                             <td style="padding:8px 10px; text-align:center;">
                                 <span style="display:inline-block; width:28px; height:24px; line-height:24px; border-radius:6px; font-size:12px; font-weight:700; background:${statusBadgeBg}; color:${statusColor}; border:1px solid ${statusColor}30; text-align:center;">${statusHtml}</span>
                             </td>
@@ -1423,7 +1425,7 @@ function loadDataPerSiswa() {
                     });
 
                     if (!jpRows) {
-                        jpRows = '<tr><td colspan="4" style="padding:16px; text-align:center; color:#9ca3af; font-size:13px;">Tidak ada jadwal pada hari ini</td></tr>';
+                        jpRows = '<tr><td colspan="3" style="padding:16px; text-align:center; color:#9ca3af; font-size:13px;">Tidak ada jadwal pada hari ini</td></tr>';
                     }
 
                     html += `
@@ -1440,10 +1442,9 @@ function loadDataPerSiswa() {
                             <table style="width:100%; border-collapse:collapse;">
                                 <thead>
                                     <tr style="background:#f3f4f6;">
-                                        <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase; width:60px;">Jam</th>
-                                        <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase;">Mapel</th>
-                                        <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase;">Guru</th>
-                                        <th style="padding:8px 10px; text-align:center; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase; width:60px;">Status</th>
+                                        <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase; width:50px;">Jam</th>
+                                        <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase;">Mapel / Guru</th>
+                                        <th style="padding:8px 10px; text-align:center; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase; width:50px;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
