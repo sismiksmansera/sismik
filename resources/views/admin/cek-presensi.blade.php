@@ -504,7 +504,7 @@
     .sidebar, .navbar, .print-btn, .badge-count, .section-title { display: none !important; }
     .jp-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
     .jp-table { border-collapse: collapse; width: 100%; font-size: 8px; min-width: 0 !important; table-layout: fixed; }
-    .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 0px 1px !important; line-height: 0.8; text-align: center; word-wrap: break-word; overflow: hidden; }
+    .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 0px 1px !important; line-height: 0.7; text-align: center; word-wrap: break-word; overflow: hidden; }
     .jp-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 7px; }
     .jp-table col.col-no { width: 1.5%; }
     .jp-table col.col-nisn { width: 10%; }
@@ -531,6 +531,9 @@
     #printHeader h4 { font-size: 10px; margin: 2px 0; }
     #printHeader table { font-size: 8px; margin-top: 4px; margin-bottom: 6px; }
     #printHeader table td { border: none !important; }
+    #printFooter { display: block !important; margin-top: 15px; font-size: 9px; }
+    #printFooter table { width: 100%; border: none; }
+    #printFooter table td { border: none !important; text-align: center; vertical-align: top; padding: 0; }
 }
 
 /* STACKED MODAL (higher z-index) */
@@ -770,6 +773,24 @@
                         </thead>
                         <tbody id="jpTableBody">
                         </tbody>
+                    </table>
+                </div>
+
+                <!-- PRINT FOOTER - Signatures (hidden on screen, visible in print) -->
+                <div id="printFooter" style="display:none;">
+                    <table>
+                        <tr>
+                            <td style="width:50%;">
+                                <p style="margin:0;">Ketua Kelas,</p>
+                                <br><br><br>
+                                <p style="margin:0;">( ............................ )</p>
+                            </td>
+                            <td style="width:50%;">
+                                <p style="margin:0;">Wali Kelas,</p>
+                                <br><br><br>
+                                <p style="margin:0;">( ............................ )</p>
+                            </td>
+                        </tr>
                     </table>
                 </div>
             </div>
