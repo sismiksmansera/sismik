@@ -55,9 +55,11 @@ class MigrasiNilaiController extends Controller
         // Get rombels based on tahun and semester
         $rombels = Rombel::where('tahun_pelajaran', $tahun)
             ->where('semester', $semester)
-            ->orderBy('nama_rombel')
             ->select('id', 'nama_rombel')
             ->get();
+        
+        // Natural sort by rombel name (so X.10 comes after X.9, not after X.1)
+        $rombels = $rombels->sortBy('nama_rombel', SORT_NATURAL)->values();
         
         return response()->json($rombels);
     }
