@@ -11,6 +11,129 @@ use App\Models\Rombel;
 class LegerController extends Controller
 {
     /**
+     * Display leger page with filters
+     */
+    public function index()
+    {
+        // Get unique tahun pelajaran
+        $tahunList = DB::table('data_periodik')
+            ->select('tahun_pelajaran')
+            ->distinct()
+            ->orderBy('tahun_pelajaran', 'desc')
+            ->pluck('tahun_pelajaran');
+        
+        return view('admin.leger.index', compact('tahunList'));
+    }
+    
+    /**
+     * Get semesters for selected tahun pelajaran (AJAX)
+     */
+    public function getSemesters(Request $request)
+    {
+        $tahun = $request->tahun_pelajaran;
+        $semesters = DB::table('data_periodik')
+            ->where('tahun_pelajaran', $tahun)
+            ->pluck('semester')
+            ->unique()
+            ->values();
+        
+        return response()->json($semesters);
+    }
+    
+    /**
+     * Get rombels for selected tahun and semester (AJAX)
+     */
+    public function getRombels(Request $request)
+    {
+        $tahun = $request->tahun_pelajaran;
+        $semester = $request->semester;
+        
+        $rombels = Rombel::where('tahun_pelajaran', $tahun)
+            ->where('semester', $semester)
+            ->select('id', 'nama_rombel')
+            ->get()
+            ->sortBy('nama_rombel', SORT_NATURAL)
+            ->values();
+        return response()->json($rombels);
+    }
+    
+    /**
+     * Get leger data for display (AJAX)
+     */
+    public function getLegerData(Request $request)
+    {
+        $rombelId = $request->query('rombel_id');
+        $tahun = $request->query('tahun');
+        $semester = $request->query('semester');
+        
+        // Get all katrol data for this rombel
+        $katrolData = DB::table('katrol_nilai_leger')
+            ->where('rombel_id', $rombelId)
+            ->where('tahun_pelajaran', $tahun)
+            ->where('semester', $semester)
+            ->orderBy('ranking')
+            ->get();
+        
+        if ($katrolData->isEmpty()) {
+            return response()->json([
+                'students' => [],
+                'mapels' => []
+            ]);
+        }
+        
+        // Define all possible mapel columns (24 mapel + IPA/IPS)
+        $allMapelColumns = [
+            'pendidikan_agama_dan_budi_pekerti', 'pendidikan_pancasila', 'bahasa_indonesia',
+            'matematika', 'sejarah_indonesia', 'bahasa_inggris', 'seni_budaya',
+            'pendidikan_jasmani_olahraga_dan_kesehatan', 'prakarya_dan_kewirausahaan',
+            'matematika_peminatan', 'biologi', 'fisika', 'kimia', 'ekonomi',
+            'geografi', 'sosiologi', 'sejarah_peminatan', 'bahasa_dan_sastra_indonesia',
+            'bahasa_dan_sastra_inggris', 'antropologi', 'bahasa_dan_sastra_asing_lainnya',
+            'informatika', 'bimbingan_konseling', 'mulok', 'ipa_average', 'ips_average'
+        ];
+        
+        // Find which mapels have data (at least one student has non-null value)
+        $activeMapels = [];
+        foreach ($allMapelColumns as $col) {
+            foreach ($katrolData as $row) {
+                if (isset($row->$col) && $row->$col !== null && $row->$col !== '') {
+                    $activeMapels[] = $col;
+                    break;
+                }
+            }
+        }
+        
+        // Convert column names to display names
+        $mapelDisplayNames = [];
+        foreach ($activeMapels as $col) {
+            $displayName = ucwords(str_replace('_', ' ', $col));
+            $mapelDisplayNames[] = $displayName;
+        }
+        
+        // Format student data
+        $students = [];
+        foreach ($katrolData as $row) {
+            $nilai = [];
+            foreach ($activeMapels as $col) {
+                $displayName = ucwords(str_replace('_', ' ', $col));
+                $nilai[$displayName] = $row->$col ?? '-';
+            }
+            
+            $students[] = [
+                'nisn' => $row->nisn,
+                'nama_siswa' => $row->nama_siswa,
+                'nilai' => $nilai,
+                'rata_rata' => number_format($row->rata_rata ?? 0, 2),
+                'ranking' => $row->ranking ?? '-'
+            ];
+        }
+        
+        return response()->json([
+            'students' => $students,
+            'mapels' => $mapelDisplayNames
+        ]);
+    }
+    /**
      * Print Leger Nilai (Original grades)
      */
     public function printNilai(Request $request)
