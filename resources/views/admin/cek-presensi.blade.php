@@ -624,7 +624,7 @@
 
 @section('content')
 <div class="layout">
-    @include('layouts.partials.sidebar-admin')
+    @include('layouts.partials.sidebar-' . (($routePrefix ?? 'admin') === 'guru_bk' ? 'guru-bk' : 'admin'))
 
     <div class="main-content">
         <div class="cek-presensi-page">
