@@ -588,34 +588,43 @@ class CekPresensiController extends Controller
         // Get student info
         $siswa = DB::table('siswa')->where('nisn', $nisn)->first();
         $namaSiswa = $siswa->nama ?? $nisn;
-        $namaRombel = $siswa->nama_rombel ?? '-';
 
-        // Get rombel IDs for this student's rombel name
-        $rombelIds = DB::table('rombel')
-            ->where('nama_rombel', $namaRombel)
+        // Get student's rombel ID from presensi_siswa (most reliable source)
+        $rombelId = DB::table('presensi_siswa')
+            ->where(DB::raw('nisn COLLATE utf8mb4_general_ci'), '=', $nisn)
             ->where('tahun_pelajaran', $tahunPelajaran)
             ->whereRaw('LOWER(semester) = ?', [$semesterAktif])
-            ->pluck('id')
-            ->toArray();
+            ->value('id_rombel');
 
-        // Get jadwal_pelajaran for this rombel, joined with periode_jadwal for validity
+        // Get rombel name
+        $namaRombel = '-';
+        if ($rombelId) {
+            $namaRombel = DB::table('rombel')->where('id', $rombelId)->value('nama_rombel') ?? '-';
+        } elseif ($siswa && $siswa->nama_rombel) {
+            // Fallback: try siswa.nama_rombel
+            $namaRombel = $siswa->nama_rombel;
+            $rombelId = DB::table('rombel')
+                ->where('nama_rombel', $namaRombel)
+                ->where('tahun_pelajaran', $tahunPelajaran)
+                ->whereRaw('LOWER(semester) = ?', [$semesterAktif])
+                ->value('id');
+        }
+
+        // Get jadwal_pelajaran for this rombel
         // Structure: $jadwalByHari['Senin'][1] = ['mapel' => '...', 'guru' => '...']
         $jadwalByHari = [];
-        if (!empty($rombelIds)) {
-            $jadwalQuery = DB::table('jadwal_pelajaran as jp')
+        if ($rombelId) {
+            $jadwalRecords = DB::table('jadwal_pelajaran as jp')
                 ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
-                ->whereIn('jp.id_rombel', $rombelIds)
+                ->where('jp.id_rombel', $rombelId)
                 ->where('jp.tahun_pelajaran', $tahunPelajaran)
                 ->whereRaw('LOWER(jp.semester) = ?', [$semesterAktif])
-                ->select('jp.hari', 'jp.jam_ke', 'mp.nama_mapel', 'jp.nama_guru', 'jp.kode_jadwal');
-
-            // Try to join with periode_jadwal if kode_jadwal exists
-            $jadwalRecords = $jadwalQuery->get();
+                ->select('jp.hari', 'jp.jam_ke', 'mp.nama_mapel', 'jp.nama_guru')
+                ->get();
 
             foreach ($jadwalRecords as $j) {
                 $hari = $j->hari;
                 $jamKe = (int)$j->jam_ke;
-                // If same hari+jamKe already exists, don't overwrite (first match wins)
                 if (!isset($jadwalByHari[$hari][$jamKe])) {
                     $jadwalByHari[$hari][$jamKe] = [
                         'mapel' => $j->nama_mapel,
