@@ -598,26 +598,36 @@ class CekPresensiController extends Controller
             ->pluck('id')
             ->toArray();
 
-        // Get jadwal_pelajaran for this rombel (mapel + guru per hari per jam_ke)
-        $jadwalRaw = [];
+        // Get jadwal_pelajaran for this rombel, joined with periode_jadwal for validity
+        // Structure: $jadwalByHari['Senin'][1] = ['mapel' => '...', 'guru' => '...']
+        $jadwalByHari = [];
         if (!empty($rombelIds)) {
-            $jadwalRecords = DB::table('jadwal_pelajaran as jp')
+            $jadwalQuery = DB::table('jadwal_pelajaran as jp')
                 ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
                 ->whereIn('jp.id_rombel', $rombelIds)
                 ->where('jp.tahun_pelajaran', $tahunPelajaran)
                 ->whereRaw('LOWER(jp.semester) = ?', [$semesterAktif])
-                ->select('jp.hari', 'jp.jam_ke', 'mp.nama_mapel', 'jp.nama_guru')
-                ->get();
+                ->select('jp.hari', 'jp.jam_ke', 'mp.nama_mapel', 'jp.nama_guru', 'jp.kode_jadwal');
+
+            // Try to join with periode_jadwal if kode_jadwal exists
+            $jadwalRecords = $jadwalQuery->get();
 
             foreach ($jadwalRecords as $j) {
                 $hari = $j->hari;
                 $jamKe = (int)$j->jam_ke;
-                $jadwalRaw[$hari][$jamKe] = [
-                    'mapel' => $j->nama_mapel,
-                    'guru' => $j->nama_guru,
-                ];
+                // If same hari+jamKe already exists, don't overwrite (first match wins)
+                if (!isset($jadwalByHari[$hari][$jamKe])) {
+                    $jadwalByHari[$hari][$jamKe] = [
+                        'mapel' => $j->nama_mapel,
+                        'guru' => $j->nama_guru,
+                    ];
+                }
             }
         }
+
+        // Indonesian day names mapping
+        $dayMap = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+                   'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
 
         // Get presensi records
         $query = DB::table('presensi_siswa as ps')
@@ -637,18 +647,13 @@ class CekPresensiController extends Controller
             ->orderBy('ps.tanggal_presensi', 'desc')
             ->get();
 
-        // Indonesian day names for mapping
-        $dayMap = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
-                   'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
-
-        // Group presensi by date
+        // Group presensi by date and JP
         $presensiByDate = [];
         foreach ($records as $rec) {
             $tgl = $rec->tanggal_presensi;
             if (!isset($presensiByDate[$tgl])) {
                 $presensiByDate[$tgl] = [];
             }
-            // Merge JP values from this record
             for ($jp = 1; $jp <= 10; $jp++) {
                 $field = "jam_ke_{$jp}";
                 $val = $rec->$field ?? null;
@@ -662,12 +667,11 @@ class CekPresensiController extends Controller
             }
         }
 
-        // If filtering by specific date and no presensi records, still show the jadwal
+        // If filtering by specific date, ensure the date is in the list
         if ($tanggal && !isset($presensiByDate[$tanggal])) {
             $presensiByDate[$tanggal] = [];
         }
 
-        // If no date filter and no presensi records at all, return empty
         if (empty($presensiByDate)) {
             return response()->json([
                 'success' => true,
@@ -679,32 +683,38 @@ class CekPresensiController extends Controller
             ]);
         }
 
-        // Build result: for each date, produce JP 1-10 with jadwal + presensi
+        // Build result: for each date, show ALL jadwal JP slots + presensi overlay
         $result = [];
         foreach ($presensiByDate as $tgl => $presensiJp) {
             $hari = $dayMap[date('l', strtotime($tgl))] ?? '';
-            $jadwalHari = $jadwalRaw[$hari] ?? [];
+            $jadwalHari = $jadwalByHari[$hari] ?? [];
+
+            // Merge: all JP that appear in jadwal OR in presensi
+            $allJps = array_unique(array_merge(array_keys($jadwalHari), array_keys($presensiJp)));
+            sort($allJps, SORT_NUMERIC);
 
             $jpList = [];
             $totalJp = 0;
             $totalHadir = 0;
 
-            for ($jp = 1; $jp <= 10; $jp++) {
+            foreach ($allJps as $jp) {
                 $jadwal = $jadwalHari[$jp] ?? null;
                 $presensi = $presensiJp[$jp] ?? null;
 
-                $mapel = $presensi['mapel'] ?? ($jadwal['mapel'] ?? null);
-                $guru = $presensi['guru'] ?? ($jadwal['guru'] ?? null);
+                // Prioritize presensi data for mapel/guru, fallback to jadwal
+                $mapel = $jadwal['mapel'] ?? ($presensi['mapel'] ?? null);
+                $guru = $jadwal['guru'] ?? ($presensi['guru'] ?? null);
                 $status = $presensi['status'] ?? null;
 
                 $jpList[] = [
                     'jp' => $jp,
                     'mapel' => $mapel,
                     'guru' => $guru,
-                    'status' => $status, // H, S, I, A, or null
+                    'status' => $status, // H, S, I, A, or null (null = belum presensi)
                 ];
 
-                if ($mapel || $status) {
+                // Count for percentage: only count JP that has jadwal
+                if ($mapel) {
                     $totalJp++;
                     if ($status === 'H') $totalHadir++;
                 }
