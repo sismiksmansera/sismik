@@ -601,8 +601,7 @@ class RombelController extends Controller
                 'data' => $resultData,
                 'total' => count($resultData),
                 'saved' => true,
-                'ipa_ips_generated' => true,
-                'history_id' => $historyId
+                'ipa_ips_generated' => true
             ]);
         } catch (\Exception $e) {
             return response()->json([
