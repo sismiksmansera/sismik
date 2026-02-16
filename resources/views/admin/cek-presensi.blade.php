@@ -482,6 +482,47 @@
 .minggu-table tbody td:nth-child(3) { text-align: left; }
 .minggu-table tbody tr:hover { background: #f5f3ff; }
 
+/* PRINT BUTTON */
+.print-btn {
+    padding: 8px 16px; background: linear-gradient(135deg, #10b981, #059669);
+    color: white; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.3s ease;
+}
+.print-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+.print-btn i { margin-right: 6px; }
+
+/* PRINT STYLES - A4 PORTRAIT */
+@media print {
+    @page { size: A4 portrait; margin: 15mm; }
+    body * { visibility: hidden; }
+    #dataSectionTanggal, #dataSectionTanggal * { visibility: visible; }
+    #dataSectionTanggal {
+        position: absolute; left: 0; top: 0; width: 100%;
+        background: white;
+    }
+    .sidebar, .navbar, .print-btn, .badge-count { display: none !important; }
+    .section-title { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+    .section-title h2 { font-size: 18px; color: #000; }
+    .jp-table { border-collapse: collapse; width: 100%; }
+    .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 6px 4px !important; font-size: 10px; }
+    .jp-table th { background: #f0f0f0 !important; color: #000 !important; font-weight: bold; }
+    .jp-badge { padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: bold; }
+    .jp-badge.H { background: #d1fae5 !important; color: #065f46 !important; }
+    .jp-badge.S { background: #dbeafe !important; color: #1e40af !important; }
+    .jp-badge.I { background: #fef3c7 !important; color: #92400e !important; }
+    .jp-badge.A { background: #fee2e2 !important; color: #991b1b !important; }
+    .jp-badge.D { background: #fed7aa !important; color: #9a3412 !important; }
+    .jp-badge.B { background: #e9d5ff !important; color: #6b21a8 !important; }
+    .jp-badge.empty { background: #f3f4f6 !important; color: #9ca3af !important; }
+    .persen-badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    .persen-badge.high { background: #d1fae5 !important; color: #065f46 !important; }
+    .persen-badge.mid { background: #fef3c7 !important; color: #92400e !important; }
+    .persen-badge.low { background: #fee2e2 !important; color: #991b1b !important; }
+    .persen-badge.none { background: #f3f4f6 !important; color: #9ca3af !important; }
+    #printHeader { display: block !important; }
+}
+
 /* STACKED MODAL (higher z-index) */
 .custom-modal-overlay.stacked { z-index: 10001; }
 
@@ -668,8 +709,31 @@
             <!-- DATA SECTION (per tanggal - JP table) -->
             <div id="dataSectionTanggal">
                 <div class="section-title">
-                    <h2><i class="fas fa-table"></i> Presensi per Jam Pelajaran</h2>
-                    <span class="badge-count" id="tanggalSiswaCount">0 Siswa</span>
+                    <h2><i class="fas fa-calendar-day"></i> Presensi per Jam Pelajaran</h2>
+                    <div>
+                        <span class="badge-count" id="jpSiswaCount">0 Siswa</span>
+                        <button class="print-btn" onclick="printPerTanggal()" style="margin-left:10px;">
+                            <i class="fas fa-print"></i> Cetak
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- PRINT HEADER (hidden on screen, visible in print) -->
+                <div id="printHeader" style="display:none; margin-bottom:20px;">
+                    <h3 style="text-align:center; margin:0; font-size:16px;">DAFTAR PRESENSI SISWA</h3>
+                    <h4 style="text-align:center; margin:5px 0; font-size:14px;">SMA NEGERI 1 SERANG</h4>
+                    <div style="margin-top:10px; font-size:11px;">
+                        <table style="width:100%; border:none;">
+                            <tr>
+                                <td style="width:20%; border:none;">Rombel</td>
+                                <td style="width:1%; border:none;">:</td>
+                                <td style="border:none;"><strong id="printRombel"></strong></td>
+                                <td style="width:20%; border:none; text-align:right;">Tanggal</td>
+                                <td style="width:1%; border:none;">:</td>
+                                <td style="width:25%; border:none;"><strong id="printTanggal"></strong></td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
                 <div class="jp-table-wrapper">
                     <table class="jp-table">
@@ -1542,6 +1606,24 @@ function loadDataPerMinggu() {
                 <p>Gagal memuat data presensi.</p>
             </div></td></tr>`;
         });
+}
+
+// Print function for per-tanggal
+function printPerTanggal() {
+    if (!selectedRombelTanggal || !selectedTanggal) {
+        showToast('Pilih rombel dan tanggal terlebih dahulu', 'error');
+        return;
+    }
+    
+    // Populate print header
+    document.getElementById('printRombel').textContent = selectedRombelTanggal.name;
+    const d = new Date(selectedTanggal);
+    const dayName = hariNames[d.getDay()];
+    const formatted = d.toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'});
+    document.getElementById('printTanggal').textContent = `${dayName}, ${formatted}`;
+    
+    // Trigger print
+    window.print();
 }
 </script>
 @endpush
