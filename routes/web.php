@@ -260,6 +260,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     
     // Migrasi Nilai Manual
     Route::get('/migrasi-nilai', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'index'])->name('migrasi-nilai.index');
+    Route::post('/migrasi-nilai/get-semesters', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'getSemesters'])->name('migrasi-nilai.get-semesters');
+    Route::post('/migrasi-nilai/get-rombels', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'getRombels'])->name('migrasi-nilai.get-rombels');
     Route::post('/migrasi-nilai/download-template', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'downloadTemplate'])->name('migrasi-nilai.download-template');
     Route::post('/migrasi-nilai/import', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'import'])->name('migrasi-nilai.import');
 });

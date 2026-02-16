@@ -89,26 +89,21 @@
                             <label class="form-label fw-bold">Tahun Pelajaran</label>
                             <select class="form-select" id="tahun_pelajaran" name="tahun_pelajaran" required>
                                 <option value="">Pilih Tahun Pelajaran</option>
-                                @foreach($periods as $period)
-                                    <option value="{{ $period->tahun_pelajaran }}">{{ $period->tahun_pelajaran }}</option>
+                                @foreach($tahunList as $tahun)
+                                    <option value="{{ $tahun }}">{{ $tahun }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Semester</label>
-                            <select class="form-select" id="semester" name="semester" required>
-                                <option value="">Pilih Semester</option>
-                                <option value="Ganjil">Ganjil</option>
-                                <option value="Genap">Genap</option>
+                            <select class="form-select" id="semester" name="semester" required disabled>
+                                <option value="">Pilih Tahun Dulu</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Rombel</label>
-                            <select class="form-select" id="rombel_id" name="rombel_id" required>
-                                <option value="">Pilih Rombel</option>
-                                @foreach($rombels as $rombel)
-                                    <option value="{{ $rombel->id }}">{{ $rombel->nama_rombel }}</option>
-                                @endforeach
+                            <select class="form-select" id="rombel_id" name="rombel_id" required disabled>
+                                <option value="">Pilih Semester Dulu</option>
                             </select>
                         </div>
                     </div>
@@ -177,12 +172,95 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnDownload = document.getElementById('btnDownload');
     const btnImport = document.getElementById('btnImport');
     
+    // Load semesters when tahun changes
+    tahunInput.addEventListener('change', function() {
+        const tahun = this.value;
+        
+        // Reset semester and rombel
+        semesterInput.innerHTML = '<option value="">Loading...</option>';
+        semesterInput.disabled = true;
+        rombelInput.innerHTML = '<option value="">Pilih Semester Dulu</option>';
+        rombelInput.disabled = true;
+        checkFilters();
+        
+        if (!tahun) {
+            semesterInput.innerHTML = '<option value="">Pilih Tahun Dulu</option>';
+            return;
+        }
+        
+        // Fetch semesters via AJAX
+        fetch('{{ route("admin.migrasi-nilai.get-semesters") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ tahun_pelajaran: tahun })
+        })
+        .then(response => response.json())
+        .then(semesters => {
+            semesterInput.innerHTML = '<option value="">Pilih Semester</option>';
+            semesters.forEach(semester => {
+                semesterInput.innerHTML += `<option value="${semester}">${semester}</option>`;
+            });
+            semesterInput.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            semesterInput.innerHTML = '<option value="">Error loading semesters</option>';
+        });
+    });
+    
+    // Load rombels when semester changes
+    semesterInput.addEventListener('change', function() {
+        const tahun = tahunInput.value;
+        const semester = this.value;
+        
+        // Reset rombel
+        rombelInput.innerHTML = '<option value="">Loading...</option>';
+        rombelInput.disabled = true;
+        checkFilters();
+        
+        if (!semester) {
+            rombelInput.innerHTML = '<option value="">Pilih Semester Dulu</option>';
+            return;
+        }
+        
+        // Fetch rombels via AJAX
+        fetch('{{ route("admin.migrasi-nilai.get-rombels") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ 
+                tahun_pelajaran: tahun,
+                semester: semester 
+            })
+        })
+        .then(response => response.json())
+        .then(rombels => {
+            rombelInput.innerHTML = '<option value="">Pilih Rombel</option>';
+            rombels.forEach(rombel => {
+                rombelInput.innerHTML += `<option value="${rombel.id}">${rombel.nama_rombel}</option>`;
+            });
+            rombelInput.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            rombelInput.innerHTML = '<option value="">Error loading rombels</option>';
+        });
+    });
+    
+    // Rombel change
+    rombelInput.addEventListener('change', checkFilters);
+    
     // Enable/disable buttons based on filter selection
     function checkFilters() {
         const tahun = tahunInput.value;
         const semester = semesterInput.value;
         const rombel = rombelInput.value;
-        
+
         if (tahun && semester && rombel) {
             // Enable buttons
             btnDownload.disabled = false;
@@ -200,10 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
             btnImport.disabled = true;
         }
     }
-    
-    tahunInput.addEventListener('change', checkFilters);
-    semesterInput.addEventListener('change', checkFilters);
-    rombelInput.addEventListener('change', checkFilters);
     
     // Disable import button if no file selected
     document.getElementById('fileInput').addEventListener('change', function() {

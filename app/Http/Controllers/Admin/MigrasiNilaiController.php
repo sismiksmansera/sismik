@@ -21,13 +21,45 @@ class MigrasiNilaiController extends Controller
      */
     public function index()
     {
-        // Get all periods
-        $periods = DataPeriodik::orderBy('tahun_pelajaran', 'desc')->get();
+        // Get unique tahun pelajaran
+        $tahunList = DataPeriodik::select('tahun_pelajaran')
+            ->distinct()
+            ->orderBy('tahun_pelajaran', 'desc')
+            ->pluck('tahun_pelajaran');
         
-        // Get all rombels
-        $rombels = Rombel::orderBy('nama_rombel')->get();
+        return view('admin.migrasi-nilai.index', compact('tahunList'));
+    }
+    
+    /**
+     * Get semesters for selected tahun pelajaran
+     */
+    public function getSemesters(Request $request)
+    {
+        $tahun = $request->tahun_pelajaran;
+        $semesters = DataPeriodik::where('tahun_pelajaran', $tahun)
+            ->pluck('semester')
+            ->unique()
+            ->values();
         
-        return view('admin.migrasi-nilai.index', compact('periods', 'rombels'));
+        return response()->json($semesters);
+    }
+    
+    /**
+     * Get rombels for selected tahun and semester
+     */
+    public function getRombels(Request $request)
+    {
+        $tahun = $request->tahun_pelajaran;
+        $semester = $request->semester;
+        
+        // Get rombels based on tahun and semester
+        $rombels = Rombel::where('tahun_pelajaran', $tahun)
+            ->where('semester', $semester)
+            ->orderBy('nama_rombel')
+            ->select('id', 'nama_rombel')
+            ->get();
+        
+        return response()->json($rombels);
     }
     
     /**
