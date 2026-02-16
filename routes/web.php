@@ -195,6 +195,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/cek-presensi/update', [\App\Http\Controllers\Admin\CekPresensiController::class, 'update'])->name('cek-presensi.update');
     Route::post('/cek-presensi/update-mapel', [\App\Http\Controllers\Admin\CekPresensiController::class, 'updateMapel'])->name('cek-presensi.update-mapel');
     Route::get('/cek-presensi/all-mapel', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getAllMapel'])->name('cek-presensi.all-mapel');
+    Route::get('/cek-presensi/hari-libur', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getHariLibur'])->name('cek-presensi.hari-libur');
+    Route::get('/cek-presensi/data-per-tanggal', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getDataPerTanggal'])->name('cek-presensi.data-per-tanggal');
     // Guru BK Management
     Route::get('/guru-bk', [GuruBKController::class, 'index'])->name('guru-bk.index');
     Route::get('/guru-bk/create', [GuruBKController::class, 'create'])->name('guru-bk.create');

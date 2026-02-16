@@ -238,4 +238,101 @@ class CekPresensiController extends Controller
             'data' => $mapelList,
         ]);
     }
+
+    /**
+     * AJAX: Get hari libur/non-KBM dates for date picker
+     */
+    public function getHariLibur()
+    {
+        $dates = [];
+        if (\Schema::hasTable('hari_efektif')) {
+            $dates = DB::table('hari_efektif')
+                ->pluck('tanggal')
+                ->toArray();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $dates,
+        ]);
+    }
+
+    /**
+     * AJAX: Get presensi data per tanggal for a rombel (all students, JP 1-10)
+     */
+    public function getDataPerTanggal(Request $request)
+    {
+        $idRombel = $request->query('id_rombel');
+        $tanggal = $request->query('tanggal');
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
+        $semesterAktif = strtolower($periodik->semester ?? 'ganjil');
+
+        // Get all students in this rombel
+        $siswaList = DB::table('siswa')
+            ->where('nama_rombel', function($query) use ($idRombel) {
+                $query->select('nama_rombel')
+                    ->from('rombel')
+                    ->where('id', $idRombel)
+                    ->limit(1);
+            })
+            ->where('status_siswa', 'Aktif')
+            ->select('nisn', 'nama')
+            ->orderBy('nama')
+            ->get();
+
+        // Get presensi records for this rombel and date
+        $presensiRecords = DB::table('presensi_siswa')
+            ->where('id_rombel', $idRombel)
+            ->where('tanggal_presensi', $tanggal)
+            ->where('tahun_pelajaran', $tahunPelajaran)
+            ->whereRaw('LOWER(semester) = ?', [$semesterAktif])
+            ->get();
+
+        // Build lookup: nisn => record data
+        $presensiByNisn = [];
+        foreach ($presensiRecords as $rec) {
+            $presensiByNisn[$rec->nisn] = $rec;
+        }
+
+        // Build result with JP 1-10
+        $result = [];
+        foreach ($siswaList as $index => $siswa) {
+            $rec = $presensiByNisn[$siswa->nisn] ?? null;
+            $jpData = [];
+            $totalJpFilled = 0;
+            $totalHadir = 0;
+
+            for ($jp = 1; $jp <= 10; $jp++) {
+                $field = "jam_ke_{$jp}";
+                $val = $rec ? ($rec->$field ?? null) : null;
+                $jpData["jp_{$jp}"] = $val;
+
+                if ($val !== null && $val !== '' && $val !== '-') {
+                    $totalJpFilled++;
+                    if ($val === 'H') {
+                        $totalHadir++;
+                    }
+                }
+            }
+
+            $prosentase = $totalJpFilled > 0 ? round(($totalHadir / $totalJpFilled) * 100, 1) : null;
+
+            $result[] = array_merge([
+                'no' => $index + 1,
+                'nisn' => $siswa->nisn,
+                'nama' => $siswa->nama,
+                'presensi_utama' => $rec ? ($rec->presensi ?? null) : null,
+                'prosentase' => $prosentase,
+            ], $jpData);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $result,
+            'tanggal' => $tanggal,
+            'total_siswa' => count($siswaList),
+        ]);
+    }
 }

@@ -349,6 +349,80 @@
     background: #fef3c7; color: #92400e;
 }
 
+/* TANGGAL SELECTOR */
+.tanggal-selector-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+    display: none;
+}
+@media (max-width: 768px) { .tanggal-selector-row { grid-template-columns: 1fr; } }
+.tanggal-selector-row .selector-card { cursor: pointer; }
+.tanggal-input-wrapper {
+    position: relative;
+}
+.tanggal-input-wrapper input[type="date"] {
+    width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb;
+    border-radius: 8px; font-size: 14px; font-weight: 600;
+    color: #1f2937; background: white;
+}
+.tanggal-input-wrapper input[type="date"]:focus {
+    outline: none; border-color: #3b82f6;
+}
+
+/* PER-TANGGAL DATA TABLE */
+#dataSectionTanggal { display: none; }
+#dataSectionTanggal.show { display: block; }
+.jp-table-wrapper {
+    background: white; border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    overflow-x: auto;
+}
+.jp-table {
+    width: 100%; border-collapse: collapse;
+    min-width: 900px;
+}
+.jp-table thead th {
+    padding: 10px 8px; background: #f8fafc;
+    font-size: 11px; font-weight: 600; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    border-bottom: 2px solid #e5e7eb; text-align: center;
+    white-space: nowrap;
+}
+.jp-table thead th:nth-child(1),
+.jp-table thead th:nth-child(2),
+.jp-table thead th:nth-child(3) { text-align: left; }
+.jp-table tbody td {
+    padding: 8px; font-size: 13px; color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    text-align: center;
+}
+.jp-table tbody td:nth-child(1),
+.jp-table tbody td:nth-child(2),
+.jp-table tbody td:nth-child(3) { text-align: left; }
+.jp-table tbody tr:hover { background: #f5f3ff; }
+.jp-badge {
+    display: inline-block; width: 26px; height: 26px; line-height: 26px;
+    border-radius: 6px; font-size: 11px; font-weight: 700;
+    text-align: center;
+}
+.jp-badge.H { background: #d1fae5; color: #059669; }
+.jp-badge.S { background: #e0e7ff; color: #4338ca; }
+.jp-badge.I { background: #fef3c7; color: #d97706; }
+.jp-badge.A { background: #fee2e2; color: #dc2626; }
+.jp-badge.D { background: #dbeafe; color: #1d4ed8; }
+.jp-badge.B { background: #fce7f3; color: #be185d; }
+.jp-badge.empty { background: #f3f4f6; color: #d1d5db; }
+.persen-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 700;
+}
+.persen-badge.high { background: #d1fae5; color: #059669; }
+.persen-badge.mid { background: #fef3c7; color: #d97706; }
+.persen-badge.low { background: #fee2e2; color: #dc2626; }
+.persen-badge.none { background: #f3f4f6; color: #9ca3af; }
+
 /* STACKED MODAL (higher z-index) */
 .custom-modal-overlay.stacked { z-index: 10001; }
 
@@ -424,7 +498,6 @@
                         <div class="method-icon tanggal-bg"><i class="fas fa-calendar-day"></i></div>
                         <p class="method-title">Per Rombel per Tanggal</p>
                         <p class="method-desc">Cek presensi berdasarkan rombel dan tanggal</p>
-                        <span class="method-badge">Segera Hadir</span>
                     </div>
                     <div class="method-card" id="methodMinggu" onclick="selectMethod('minggu')">
                         <div class="method-icon minggu-bg"><i class="fas fa-calendar-week"></i></div>
@@ -459,7 +532,32 @@
                 </div>
             </div>
 
-            <!-- DATA SECTION -->
+            <!-- TANGGAL SELECTOR (for per-tanggal method) -->
+            <div class="tanggal-selector-row" id="tanggalSelectorRow">
+                <div class="selector-card" id="rombelCardTanggal" onclick="openRombelModalTanggal()">
+                    <div class="card-icon rombel-icon"><i class="fas fa-users"></i></div>
+                    <div class="card-content">
+                        <p class="card-value" id="rombelValueTanggal" style="display:none;"></p>
+                        <p class="card-placeholder" id="rombelPlaceholderTanggal">Pilih Rombel...</p>
+                        <span class="card-label">Rombel</span>
+                    </div>
+                </div>
+                <div class="selector-card disabled" id="tanggalCard">
+                    <div class="card-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="card-content">
+                        <p class="card-value" id="tanggalValue" style="display:none;"></p>
+                        <p class="card-placeholder" id="tanggalPlaceholder">Pilih Tanggal...</p>
+                        <span class="card-label">Tanggal</span>
+                        <div class="tanggal-input-wrapper" id="tanggalInputWrapper" style="display:none; margin-top:8px;">
+                            <input type="date" id="tanggalInput" onchange="onTanggalSelected()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATA SECTION (per mapel) -->
             <div id="dataSection">
                 <div class="section-title">
                     <h2><i class="fas fa-calendar-alt"></i> Riwayat Presensi</h2>
@@ -477,6 +575,30 @@
                             </tr>
                         </thead>
                         <tbody id="dateTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- DATA SECTION (per tanggal - JP table) -->
+            <div id="dataSectionTanggal">
+                <div class="section-title">
+                    <h2><i class="fas fa-table"></i> Presensi per Jam Pelajaran</h2>
+                    <span class="badge-count" id="tanggalSiswaCount">0 Siswa</span>
+                </div>
+                <div class="jp-table-wrapper">
+                    <table class="jp-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>NISN</th>
+                                <th>Nama Siswa</th>
+                                <th>JP 1</th><th>JP 2</th><th>JP 3</th><th>JP 4</th><th>JP 5</th>
+                                <th>JP 6</th><th>JP 7</th><th>JP 8</th><th>JP 9</th><th>JP 10</th>
+                                <th>% Hadir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jpTableBody">
                         </tbody>
                     </table>
                 </div>
@@ -608,9 +730,12 @@ let selectedMethod = null;
 let selectedRombel = null;
 let selectedMapel = null;
 let expandedDate = null;
+let selectedRombelTanggal = null;
+let selectedTanggal = null;
+let hariLiburList = [];
 
 function selectMethod(method) {
-    if (method !== 'mapel') {
+    if (method === 'minggu') {
         showToast('Fitur ini akan segera hadir!', 'error');
         return;
     }
@@ -619,23 +744,41 @@ function selectMethod(method) {
 
     // Highlight active card
     document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
-    document.getElementById('methodMapel').classList.add('active');
+    document.getElementById(method === 'mapel' ? 'methodMapel' : 'methodTanggal').classList.add('active');
 
-    // Show selector row
-    document.getElementById('selectorRow').style.display = 'grid';
-
-    // Reset selections
-    selectedRombel = null;
-    selectedMapel = null;
-    document.getElementById('rombelCard').classList.remove('selected');
-    document.getElementById('rombelPlaceholder').style.display = 'block';
-    document.getElementById('rombelValue').style.display = 'none';
-    document.getElementById('mapelCard').classList.add('disabled');
-    document.getElementById('mapelCard').classList.remove('selected');
-    document.getElementById('mapelPlaceholder').style.display = 'block';
-    document.getElementById('mapelPlaceholder').textContent = 'Pilih Mata Pelajaran...';
-    document.getElementById('mapelValue').style.display = 'none';
+    // Hide all sections first
+    document.getElementById('selectorRow').style.display = 'none';
+    document.getElementById('tanggalSelectorRow').style.display = 'none';
     document.getElementById('dataSection').classList.remove('show');
+    document.getElementById('dataSectionTanggal').classList.remove('show');
+
+    if (method === 'mapel') {
+        document.getElementById('selectorRow').style.display = 'grid';
+        // Reset mapel selections
+        selectedRombel = null;
+        selectedMapel = null;
+        document.getElementById('rombelCard').classList.remove('selected');
+        document.getElementById('rombelPlaceholder').style.display = 'block';
+        document.getElementById('rombelValue').style.display = 'none';
+        document.getElementById('mapelCard').classList.add('disabled');
+        document.getElementById('mapelCard').classList.remove('selected');
+        document.getElementById('mapelPlaceholder').style.display = 'block';
+        document.getElementById('mapelPlaceholder').textContent = 'Pilih Mata Pelajaran...';
+        document.getElementById('mapelValue').style.display = 'none';
+    } else if (method === 'tanggal') {
+        document.getElementById('tanggalSelectorRow').style.display = 'grid';
+        // Reset tanggal selections
+        selectedRombelTanggal = null;
+        selectedTanggal = null;
+        document.getElementById('rombelCardTanggal').classList.remove('selected');
+        document.getElementById('rombelPlaceholderTanggal').style.display = 'block';
+        document.getElementById('rombelValueTanggal').style.display = 'none';
+        document.getElementById('tanggalCard').classList.add('disabled');
+        document.getElementById('tanggalPlaceholder').style.display = 'block';
+        document.getElementById('tanggalValue').style.display = 'none';
+        document.getElementById('tanggalInputWrapper').style.display = 'none';
+        document.getElementById('tanggalInput').value = '';
+    }
 }
 
 const hariNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
@@ -974,6 +1117,151 @@ function escapeHtml(text) {
 function escapeAttr(text) {
     if (!text) return '';
     return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ==========================================
+// PER-TANGGAL METHOD FUNCTIONS
+// ==========================================
+
+function openRombelModalTanggal() {
+    // Reuse same rombel modal but with tanggal handler
+    const modal = document.getElementById('rombelModal');
+    // Temporarily override onclick handlers
+    const options = modal.querySelectorAll('.option-card');
+    options.forEach(opt => {
+        const origOnclick = opt.getAttribute('onclick');
+        // Extract id and name from selectRombel(id, 'name')
+        const match = origOnclick.match(/selectRombel\((\d+),\s*'(.+?)'\)/);
+        if (match) {
+            opt.setAttribute('data-orig-onclick', origOnclick);
+            opt.setAttribute('onclick', `selectRombelTanggal(${match[1]}, '${match[2]}')`);
+        }
+    });
+    modal.classList.add('show');
+}
+
+function selectRombelTanggal(id, name) {
+    selectedRombelTanggal = { id, name };
+    selectedTanggal = null;
+
+    document.getElementById('rombelCardTanggal').classList.add('selected');
+    document.getElementById('rombelPlaceholderTanggal').style.display = 'none';
+    document.getElementById('rombelValueTanggal').textContent = name;
+    document.getElementById('rombelValueTanggal').style.display = 'block';
+
+    // Enable tanggal card
+    document.getElementById('tanggalCard').classList.remove('disabled');
+    document.getElementById('tanggalPlaceholder').style.display = 'none';
+    document.getElementById('tanggalInputWrapper').style.display = 'block';
+    document.getElementById('tanggalInput').value = '';
+    document.getElementById('tanggalValue').style.display = 'none';
+    document.getElementById('dataSectionTanggal').classList.remove('show');
+
+    // Restore original rombel modal onclick handlers
+    const modal = document.getElementById('rombelModal');
+    modal.querySelectorAll('.option-card[data-orig-onclick]').forEach(opt => {
+        opt.setAttribute('onclick', opt.getAttribute('data-orig-onclick'));
+        opt.removeAttribute('data-orig-onclick');
+    });
+    closeModal('rombelModal');
+
+    // Fetch hari libur to set date restrictions
+    fetch(`{{ route("admin.cek-presensi.hari-libur") }}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                hariLiburList = data.data || [];
+            }
+        });
+}
+
+function onTanggalSelected() {
+    const input = document.getElementById('tanggalInput');
+    const val = input.value;
+    if (!val) return;
+
+    // Check if it's Saturday (6) or Sunday (0)
+    const d = new Date(val);
+    const day = d.getDay();
+    if (day === 0 || day === 6) {
+        showToast('Sabtu dan Minggu bukan hari efektif KBM!', 'error');
+        input.value = '';
+        return;
+    }
+
+    // Check if it's a holiday/non-KBM day
+    if (hariLiburList.includes(val)) {
+        showToast('Tanggal ini adalah hari libur/non-KBM!', 'error');
+        input.value = '';
+        return;
+    }
+
+    selectedTanggal = val;
+
+    // Update display
+    const tglFormatted = d.toLocaleDateString('id-ID', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+    document.getElementById('tanggalValue').textContent = tglFormatted;
+    document.getElementById('tanggalValue').style.display = 'block';
+    document.getElementById('tanggalCard').classList.add('selected');
+
+    loadDataPerTanggal();
+}
+
+function loadDataPerTanggal() {
+    const section = document.getElementById('dataSectionTanggal');
+    const tbody = document.getElementById('jpTableBody');
+    section.classList.add('show');
+    tbody.innerHTML = '<tr><td colspan="14"><div class="loading-spinner"><div class="spinner"></div></div></td></tr>';
+
+    fetch(`{{ route("admin.cek-presensi.data-per-tanggal") }}?id_rombel=${selectedRombelTanggal.id}&tanggal=${selectedTanggal}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data.length > 0) {
+                document.getElementById('tanggalSiswaCount').textContent = data.total_siswa + ' Siswa';
+                let html = '';
+                data.data.forEach(row => {
+                    html += `<tr>
+                        <td>${row.no}</td>
+                        <td>${escapeHtml(row.nisn)}</td>
+                        <td><strong>${escapeHtml(row.nama)}</strong></td>`;
+
+                    for (let jp = 1; jp <= 10; jp++) {
+                        const val = row['jp_' + jp];
+                        if (val && val !== '-' && val !== '') {
+                            html += `<td><span class="jp-badge ${val}">${val}</span></td>`;
+                        } else {
+                            html += `<td><span class="jp-badge empty">-</span></td>`;
+                        }
+                    }
+
+                    // Percentage
+                    if (row.prosentase !== null) {
+                        let pClass = 'none';
+                        if (row.prosentase >= 80) pClass = 'high';
+                        else if (row.prosentase >= 50) pClass = 'mid';
+                        else pClass = 'low';
+                        html += `<td><span class="persen-badge ${pClass}">${row.prosentase}%</span></td>`;
+                    } else {
+                        html += `<td><span class="persen-badge none">-</span></td>`;
+                    }
+
+                    html += '</tr>';
+                });
+                tbody.innerHTML = html;
+            } else {
+                tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i><h3>Tidak Ada Data</h3>
+                    <p>Belum ada presensi untuk rombel ini pada tanggal tersebut.</p>
+                </div></td></tr>`;
+                document.getElementById('tanggalSiswaCount').textContent = '0 Siswa';
+            }
+        })
+        .catch(() => {
+            tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i><h3>Error</h3>
+                <p>Gagal memuat data presensi.</p>
+            </div></td></tr>`;
+        });
 }
 </script>
 @endpush
