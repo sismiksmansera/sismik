@@ -62,76 +62,69 @@ class LegerController extends Controller
      */
     public function getLegerData(Request $request)
     {
-        $rombelId = $request->query('rombel_id');
-        $tahun = $request->query('tahun');
-        $semester = $request->query('semester');
-        
-        // Get all katrol data for this rombel
-        $katrolData = DB::table('katrol_nilai_leger')
-            ->where('rombel_id', $rombelId)
-            ->where('tahun_pelajaran', $tahun)
-            ->where('semester', $semester)
-            ->orderBy('ranking')
-            ->get();
-        
-        if ($katrolData->isEmpty()) {
-            return response()->json([
-                'students' => [],
-                'mapels' => []
-            ]);
-        }
-        
-        // Define all possible mapel columns (24 mapel + IPA/IPS)
-        $allMapelColumns = [
-            'pendidikan_agama_dan_budi_pekerti', 'pendidikan_pancasila', 'bahasa_indonesia',
-            'matematika', 'sejarah_indonesia', 'bahasa_inggris', 'seni_budaya',
-            'pendidikan_jasmani_olahraga_dan_kesehatan', 'prakarya_dan_kewirausahaan',
-            'matematika_peminatan', 'biologi', 'fisika', 'kimia', 'ekonomi',
-            'geografi', 'sosiologi', 'sejarah_peminatan', 'bahasa_dan_sastra_indonesia',
-            'bahasa_dan_sastra_inggris', 'antropologi', 'bahasa_dan_sastra_asing_lainnya',
-            'informatika', 'bimbingan_konseling', 'mulok', 'ipa_average', 'ips_average'
-        ];
-        
-        // Find which mapels have data (at least one student has non-null value)
-        $activeMapels = [];
-        foreach ($allMapelColumns as $col) {
-            foreach ($katrolData as $row) {
-                if (isset($row->$col) && $row->$col !== null && $row->$col !== '') {
-                    $activeMapels[] = $col;
-                    break;
-                }
-            }
-        }
-        
-        // Convert column names to display names
-        $mapelDisplayNames = [];
-        foreach ($activeMapels as $col) {
-            $displayName = ucwords(str_replace('_', ' ', $col));
-            $mapelDisplayNames[] = $displayName;
-        }
-        
-        // Format student data
-        $students = [];
-        foreach ($katrolData as $row) {
-            $nilai = [];
-            foreach ($activeMapels as $col) {
-                $displayName = ucwords(str_replace('_', ' ', $col));
-                $nilai[$displayName] = $row->$col ?? '-';
+        try {
+            $rombelId = $request->query('rombel_id');
+            $tahun = $request->query('tahun');
+            $semester = $request->query('semester');
+            
+            $katrolData = DB::table('katrol_nilai_leger')
+                ->where('rombel_id', $rombelId)
+                ->where('tahun_pelajaran', $tahun)
+                ->where('semester', $semester)
+                ->orderBy('ranking', 'asc')
+                ->get();
+            
+            if ($katrolData->isEmpty()) {
+                return response()->json(['students' => [], 'mapels' => []]);
             }
             
-            $students[] = [
-                'nisn' => $row->nisn,
-                'nama_siswa' => $row->nama_siswa,
-                'nilai' => $nilai,
-                'rata_rata' => number_format($row->rata_rata ?? 0, 2),
-                'ranking' => $row->ranking ?? '-'
+            $allMapelColumns = [
+                'pendidikan_agama_dan_budi_pekerti', 'pendidikan_pancasila', 'bahasa_indonesia',
+                'matematika', 'sejarah_indonesia', 'bahasa_inggris', 'seni_budaya',
+                'pendidikan_jasmani_olahraga_dan_kesehatan', 'prakarya_dan_kewirausahaan',
+                'matematika_peminatan', 'biologi', 'fisika', 'kimia', 'ekonomi',
+                'geografi', 'sosiologi', 'sejarah_peminatan', 'bahasa_dan_sastra_indonesia',
+                'bahasa_dan_sastra_inggris', 'antropologi', 'bahasa_dan_sastra_asing_lainnya',
+                'informatika', 'bimbingan_konseling', 'mulok', 'ipa_average', 'ips_average'
             ];
+            
+            $activeMapels = [];
+            foreach ($allMapelColumns as $col) {
+                foreach ($katrolData as $row) {
+                    if (property_exists($row, $col) && $row->$col !== null && $row->$col !== '') {
+                        $activeMapels[] = $col;
+                        break;
+                    }
+                }
+            }
+            
+            $mapelDisplayNames = [];
+            foreach ($activeMapels as $col) {
+                $mapelDisplayNames[] = ucwords(str_replace('_', ' ', $col));
+            }
+            
+            $students = [];
+            foreach ($katrolData as $row) {
+                $nilai = [];
+                foreach ($activeMapels as $col) {
+                    $displayName = ucwords(str_replace('_', ' ', $col));
+                    $nilai[$displayName] = property_exists($row, $col) ? ($row->$col ?? '-') : '-';
+                }
+                
+                $students[] = [
+                    'nisn' => property_exists($row, 'nisn') ? $row->nisn : '-',
+                    'nama_siswa' => property_exists($row, 'nama_siswa') ? $row->nama_siswa : (property_exists($row, 'nama') ? $row->nama : 'Unknown'),
+                    'nilai' => $nilai,
+                    'rata_rata' => property_exists($row, 'rata_rata') ? number_format($row->rata_rata, 2) : '0.00',
+                    'ranking' => property_exists($row, 'ranking') ? $row->ranking : '-'
+                ];
+            }
+            
+            return response()->json(['students' => $students, 'mapels' => $mapelDisplayNames]);
+        } catch (\Exception $e) {
+            \Log::error('Leger Data Error: ' . $e->getMessage());
+            return response()->json(['error' => true, 'message' => $e->getMessage()], 500);
         }
-        
-        return response()->json([
-            'students' => $students,
-            'mapels' => $mapelDisplayNames
-        ]);
     }
     /**
      * Print Leger Nilai (Original grades)
