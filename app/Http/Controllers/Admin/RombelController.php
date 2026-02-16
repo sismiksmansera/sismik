@@ -363,169 +363,176 @@ class RombelController extends Controller
      */
     public function katrolPreview(Request $request, $id)
     {
-        $rombel = Rombel::findOrFail($id);
-        $rombelNama = $rombel->nama_rombel;
-        
-        $tahunPelajaran = $request->input('tahun', $rombel->tahun_pelajaran);
-        $semester = $request->input('semester', $rombel->semester);
-        $minBaru = floatval($request->input('min_baru', 65));
-        $maxBaru = floatval($request->input('max_baru', 95));
+        try {
+            $rombel = Rombel::findOrFail($id);
+            $rombelNama = $rombel->nama_rombel;
+            
+            $tahunPelajaran = $request->input('tahun', $rombel->tahun_pelajaran);
+            $semester = $request->input('semester', $rombel->semester);
+            $minBaru = floatval($request->input('min_baru', 65));
+            $maxBaru = floatval($request->input('max_baru', 95));
 
-        // Get active period
-        $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
-        $tahunAktif = $periodeAktif->tahun_pelajaran ?? $tahunPelajaran;
-        $semesterAktif = $periodeAktif->semester ?? $semester;
+            // Get active period
+            $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
+            $tahunAktif = $periodeAktif->tahun_pelajaran ?? $tahunPelajaran;
+            $semesterAktif = $periodeAktif->semester ?? $semester;
 
-        // Build where clause for siswa in this rombel
-        $tahunParts = explode('/', $tahunPelajaran);
-        $tahunAwal = intval($tahunParts[0] ?? date('Y'));
-        $semesterLower = strtolower($semester);
+            // Build where clause for siswa in this rombel
+            $tahunParts = explode('/', $tahunPelajaran);
+            $tahunAwal = intval($tahunParts[0] ?? date('Y'));
+            $semesterLower = strtolower($semester);
 
-        $whereConditions = [];
-        if ($semesterLower == 'ganjil') {
-            $whereConditions[] = "(angkatan_masuk = {$tahunAwal} AND rombel_semester_1 = '{$rombelNama}')";
-            $whereConditions[] = "(angkatan_masuk = " . ($tahunAwal - 1) . " AND rombel_semester_3 = '{$rombelNama}')";
-            $whereConditions[] = "(angkatan_masuk = " . ($tahunAwal - 2) . " AND rombel_semester_5 = '{$rombelNama}')";
-        } else {
-            $whereConditions[] = "(angkatan_masuk = {$tahunAwal} AND rombel_semester_2 = '{$rombelNama}')";
-            $whereConditions[] = "(angkatan_masuk = " . ($tahunAwal - 1) . " AND rombel_semester_4 = '{$rombelNama}')";
-            $whereConditions[] = "(angkatan_masuk = " . ($tahunAwal - 2) . " AND rombel_semester_6 = '{$rombelNama}')";
-        }
-        $whereClause = implode(' OR ', $whereConditions);
-
-        // Get siswa NISNs
-        $siswaRows = DB::select("SELECT nisn, nama FROM siswa WHERE {$whereClause} ORDER BY nama");
-        $siswaList = [];
-        foreach ($siswaRows as $row) {
-            $siswaList[$row->nisn] = $row->nama;
-        }
-
-        if (empty($siswaList)) {
-            return response()->json(['success' => false, 'message' => 'Tidak ada siswa dalam rombel ini']);
-        }
-
-        $nisnIn = "'" . implode("','", array_keys($siswaList)) . "'";
-
-        // Get all grades
-        $nilaiRows = DB::select("
-            SELECT p.nisn, p.mapel, AVG(p.nilai) as rata_nilai
-            FROM penilaian p
-            WHERE p.nisn IN ({$nisnIn})
-              AND p.tahun_pelajaran = ?
-              AND p.semester = ?
-            GROUP BY p.nisn, p.mapel
-            ORDER BY p.mapel, p.nisn
-        ", [$tahunAktif, $semesterAktif]);
-
-        if (empty($nilaiRows)) {
-            return response()->json(['success' => false, 'message' => 'Tidak ada data nilai untuk periode ini']);
-        }
-
-        // Collect grades per mapel for min/max calculation
-        $nilaiPerMapel = [];
-        $dataRaw = [];
-
-        foreach ($nilaiRows as $row) {
-            $mapel = $row->mapel;
-            $nilai = floatval($row->rata_nilai);
-            $nilaiPerMapel[$mapel][] = $nilai;
-            $dataRaw[] = [
-                'nisn' => $row->nisn,
-                'nama_siswa' => $siswaList[$row->nisn] ?? 'Unknown',
-                'mapel' => $mapel,
-                'nilai_lama' => round($nilai, 1)
-            ];
-        }
-
-        // Calculate min/max per mapel
-        $mapelRanges = [];
-        foreach ($nilaiPerMapel as $mapel => $nilaiArr) {
-            $mapelRanges[$mapel] = ['min' => min($nilaiArr), 'max' => max($nilaiArr)];
-        }
-
-        // Transform grades with linear normalization per mapel
-        $resultData = [];
-        foreach ($dataRaw as $row) {
-            $mapel = $row['mapel'];
-            $nilaiLama = $row['nilai_lama'];
-            $minLama = $mapelRanges[$mapel]['min'];
-            $maxLama = $mapelRanges[$mapel]['max'];
-
-            if ($maxLama == $minLama) {
-                $nilaiBaru = ($minBaru + $maxBaru) / 2;
+            $whereConditions = [];
+            if ($semesterLower == 'ganjil') {
+                $whereConditions[] = "(angkatan_masuk = {$tahunAwal} AND rombel_semester_1 = '{$rombelNama}')";
+                $whereConditions[] = "(angkatan_masuk = " . ($tahunAwal - 1) . " AND rombel_semester_3 = '{$rombelNama}')";
+                $whereConditions[] = "(angkatan_masuk = " . ($tahunAwal - 2) . " AND rombel_semester_5 = '{$rombelNama}')";
             } else {
-                $nilaiBaru = (($nilaiLama - $minLama) / ($maxLama - $minLama)) * ($maxBaru - $minBaru) + $minBaru;
+                $whereConditions[] = "(angkatan_masuk = {$tahunAwal} AND rombel_semester_2 = '{$rombelNama}')";
+                $whereConditions[] = "(angkatan_masuk = " . ($tahunAwal - 1) . " AND rombel_semester_4 = '{$rombelNama}')";
+                $whereConditions[] = "(angkatan_masuk = " . ($tahunAwal - 2) . " AND rombel_semester_6 = '{$rombelNama}')";
+            }
+            $whereClause = implode(' OR ', $whereConditions);
+
+            // Get siswa NISNs
+            $siswaRows = DB::select("SELECT nisn, nama FROM siswa WHERE {$whereClause} ORDER BY nama");
+            $siswaList = [];
+            foreach ($siswaRows as $row) {
+                $siswaList[$row->nisn] = $row->nama;
             }
 
-            $resultData[] = [
-                'nisn' => $row['nisn'],
-                'nama_siswa' => $row['nama_siswa'],
-                'mapel' => $mapel,
-                'nilai_lama' => $nilaiLama,
-                'nilai_baru' => round($nilaiBaru, 1)
-            ];
-
-            // Save to nilai_katrol
-            DB::statement("
-                INSERT INTO nilai_katrol (rombel_id, tahun_pelajaran, semester, nisn, mapel, nilai_asli, nilai_katrol)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE nilai_asli = VALUES(nilai_asli), nilai_katrol = VALUES(nilai_katrol)
-            ", [$id, $tahunAktif, $semesterAktif, $row['nisn'], $mapel, $nilaiLama, round($nilaiBaru, 1)]);
-        }
-
-        // Generate IPA and IPS averages
-        $ipaMapels = ['Biologi', 'Fisika', 'Kimia'];
-        $ipsMapels = ['Sejarah', 'Ekonomi', 'Sosiologi', 'Geografi'];
-        $nilaiPerSiswa = [];
-
-        foreach ($resultData as $row) {
-            $nilaiPerSiswa[$row['nisn']]['nama'] = $row['nama_siswa'];
-            $nilaiPerSiswa[$row['nisn']]['nilai'][$row['mapel']] = $row['nilai_baru'];
-        }
-
-        foreach ($nilaiPerSiswa as $nisn => $siswaData) {
-            // IPA
-            $ipaValues = [];
-            foreach ($ipaMapels as $m) {
-                if (isset($siswaData['nilai'][$m])) $ipaValues[] = $siswaData['nilai'][$m];
+            if (empty($siswaList)) {
+                return response()->json(['success' => false, 'message' => 'Tidak ada siswa dalam rombel ini']);
             }
-            if (!empty($ipaValues)) {
-                $ipaAvg = round(array_sum($ipaValues) / count($ipaValues), 1);
+
+            $nisnIn = "'" . implode("','", array_keys($siswaList)) . "'";
+
+            // Get all grades
+            $nilaiRows = DB::select("
+                SELECT p.nisn, p.mapel, AVG(p.nilai) as rata_nilai
+                FROM penilaian p
+                WHERE p.nisn IN ({$nisnIn})
+                  AND p.tahun_pelajaran = ?
+                  AND p.semester = ?
+                GROUP BY p.nisn, p.mapel
+                ORDER BY p.mapel, p.nisn
+            ", [$tahunAktif, $semesterAktif]);
+
+            if (empty($nilaiRows)) {
+                return response()->json(['success' => false, 'message' => 'Tidak ada data nilai untuk periode ini']);
+            }
+
+            // Collect grades per mapel for min/max calculation
+            $nilaiPerMapel = [];
+            $dataRaw = [];
+
+            foreach ($nilaiRows as $row) {
+                $mapel = $row->mapel;
+                $nilai = floatval($row->rata_nilai);
+                $nilaiPerMapel[$mapel][] = $nilai;
+                $dataRaw[] = [
+                    'nisn' => $row->nisn,
+                    'nama_siswa' => $siswaList[$row->nisn] ?? 'Unknown',
+                    'mapel' => $mapel,
+                    'nilai_lama' => round($nilai, 1)
+                ];
+            }
+
+            // Calculate min/max per mapel
+            $mapelRanges = [];
+            foreach ($nilaiPerMapel as $mapel => $nilaiArr) {
+                $mapelRanges[$mapel] = ['min' => min($nilaiArr), 'max' => max($nilaiArr)];
+            }
+
+            // Transform grades with linear normalization per mapel
+            $resultData = [];
+            foreach ($dataRaw as $row) {
+                $mapel = $row['mapel'];
+                $nilaiLama = $row['nilai_lama'];
+                $minLama = $mapelRanges[$mapel]['min'];
+                $maxLama = $mapelRanges[$mapel]['max'];
+
+                if ($maxLama == $minLama) {
+                    $nilaiBaru = ($minBaru + $maxBaru) / 2;
+                } else {
+                    $nilaiBaru = (($nilaiLama - $minLama) / ($maxLama - $minLama)) * ($maxBaru - $minBaru) + $minBaru;
+                }
+
+                $resultData[] = [
+                    'nisn' => $row['nisn'],
+                    'nama_siswa' => $row['nama_siswa'],
+                    'mapel' => $mapel,
+                    'nilai_lama' => $nilaiLama,
+                    'nilai_baru' => round($nilaiBaru, 1)
+                ];
+
+                // Save to nilai_katrol
                 DB::statement("
                     INSERT INTO nilai_katrol (rombel_id, tahun_pelajaran, semester, nisn, mapel, nilai_asli, nilai_katrol)
-                    VALUES (?, ?, ?, ?, 'IPA', ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE nilai_asli = VALUES(nilai_asli), nilai_katrol = VALUES(nilai_katrol)
-                ", [$id, $tahunAktif, $semesterAktif, $nisn, $ipaAvg, $ipaAvg]);
+                ", [$id, $tahunAktif, $semesterAktif, $row['nisn'], $mapel, $nilaiLama, round($nilaiBaru, 1)]);
             }
 
-            // IPS
-            $ipsValues = [];
-            foreach ($ipsMapels as $m) {
-                if (isset($siswaData['nilai'][$m])) $ipsValues[] = $siswaData['nilai'][$m];
+            // Generate IPA and IPS averages
+            $ipaMapels = ['Biologi', 'Fisika', 'Kimia'];
+            $ipsMapels = ['Sejarah', 'Ekonomi', 'Sosiologi', 'Geografi'];
+            $nilaiPerSiswa = [];
+
+            foreach ($resultData as $row) {
+                $nilaiPerSiswa[$row['nisn']]['nama'] = $row['nama_siswa'];
+                $nilaiPerSiswa[$row['nisn']]['nilai'][$row['mapel']] = $row['nilai_baru'];
             }
-            if (!empty($ipsValues)) {
-                $ipsAvg = round(array_sum($ipsValues) / count($ipsValues), 1);
-                DB::statement("
-                    INSERT INTO nilai_katrol (rombel_id, tahun_pelajaran, semester, nisn, mapel, nilai_asli, nilai_katrol)
-                    VALUES (?, ?, ?, ?, 'IPS', ?, ?)
-                    ON DUPLICATE KEY UPDATE nilai_asli = VALUES(nilai_asli), nilai_katrol = VALUES(nilai_katrol)
-                ", [$id, $tahunAktif, $semesterAktif, $nisn, $ipsAvg, $ipsAvg]);
+
+            foreach ($nilaiPerSiswa as $nisn => $siswaData) {
+                // IPA
+                $ipaValues = [];
+                foreach ($ipaMapels as $m) {
+                    if (isset($siswaData['nilai'][$m])) $ipaValues[] = $siswaData['nilai'][$m];
+                }
+                if (!empty($ipaValues)) {
+                    $ipaAvg = round(array_sum($ipaValues) / count($ipaValues), 1);
+                    DB::statement("
+                        INSERT INTO nilai_katrol (rombel_id, tahun_pelajaran, semester, nisn, mapel, nilai_asli, nilai_katrol)
+                        VALUES (?, ?, ?, ?, 'IPA', ?, ?)
+                        ON DUPLICATE KEY UPDATE nilai_asli = VALUES(nilai_asli), nilai_katrol = VALUES(nilai_katrol)
+                    ", [$id, $tahunAktif, $semesterAktif, $nisn, $ipaAvg, $ipaAvg]);
+                }
+
+                // IPS
+                $ipsValues = [];
+                foreach ($ipsMapels as $m) {
+                    if (isset($siswaData['nilai'][$m])) $ipsValues[] = $siswaData['nilai'][$m];
+                }
+                if (!empty($ipsValues)) {
+                    $ipsAvg = round(array_sum($ipsValues) / count($ipsValues), 1);
+                    DB::statement("
+                        INSERT INTO nilai_katrol (rombel_id, tahun_pelajaran, semester, nisn, mapel, nilai_asli, nilai_katrol)
+                        VALUES (?, ?, ?, ?, 'IPS', ?, ?)
+                        ON DUPLICATE KEY UPDATE nilai_asli = VALUES(nilai_asli), nilai_katrol = VALUES(nilai_katrol)
+                    ", [$id, $tahunAktif, $semesterAktif, $nisn, $ipsAvg, $ipsAvg]);
+                }
             }
+
+            // Sort by mapel then nama
+            usort($resultData, function($a, $b) {
+                $cmp = strcmp($a['mapel'], $b['mapel']);
+                return $cmp == 0 ? strcmp($a['nama_siswa'], $b['nama_siswa']) : $cmp;
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $resultData,
+                'total' => count($resultData),
+                'saved' => true,
+                'ipa_ips_generated' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Sort by mapel then nama
-        usort($resultData, function($a, $b) {
-            $cmp = strcmp($a['mapel'], $b['mapel']);
-            return $cmp == 0 ? strcmp($a['nama_siswa'], $b['nama_siswa']) : $cmp;
-        });
-
-        return response()->json([
-            'success' => true,
-            'data' => $resultData,
-            'total' => count($resultData),
-            'saved' => true,
-            'ipa_ips_generated' => true
-        ]);
     }
 
     /**

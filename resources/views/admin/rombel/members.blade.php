@@ -392,7 +392,7 @@
                                 <input type="number" id="nilaiMaxBaru" class="form-control" value="{{ $lockedNilaiMax }}" min="0" max="100">
                             </div>
                             <div class="col-md-4">
-                                <button onclick="generateKatrolPreview()" class="btn btn-primary w-100 fw-bold">
+                                <button type="button" onclick="generateKatrolPreview()" class="btn btn-primary w-100 fw-bold">
                                     <i class="fas fa-eye me-1"></i> Simpan & Preview
                                 </button>
                             </div>
@@ -511,11 +511,20 @@ function generateKatrolPreview() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
         },
         body: `tahun=${encodeURIComponent('{{ $tahunPelajaran }}')}&semester=${encodeURIComponent('{{ $semester }}')}&min_baru=${minBaru}&max_baru=${maxBaru}`
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) {
+            return r.text().then(text => {
+                console.error('Server error:', r.status, text);
+                throw new Error('Server error ' + r.status);
+            });
+        }
+        return r.json();
+    })
     .then(data => {
         document.getElementById('katrolLoading').classList.add('d-none');
         if (data.success) {
@@ -523,11 +532,12 @@ function generateKatrolPreview() {
             renderKatrolTable(data.data);
             document.getElementById('katrolPreviewContainer').style.display = 'block';
         } else {
-            alert('Error: ' + data.message);
+            alert(data.message || 'Terjadi kesalahan');
         }
     })
     .catch(err => {
         document.getElementById('katrolLoading').classList.add('d-none');
+        console.error('Fetch error:', err);
         alert('Error: ' + err.message);
     });
 }
