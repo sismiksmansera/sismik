@@ -65,6 +65,10 @@
             <i class="fas fa-futbol"></i>
             <span>Ekstrakurikuler</span>
         </a>
+        <a href="{{ route('admin.migrasi-nilai.index') }}" class="menu-item {{ request()->routeIs('admin.migrasi-nilai.*') ? 'active' : '' }}">
+            <i class="fas fa-file-upload"></i>
+            <span>Migrasi Nilai Manual</span>
+        </a>
 
         <div class="menu-label">Laporan</div>
         <a href="#" class="menu-item">

@@ -257,6 +257,11 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/pengaduan/update', [\App\Http\Controllers\Admin\PengaduanController::class, 'update'])->name('pengaduan.update');
     Route::post('/pengaduan/teruskan', [\App\Http\Controllers\Admin\PengaduanController::class, 'teruskan'])->name('pengaduan.teruskan');
     Route::post('/pengaduan/destroy', [\App\Http\Controllers\Admin\PengaduanController::class, 'destroy'])->name('pengaduan.destroy');
+    
+    // Migrasi Nilai Manual
+    Route::get('/migrasi-nilai', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'index'])->name('migrasi-nilai.index');
+    Route::post('/migrasi-nilai/download-template', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'downloadTemplate'])->name('migrasi-nilai.download-template');
+    Route::post('/migrasi-nilai/import', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'import'])->name('migrasi-nilai.import');
 });
 
 
