@@ -481,6 +481,103 @@ class CekPresensiController extends Controller
     }
 
     /**
+     * AJAX: Bulk store/update presensi for multiple students + JPs in one request
+     */
+    public function bulkStorePresensi(Request $request)
+    {
+        $entries = $request->input('entries', []);
+        $tanggal = $request->input('tanggal');
+        $idRombel = $request->input('id_rombel');
+
+        if (empty($entries) || !$tanggal || !$idRombel) {
+            return response()->json(['success' => false, 'message' => 'Data tidak lengkap']);
+        }
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
+        $semester = $periodik->semester ?? '';
+
+        $saved = 0;
+
+        DB::beginTransaction();
+        try {
+            // Group entries by nisn+mapel for efficiency
+            $grouped = [];
+            foreach ($entries as $entry) {
+                $key = $entry['nisn'] . '|' . ($entry['mapel'] ?? '');
+                if (!isset($grouped[$key])) {
+                    $grouped[$key] = [
+                        'nisn' => $entry['nisn'],
+                        'nama' => $entry['nama'] ?? '',
+                        'mapel' => $entry['mapel'] ?? '',
+                        'guru' => $entry['guru'] ?? '',
+                        'jps' => [],
+                    ];
+                }
+                $grouped[$key]['jps'][$entry['jp']] = $entry['status'];
+            }
+
+            foreach ($grouped as $group) {
+                $nisn = $group['nisn'];
+                $mapel = $group['mapel'];
+
+                // Build the update/insert columns
+                $jamColumns = [];
+                foreach ($group['jps'] as $jp => $status) {
+                    $jamColumns["jam_ke_{$jp}"] = $status;
+                }
+
+                // Use the last status for the main 'presensi' field
+                $lastStatus = end($group['jps']);
+
+                $existing = DB::table('presensi_siswa')
+                    ->where('nisn', $nisn)
+                    ->where('mata_pelajaran', $mapel)
+                    ->where('tanggal_presensi', $tanggal)
+                    ->where('id_rombel', $idRombel)
+                    ->first();
+
+                if ($existing) {
+                    DB::table('presensi_siswa')
+                        ->where('id', $existing->id)
+                        ->update(array_merge($jamColumns, [
+                            'presensi' => $lastStatus,
+                            'tanggal_waktu_record' => now(),
+                        ]));
+                } else {
+                    DB::table('presensi_siswa')->insert(array_merge([
+                        'nama_siswa' => $group['nama'],
+                        'nisn' => $nisn,
+                        'presensi' => $lastStatus,
+                        'mata_pelajaran' => $mapel,
+                        'tanggal_presensi' => $tanggal,
+                        'id_rombel' => $idRombel,
+                        'tahun_pelajaran' => $tahunPelajaran,
+                        'semester' => $semester,
+                        'guru_pengajar' => $group['guru'],
+                        'tanggal_waktu_record' => now(),
+                    ], $jamColumns));
+                }
+
+                $saved += count($group['jps']);
+            }
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menyimpan $saved presensi",
+                'saved' => $saved,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * AJAX: Get all mata pelajaran for picker
      */
     public function getAllMapel()

@@ -240,6 +240,30 @@
     .tp-toast.success { background: linear-gradient(135deg, #10b981, #059669); }
     .tp-toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
 
+    /* LOADING OVERLAY */
+    .tp-loading-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.6); z-index: 99998;
+        align-items: center; justify-content: center;
+        flex-direction: column; gap: 16px;
+    }
+    .tp-loading-overlay.show { display: flex; }
+    .tp-loading-spinner {
+        width: 48px; height: 48px;
+        border: 4px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: tpSpin 0.8s linear infinite;
+    }
+    @keyframes tpSpin { to { transform: rotate(360deg); } }
+    .tp-loading-text {
+        color: #fff; font-size: 16px; font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .tp-loading-progress {
+        color: rgba(255,255,255,0.8); font-size: 13px;
+    }
+
     /* RESPONSIVE */
     @media (max-width: 768px) {
         .tp-header { padding: 15px; }
@@ -487,6 +511,13 @@
     </div>
 </div>
 
+<!-- Loading Overlay -->
+<div class="tp-loading-overlay" id="loadingOverlay">
+    <div class="tp-loading-spinner"></div>
+    <div class="tp-loading-text" id="loadingText">Menyimpan data...</div>
+    <div class="tp-loading-progress" id="loadingProgress"></div>
+</div>
+
 <!-- Toast -->
 <div class="tp-toast" id="tpToast"></div>
 
@@ -500,6 +531,7 @@
 
     @php $backUrl = route($routePrefix . '.cek-presensi.index', ['method' => 'tanggal', 'id_rombel' => $idRombel, 'nama_rombel' => $rombel->nama_rombel, 'tanggal' => $tanggal]); @endphp
     const storeUrl = @json(route("{$routePrefix}.cek-presensi.store-presensi"));
+    const bulkStoreUrl = @json(route("{$routePrefix}.cek-presensi.bulk-store-presensi"));
     const deleteUrl = @json(route("{$routePrefix}.cek-presensi.delete-presensi-by-date"));
     const backUrl = @json($backUrl);
     const csrfToken = '{{ csrf_token() }}';
@@ -538,6 +570,33 @@
         savePresensi(activeNisn, activeNama, activeJp, status, activeMapel, activeGuru);
     }
 
+    let bulkInProgress = false;
+    let bulkTotal = 0;
+    let bulkDone = 0;
+
+    function showLoading(text) {
+        bulkInProgress = true;
+        document.getElementById('loadingText').textContent = text;
+        document.getElementById('loadingProgress').textContent = '';
+        document.getElementById('loadingOverlay').classList.add('show');
+    }
+    function updateLoadingProgress() {
+        bulkDone++;
+        document.getElementById('loadingProgress').textContent = `${bulkDone} / ${bulkTotal}`;
+    }
+    function hideLoading() {
+        bulkInProgress = false;
+        document.getElementById('loadingOverlay').classList.remove('show');
+    }
+
+    // Prevent navigation during bulk save
+    window.addEventListener('beforeunload', function(e) {
+        if (bulkInProgress) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
     function savePresensi(nisn, nama, jp, status, mapel, guru, silent = false) {
         // Update UI immediately
         const btn = document.getElementById(`jp-${nisn}-${jp}`);
@@ -546,8 +605,8 @@
             btn.querySelector('.tp-jp-status').textContent = status;
         }
 
-        // AJAX save
-        fetch(storeUrl, {
+        // AJAX save — returns Promise
+        return fetch(storeUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -566,6 +625,7 @@
         })
         .then(r => r.json())
         .then(data => {
+            if (bulkInProgress) updateLoadingProgress();
             if (!silent) {
                 if (data.success) {
                     showToast(`JP ${jp}: ${statusNames[status]} ✓`, 'success');
@@ -574,28 +634,79 @@
                 }
             }
         })
-        .catch(() => { if (!silent) showToast('Terjadi kesalahan koneksi', 'error'); });
+        .catch(() => {
+            if (bulkInProgress) updateLoadingProgress();
+            if (!silent) showToast('Terjadi kesalahan koneksi', 'error');
+        });
     }
 
     // Auto-set all scheduled JPs to Hadir on page load ONLY when adding new presensi (no existing data)
     const hasExistingData = {{ count($presensiMap) > 0 ? 'true' : 'false' }};
     if (!hasExistingData) {
         document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.tp-card');
-            cards.forEach(card => {
-                const nisn = card.dataset.nisn;
-                const nama = card.dataset.nama;
-                const btns = card.querySelectorAll('.tp-jp-btn');
-                btns.forEach(btn => {
-                    const jp = parseInt(btn.dataset.jp);
-                    const mapel = btn.dataset.mapel;
-                    const guru = btn.dataset.guru;
-                    const currentStatus = btn.querySelector('.tp-jp-status').textContent.trim();
-                    if (mapel && (currentStatus === '-' || currentStatus === '')) {
-                        savePresensi(nisn, nama, jp, 'H', mapel, guru, true);
-                    }
-                });
+            bulkSaveAll('H', 'Menyimpan presensi awal...', true);
+        });
+    }
+
+    /**
+     * Bulk save: collect all scheduled JPs, update UI, send one request
+     * @param {string} status - status to set
+     * @param {string} loadingMsg - loading overlay message
+     * @param {boolean} onlyEmpty - if true, only set JPs without existing status
+     */
+    function bulkSaveAll(status, loadingMsg, onlyEmpty = false) {
+        const entries = [];
+        const cards = document.querySelectorAll('.tp-card');
+        cards.forEach(card => {
+            const nisn = card.dataset.nisn;
+            const nama = card.dataset.nama;
+            const btns = card.querySelectorAll('.tp-jp-btn');
+            btns.forEach(btn => {
+                const jp = parseInt(btn.dataset.jp);
+                const mapel = btn.dataset.mapel;
+                const guru = btn.dataset.guru;
+                if (!mapel) return;
+                if (onlyEmpty) {
+                    const cur = btn.querySelector('.tp-jp-status').textContent.trim();
+                    if (cur !== '-' && cur !== '') return;
+                }
+                entries.push({ nisn, nama, jp, status, mapel, guru });
+                // Update UI immediately
+                btn.className = `tp-jp-btn ${status}`;
+                btn.querySelector('.tp-jp-status').textContent = status;
             });
+        });
+
+        if (entries.length === 0) return;
+
+        showLoading(loadingMsg);
+        bulkTotal = entries.length;
+        bulkDone = 0;
+
+        fetch(bulkStoreUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                entries: entries,
+                tanggal: tanggal,
+                id_rombel: idRombel
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showToast(`${data.saved} presensi berhasil disimpan ✓`, 'success');
+            } else {
+                showToast(data.message || 'Gagal menyimpan', 'error');
+            }
+        })
+        .catch(() => {
+            hideLoading();
+            showToast('Terjadi kesalahan koneksi', 'error');
         });
     }
 
@@ -612,21 +723,7 @@
 
     function setSemuaStatus(status) {
         closeSetSemuaModal();
-        const cards = document.querySelectorAll('.tp-card');
-        cards.forEach(card => {
-            const nisn = card.dataset.nisn;
-            const nama = card.dataset.nama;
-            const btns = card.querySelectorAll('.tp-jp-btn');
-            btns.forEach(btn => {
-                const jp = parseInt(btn.dataset.jp);
-                const mapel = btn.dataset.mapel;
-                const guru = btn.dataset.guru;
-                if (mapel) {
-                    savePresensi(nisn, nama, jp, status, mapel, guru, true);
-                }
-            });
-        });
-        showToast(`Semua JP di-set ${statusNames[status]}`, 'success');
+        bulkSaveAll(status, `Menyimpan ${statusNames[status]} ke semua siswa...`);
     }
 
     // Hapus Presensi
