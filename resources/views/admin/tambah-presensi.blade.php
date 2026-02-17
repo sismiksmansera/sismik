@@ -649,17 +649,19 @@
     }
 
     /**
-     * Bulk save: collect all scheduled JPs, update UI, send one request
+     * Bulk save per-student: process one student at a time for reliability
      * @param {string} status - status to set
      * @param {string} loadingMsg - loading overlay message
      * @param {boolean} onlyEmpty - if true, only set JPs without existing status
      */
-    function bulkSaveAll(status, loadingMsg, onlyEmpty = false) {
-        const entries = [];
+    async function bulkSaveAll(status, loadingMsg, onlyEmpty = false) {
+        // Collect entries grouped by student
+        const studentEntries = [];
         const cards = document.querySelectorAll('.tp-card');
         cards.forEach(card => {
             const nisn = card.dataset.nisn;
             const nama = card.dataset.nama;
+            const entries = [];
             const btns = card.querySelectorAll('.tp-jp-btn');
             btns.forEach(btn => {
                 const jp = parseInt(btn.dataset.jp);
@@ -675,39 +677,54 @@
                 btn.className = `tp-jp-btn ${status}`;
                 btn.querySelector('.tp-jp-status').textContent = status;
             });
-        });
-
-        if (entries.length === 0) return;
-
-        showLoading(loadingMsg);
-        bulkTotal = entries.length;
-        bulkDone = 0;
-
-        fetch(bulkStoreUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify({
-                entries: entries,
-                tanggal: tanggal,
-                id_rombel: idRombel
-            })
-        })
-        .then(r => r.json())
-        .then(data => {
-            hideLoading();
-            if (data.success) {
-                showToast(`${data.saved} presensi berhasil disimpan ✓`, 'success');
-            } else {
-                showToast(data.message || 'Gagal menyimpan', 'error');
+            if (entries.length > 0) {
+                studentEntries.push({ nisn, nama, entries });
             }
-        })
-        .catch(() => {
-            hideLoading();
-            showToast('Terjadi kesalahan koneksi', 'error');
         });
+
+        if (studentEntries.length === 0) return;
+
+        bulkTotal = studentEntries.length;
+        bulkDone = 0;
+        showLoading(loadingMsg);
+
+        let totalSaved = 0;
+        let hasError = false;
+
+        for (const student of studentEntries) {
+            document.getElementById('loadingProgress').textContent =
+                `Siswa ${bulkDone + 1} / ${bulkTotal} — ${student.nama}`;
+            try {
+                const resp = await fetch(bulkStoreUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        entries: student.entries,
+                        tanggal: tanggal,
+                        id_rombel: idRombel
+                    })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    totalSaved += data.saved || student.entries.length;
+                } else {
+                    hasError = true;
+                }
+            } catch (e) {
+                hasError = true;
+            }
+            bulkDone++;
+        }
+
+        hideLoading();
+        if (hasError) {
+            showToast(`Selesai dengan beberapa error (${totalSaved} tersimpan)`, 'error');
+        } else {
+            showToast(`${totalSaved} presensi berhasil disimpan ✓`, 'success');
+        }
     }
 
     // Set Semua Modal
