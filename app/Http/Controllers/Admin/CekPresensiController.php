@@ -256,6 +256,43 @@ class CekPresensiController extends Controller
     }
 
     /**
+     * AJAX: Delete ALL presensi for a given rombel + date (all mapel)
+     */
+    public function deletePresensiByDate(Request $request)
+    {
+        $idRombel = $request->input('id_rombel');
+        $tanggal = $request->input('tanggal');
+
+        if (!$idRombel || !$tanggal) {
+            return response()->json(['success' => false, 'message' => 'Data tidak lengkap']);
+        }
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
+        $semesterAktif = strtolower($periodik->semester ?? 'ganjil');
+
+        // Get all rombel IDs with same nama_rombel
+        $namaRombel = DB::table('rombel')->where('id', $idRombel)->value('nama_rombel');
+        $allRombelIds = DB::table('rombel')
+            ->where('nama_rombel', $namaRombel)
+            ->pluck('id')
+            ->toArray();
+
+        $deleted = DB::table('presensi_siswa')
+            ->whereIn('id_rombel', $allRombelIds)
+            ->where('tanggal_presensi', $tanggal)
+            ->where('tahun_pelajaran', $tahunPelajaran)
+            ->whereRaw('LOWER(semester) = ?', [$semesterAktif])
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil menghapus $deleted data presensi",
+            'deleted' => $deleted,
+        ]);
+    }
+
+    /**
      * Show the tambah presensi form for a given rombel + date
      */
     public function tambahPresensi(Request $request)

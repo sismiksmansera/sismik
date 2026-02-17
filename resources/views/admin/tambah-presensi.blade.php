@@ -65,15 +65,24 @@
     }
     .btn-back-tp:hover { background: linear-gradient(135deg, #4b5563, #374151); transform: translateY(-2px); color: white; }
 
-    .btn-hadir-semua {
+    .btn-set-semua {
         display: inline-flex; align-items: center; gap: 8px;
         padding: 10px 20px;
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
         color: white; border: none; border-radius: 10px;
         font-weight: 600; font-size: 13px; cursor: pointer;
         transition: all 0.3s ease;
     }
-    .btn-hadir-semua:hover { background: linear-gradient(135deg, #059669, #047857); transform: translateY(-2px); }
+    .btn-set-semua:hover { background: linear-gradient(135deg, #2563eb, #1d4ed8); transform: translateY(-2px); }
+    .btn-hapus-presensi {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white; border: none; border-radius: 10px;
+        font-weight: 600; font-size: 13px; cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .btn-hapus-presensi:hover { background: linear-gradient(135deg, #dc2626, #b91c1c); transform: translateY(-2px); }
 
     /* STUDENT CARDS */
     .tp-cards {
@@ -251,7 +260,7 @@
         .tp-jp-status { font-size: 12px; }
         .tp-jp-mapel { font-size: 6px; }
         .tp-actions { flex-direction: column; gap: 8px; }
-        .btn-back-tp, .btn-hadir-semua { width: 100%; justify-content: center; }
+        .btn-back-tp, .btn-set-semua, .btn-hapus-presensi { width: 100%; justify-content: center; }
     }
 </style>
 
@@ -260,14 +269,14 @@
     @if(($routePrefix ?? 'admin') === 'guru_bk')
         @include('layouts.partials.sidebar-guru-bk')
     @else
-        @include('layouts.partials.sidebar')
+        @include('layouts.partials.sidebar-admin')
     @endif
 
     <div class="main-content">
         <!-- Header -->
         <div class="tp-header">
             <div class="header-icon"><i class="fas fa-clipboard-check"></i></div>
-            <h1>TAMBAH PRESENSI</h1>
+            <h1>{{ count($presensiMap) > 0 ? 'EDIT PRESENSI' : 'TAMBAH PRESENSI' }}</h1>
         </div>
 
         <!-- Info Cards -->
@@ -308,12 +317,19 @@
 
         <!-- Action Buttons -->
         <div class="tp-actions">
-            <a href="{{ route($routePrefix . '.cek-presensi.index') }}" class="btn-back-tp">
+            <a href="{{ route($routePrefix . '.cek-presensi.index', ['method' => 'tanggal', 'id_rombel' => $idRombel, 'nama_rombel' => $rombel->nama_rombel, 'tanggal' => $tanggal]) }}" class="btn-back-tp">
                 <i class="fas fa-arrow-left"></i> Kembali
             </a>
-            <button class="btn-hadir-semua" onclick="setAllHadir()">
-                <i class="fas fa-check-double"></i> Set Semua Hadir
-            </button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-set-semua" onclick="openSetSemuaModal()">
+                    <i class="fas fa-check-double"></i> Set Semua
+                </button>
+                @if(($routePrefix ?? 'admin') === 'admin')
+                <button class="btn-hapus-presensi" onclick="hapusPresensi()">
+                    <i class="fas fa-trash-alt"></i> Hapus Presensi
+                </button>
+                @endif
+            </div>
         </div>
 
         <!-- Student Cards -->
@@ -429,6 +445,48 @@
     </div>
 </div>
 
+<!-- Set Semua Modal -->
+<div class="tp-modal-overlay" id="setSemuaModal">
+    <div class="tp-modal">
+        <div class="tp-modal-header">
+            <h3><i class="fas fa-check-double" style="color:#3b82f6; margin-right:6px;"></i> Set Semua Presensi</h3>
+            <button class="tp-modal-close" onclick="closeSetSemuaModal()">&times;</button>
+        </div>
+        <div class="tp-modal-body">
+            <div class="tp-modal-student">
+                <h4>Semua Siswa & Jam Pelajaran</h4>
+                <p>Pilih status yang akan diterapkan ke seluruh siswa pada semua JP yang terjadwal</p>
+            </div>
+            <div class="tp-status-grid">
+                <div class="tp-status-option hadir" onclick="setSemuaStatus('H')">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Hadir</span>
+                </div>
+                <div class="tp-status-option sakit" onclick="setSemuaStatus('S')">
+                    <i class="fas fa-thermometer-half"></i>
+                    <span>Sakit</span>
+                </div>
+                <div class="tp-status-option izin" onclick="setSemuaStatus('I')">
+                    <i class="fas fa-envelope"></i>
+                    <span>Izin</span>
+                </div>
+                <div class="tp-status-option alfa" onclick="setSemuaStatus('A')">
+                    <i class="fas fa-times-circle"></i>
+                    <span>Alpha</span>
+                </div>
+                <div class="tp-status-option dispen" onclick="setSemuaStatus('D')">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Dispensasi</span>
+                </div>
+                <div class="tp-status-option bolos" onclick="setSemuaStatus('B')">
+                    <i class="fas fa-running"></i>
+                    <span>Bolos</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="tp-toast" id="tpToast"></div>
 
@@ -440,7 +498,10 @@
     let activeMapel = '';
     let activeGuru = '';
 
+    @php $backUrl = route($routePrefix . '.cek-presensi.index', ['method' => 'tanggal', 'id_rombel' => $idRombel, 'nama_rombel' => $rombel->nama_rombel, 'tanggal' => $tanggal]); @endphp
     const storeUrl = @json(route("{$routePrefix}.cek-presensi.store-presensi"));
+    const deleteUrl = @json(route("{$routePrefix}.cek-presensi.delete-presensi-by-date"));
+    const backUrl = @json($backUrl);
     const csrfToken = '{{ csrf_token() }}';
     const idRombel = '{{ $idRombel }}';
     const tanggal = '{{ $tanggal }}';
@@ -477,7 +538,7 @@
         savePresensi(activeNisn, activeNama, activeJp, status, activeMapel, activeGuru);
     }
 
-    function savePresensi(nisn, nama, jp, status, mapel, guru) {
+    function savePresensi(nisn, nama, jp, status, mapel, guru, silent = false) {
         // Update UI immediately
         const btn = document.getElementById(`jp-${nisn}-${jp}`);
         if (btn) {
@@ -505,18 +566,52 @@
         })
         .then(r => r.json())
         .then(data => {
-            if (data.success) {
-                showToast(`JP ${jp}: ${statusNames[status]} ✓`, 'success');
-            } else {
-                showToast(data.message || 'Gagal menyimpan', 'error');
+            if (!silent) {
+                if (data.success) {
+                    showToast(`JP ${jp}: ${statusNames[status]} ✓`, 'success');
+                } else {
+                    showToast(data.message || 'Gagal menyimpan', 'error');
+                }
             }
         })
-        .catch(() => showToast('Terjadi kesalahan koneksi', 'error'));
+        .catch(() => { if (!silent) showToast('Terjadi kesalahan koneksi', 'error'); });
     }
 
-    function setAllHadir() {
-        if (!confirm('Set semua JP yang terjadwal menjadi Hadir untuk semua siswa?')) return;
+    // Auto-set all scheduled JPs to Hadir on page load ONLY when adding new presensi (no existing data)
+    const hasExistingData = {{ count($presensiMap) > 0 ? 'true' : 'false' }};
+    if (!hasExistingData) {
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.tp-card');
+            cards.forEach(card => {
+                const nisn = card.dataset.nisn;
+                const nama = card.dataset.nama;
+                const btns = card.querySelectorAll('.tp-jp-btn');
+                btns.forEach(btn => {
+                    const jp = parseInt(btn.dataset.jp);
+                    const mapel = btn.dataset.mapel;
+                    const guru = btn.dataset.guru;
+                    const currentStatus = btn.querySelector('.tp-jp-status').textContent.trim();
+                    if (mapel && (currentStatus === '-' || currentStatus === '')) {
+                        savePresensi(nisn, nama, jp, 'H', mapel, guru, true);
+                    }
+                });
+            });
+        });
+    }
 
+    // Set Semua Modal
+    function openSetSemuaModal() {
+        document.getElementById('setSemuaModal').classList.add('show');
+    }
+    function closeSetSemuaModal() {
+        document.getElementById('setSemuaModal').classList.remove('show');
+    }
+    document.getElementById('setSemuaModal').addEventListener('click', function(e) {
+        if (e.target === this) closeSetSemuaModal();
+    });
+
+    function setSemuaStatus(status) {
+        closeSetSemuaModal();
         const cards = document.querySelectorAll('.tp-card');
         cards.forEach(card => {
             const nisn = card.dataset.nisn;
@@ -526,12 +621,39 @@
                 const jp = parseInt(btn.dataset.jp);
                 const mapel = btn.dataset.mapel;
                 const guru = btn.dataset.guru;
-                // Only set JPs that have a jadwal (mapel assigned)
                 if (mapel) {
-                    savePresensi(nisn, nama, jp, 'H', mapel, guru);
+                    savePresensi(nisn, nama, jp, status, mapel, guru, true);
                 }
             });
         });
+        showToast(`Semua JP di-set ${statusNames[status]}`, 'success');
+    }
+
+    // Hapus Presensi
+    function hapusPresensi() {
+        if (!confirm('Yakin ingin menghapus SEMUA data presensi pada tanggal ini?\n\nData yang sudah dihapus tidak dapat dikembalikan.')) return;
+
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                id_rombel: idRombel,
+                tanggal: tanggal
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => window.location.href = backUrl, 1000);
+            } else {
+                showToast(data.message || 'Gagal menghapus', 'error');
+            }
+        })
+        .catch(() => showToast('Terjadi kesalahan koneksi', 'error'));
     }
 
     function showToast(msg, type) {

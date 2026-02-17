@@ -800,8 +800,8 @@
                     <h2><i class="fas fa-calendar-day"></i> Presensi per Jam Pelajaran</h2>
                     <div>
                         <span class="badge-count" id="jpSiswaCount">0 Siswa</span>
-                        <button class="print-btn" onclick="goTambahPresensi()" style="margin-left:10px; background:linear-gradient(135deg,#10b981,#059669);">
-                            <i class="fas fa-plus"></i> Tambah Presensi
+                        <button class="print-btn" id="btnTambahEditPresensi" onclick="goTambahPresensi()" style="margin-left:10px; background:linear-gradient(135deg,#10b981,#059669);">
+                            <i class="fas fa-plus"></i> <span>Tambah Presensi</span>
                         </button>
                         <button class="print-btn" onclick="printPerTanggal()" style="margin-left:6px;">
                             <i class="fas fa-print"></i> Cetak
@@ -1956,12 +1956,26 @@ function loadDataPerTanggal() {
                     html += '</tr>';
                 });
                 tbody.innerHTML = html;
+
+                // Update button text: Edit if data exists, Tambah if not
+                const btn = document.getElementById('btnTambahEditPresensi');
+                if (btn) {
+                    btn.querySelector('i').className = 'fas fa-edit';
+                    btn.querySelector('span').textContent = 'Edit Presensi';
+                }
             } else {
                 tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state">
                     <i class="fas fa-clipboard-list"></i><h3>Tidak Ada Data</h3>
                     <p>Belum ada presensi untuk rombel ini pada tanggal tersebut.</p>
                 </div></td></tr>`;
                 document.getElementById('jpSiswaCount').textContent = '0 Siswa';
+
+                // Reset button to Tambah
+                const btn = document.getElementById('btnTambahEditPresensi');
+                if (btn) {
+                    btn.querySelector('i').className = 'fas fa-plus';
+                    btn.querySelector('span').textContent = 'Tambah Presensi';
+                }
             }
         })
         .catch(() => {
@@ -2257,5 +2271,47 @@ function printPerMinggu() {
     document.body.classList.remove('print-minggu');
     styleEl.textContent = '';
 }
+
+// Auto-restore state from URL query params (e.g. returning from tambah/edit presensi)
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const method = params.get('method');
+    const idRombel = params.get('id_rombel');
+    const namaRombel = params.get('nama_rombel');
+    const tgl = params.get('tanggal');
+
+    if (method && idRombel && namaRombel) {
+        // Select the method
+        selectMethodFromModal(method);
+
+        if (method === 'tanggal' && tgl) {
+            // Auto-select rombel for tanggal
+            selectedRombelTanggal = { id: parseInt(idRombel), name: namaRombel };
+            document.getElementById('rombelCardTanggal').classList.add('selected');
+            document.getElementById('rombelPlaceholderTanggal').style.display = 'none';
+            document.getElementById('rombelValueTanggal').textContent = namaRombel;
+            document.getElementById('rombelValueTanggal').style.display = 'block';
+
+            // Enable tanggal card and set date
+            document.getElementById('tanggalCard').classList.remove('disabled');
+            document.getElementById('tanggalPlaceholder').style.display = 'none';
+            document.getElementById('tanggalInputWrapper').style.display = 'block';
+            document.getElementById('tanggalInput').value = tgl;
+
+            // Format and display date
+            const d = new Date(tgl);
+            const tglFormatted = d.toLocaleDateString('id-ID', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+            document.getElementById('tanggalValue').textContent = tglFormatted;
+            document.getElementById('tanggalValue').style.display = 'block';
+            document.getElementById('tanggalCard').classList.add('selected');
+
+            selectedTanggal = tgl;
+            loadDataPerTanggal();
+        }
+
+        // Clean URL params without reloading
+        window.history.replaceState({}, '', window.location.pathname);
+    }
+})();
 </script>
 @endpush
