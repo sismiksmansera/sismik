@@ -224,6 +224,38 @@ class CekPresensiController extends Controller
     }
 
     /**
+     * AJAX: Delete a presensi session (all records for a specific rombel + mapel + date)
+     */
+    public function deleteSession(Request $request)
+    {
+        $idRombel = $request->input('id_rombel');
+        $mapel = $request->input('mapel');
+        $tanggal = $request->input('tanggal');
+
+        if (!$idRombel || !$mapel || !$tanggal) {
+            return response()->json(['success' => false, 'message' => 'Data tidak lengkap']);
+        }
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
+        $semesterAktif = strtolower($periodik->semester ?? 'ganjil');
+
+        $deleted = DB::table('presensi_siswa')
+            ->where('id_rombel', $idRombel)
+            ->where('mata_pelajaran', $mapel)
+            ->where('tanggal_presensi', $tanggal)
+            ->where('tahun_pelajaran', $tahunPelajaran)
+            ->whereRaw('LOWER(semester) = ?', [$semesterAktif])
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil menghapus $deleted data presensi",
+            'deleted' => $deleted,
+        ]);
+    }
+
+    /**
      * AJAX: Get all mata pelajaran for picker
      */
     public function getAllMapel()

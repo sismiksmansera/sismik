@@ -1629,9 +1629,14 @@ function loadDetail(tanggal) {
                 let html = `
                     <div class="detail-header">
                         <h4>Detail Presensi — ${tglFormatted}</h4>
-                        ${canEdit ? `<button class="btn-edit-mapel" onclick="event.stopPropagation(); openEditMapelModal('${tanggal}', '${escapeAttr(selectedMapel.name)}')">
-                            <i class="fas fa-edit"></i> Edit Mapel
-                        </button>` : ''}
+                        <div style="display:flex; gap:8px;">
+                            ${canEdit ? `<button class="btn-edit-mapel" onclick="event.stopPropagation(); openEditMapelModal('${tanggal}', '${escapeAttr(selectedMapel.name)}')">
+                                <i class="fas fa-edit"></i> Edit Mapel
+                            </button>
+                            <button class="btn-edit-mapel" style="background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff;" onclick="event.stopPropagation(); deleteSession('${tanggal}', '${escapeAttr(selectedMapel.name)}')">
+                                <i class="fas fa-trash-alt"></i> Hapus Sesi
+                            </button>` : ''}
+                        </div>
                     </div>
                     <table class="detail-table">
                         <thead><tr>
@@ -1765,6 +1770,40 @@ function pilihMapelBaruDanSimpan(newMapel) {
     })
     .catch(() => showToast('Terjadi kesalahan', 'error'));
 }
+
+@if(($routePrefix ?? 'admin') === 'admin')
+function deleteSession(tanggal, mapel) {
+    const d = new Date(tanggal);
+    const tglFormatted = d.toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'});
+
+    if (!confirm(`Yakin ingin menghapus seluruh data presensi sesi ini?\n\nMapel: ${mapel}\nTanggal: ${tglFormatted}\nRombel: ${selectedRombel.name}\n\nData yang dihapus tidak dapat dikembalikan!`)) {
+        return;
+    }
+
+    fetch(`{{ route("{$routePrefix}.cek-presensi.delete-session") }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            id_rombel: selectedRombel.id,
+            mapel: mapel,
+            tanggal: tanggal
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            loadData(); // refresh table
+        } else {
+            showToast(data.message || 'Gagal menghapus', 'error');
+        }
+    })
+    .catch(() => showToast('Terjadi kesalahan', 'error'));
+}
+@endif
 
 function showToast(message, type) {
     const toast = document.getElementById('toast');

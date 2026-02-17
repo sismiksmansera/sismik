@@ -194,6 +194,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/cek-presensi/detail', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getDetail'])->name('cek-presensi.detail');
     Route::post('/cek-presensi/update', [\App\Http\Controllers\Admin\CekPresensiController::class, 'update'])->name('cek-presensi.update');
     Route::post('/cek-presensi/update-mapel', [\App\Http\Controllers\Admin\CekPresensiController::class, 'updateMapel'])->name('cek-presensi.update-mapel');
+    Route::post('/cek-presensi/delete-session', [\App\Http\Controllers\Admin\CekPresensiController::class, 'deleteSession'])->name('cek-presensi.delete-session');
     Route::get('/cek-presensi/all-mapel', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getAllMapel'])->name('cek-presensi.all-mapel');
     Route::get('/cek-presensi/hari-libur', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getHariLibur'])->name('cek-presensi.hari-libur');
     Route::get('/cek-presensi/data-per-tanggal', [\App\Http\Controllers\Admin\CekPresensiController::class, 'getDataPerTanggal'])->name('cek-presensi.data-per-tanggal');
