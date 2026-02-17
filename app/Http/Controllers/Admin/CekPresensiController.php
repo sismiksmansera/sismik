@@ -256,6 +256,194 @@ class CekPresensiController extends Controller
     }
 
     /**
+     * Show the tambah presensi form for a given rombel + date
+     */
+    public function tambahPresensi(Request $request)
+    {
+        $idRombel = $request->query('id_rombel');
+        $tanggal = $request->query('tanggal');
+
+        if (empty($idRombel) || empty($tanggal)) {
+            return redirect()->back()->with('error', 'Parameter tidak lengkap.');
+        }
+
+        $rombel = DB::table('rombel')->where('id', $idRombel)->first();
+        if (!$rombel) {
+            return redirect()->back()->with('error', 'Data rombel tidak ditemukan.');
+        }
+
+        $periodik = DataPeriodik::aktif()->first();
+        if (!$periodik) {
+            return redirect()->back()->with('error', 'Periode aktif tidak ditemukan.');
+        }
+
+        $tahunPelajaran = $periodik->tahun_pelajaran;
+        $semesterAktif = $periodik->semester;
+        $semesterLower = strtolower($semesterAktif);
+
+        // Determine day name (Indonesian) from the date
+        $dayMap = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+                   'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
+        $dayName = $dayMap[date('l', strtotime($tanggal))] ?? '';
+
+        // Get jadwal for this rombel + day with periode_jadwal validity
+        $jadwalRecords = DB::table('jadwal_pelajaran as jp')
+            ->join('mata_pelajaran as mp', 'jp.id_mapel', '=', 'mp.id')
+            ->join('periode_jadwal as pj', DB::raw('jp.kode_jadwal COLLATE utf8mb4_unicode_ci'), '=', 'pj.kode')
+            ->where('jp.id_rombel', $idRombel)
+            ->where('jp.hari', $dayName)
+            ->where('jp.tahun_pelajaran', $tahunPelajaran)
+            ->whereRaw('LOWER(jp.semester) = ?', [$semesterLower])
+            ->where('pj.tanggal_mulai', '<=', $tanggal)
+            ->where(function ($q) use ($tanggal) {
+                $q->whereNull('pj.tanggal_akhir')
+                  ->orWhere('pj.tanggal_akhir', '>=', $tanggal);
+            })
+            ->select('jp.jam_ke', 'mp.nama_mapel', 'jp.nama_guru')
+            ->orderBy('jp.jam_ke')
+            ->get();
+
+        // Build jadwal map: jam_ke => {mapel, guru}
+        $jadwalMap = [];
+        foreach ($jadwalRecords as $j) {
+            $jadwalMap[(int)$j->jam_ke] = [
+                'mapel' => $j->nama_mapel,
+                'guru' => $j->nama_guru,
+            ];
+        }
+
+        // Get all rombel IDs with same nama_rombel
+        $allRombelIds = DB::table('rombel')
+            ->where('nama_rombel', $rombel->nama_rombel)
+            ->pluck('id')
+            ->toArray();
+
+        // Get students in the rombel using dynamic semester logic (same as Guru/PresensiController)
+        $tahunAwal = explode('/', $tahunPelajaran)[0];
+        $tahunAktif = (int) $tahunAwal;
+        $whereConditions = [];
+        for ($tahunAngkatan = $tahunAktif; $tahunAngkatan >= $tahunAktif - 2; $tahunAngkatan--) {
+            $selisih = $tahunAktif - $tahunAngkatan;
+            $semesterKe = $semesterAktif == 'Ganjil' ? ($selisih * 2) + 1 : ($selisih * 2) + 2;
+            if ($semesterKe <= 6) {
+                $whereConditions[] = "(angkatan_masuk = $tahunAngkatan AND rombel_semester_$semesterKe = ?)";
+            }
+        }
+        if (empty($whereConditions)) {
+            $semesters = $semesterAktif == 'Ganjil' ? [1, 3, 5] : [2, 4, 6];
+            foreach ($semesters as $sem) {
+                $whereConditions[] = "rombel_semester_$sem = ?";
+            }
+        }
+        $whereClause = implode(' OR ', $whereConditions);
+        $bindings = array_fill(0, count($whereConditions), $rombel->nama_rombel);
+        $siswaList = \App\Models\Siswa::whereRaw("($whereClause)", $bindings)
+            ->orderBy('nama')
+            ->get();
+
+        // Get existing presensi for this date + rombel (all mapel)
+        $existingPresensi = DB::table('presensi_siswa')
+            ->whereIn('id_rombel', $allRombelIds)
+            ->where('tanggal_presensi', $tanggal)
+            ->where('tahun_pelajaran', $tahunPelajaran)
+            ->whereRaw('LOWER(semester) = ?', [$semesterLower])
+            ->get();
+
+        // Merge existing presensi per student: nisn => [jp_1..jp_10]
+        $presensiMap = [];
+        foreach ($existingPresensi as $p) {
+            $nisn = $p->nisn;
+            if (!isset($presensiMap[$nisn])) {
+                $presensiMap[$nisn] = [];
+                for ($jp = 1; $jp <= 10; $jp++) {
+                    $presensiMap[$nisn]["jp_$jp"] = null;
+                }
+            }
+            for ($jp = 1; $jp <= 10; $jp++) {
+                $field = "jam_ke_$jp";
+                $val = $p->$field ?? null;
+                if ($val !== null && $val !== '' && $val !== '-') {
+                    $presensiMap[$nisn]["jp_$jp"] = $val;
+                }
+            }
+        }
+
+        // Determine routePrefix from route name
+        $routePrefix = 'admin';
+        if (str_contains($request->route()->getName(), 'guru_bk')) {
+            $routePrefix = 'guru_bk';
+        }
+        $layout = $routePrefix === 'guru_bk' ? 'layouts.app-guru-bk' : 'layouts.app';
+
+        return view('admin.tambah-presensi', compact(
+            'rombel', 'tanggal', 'dayName', 'tahunPelajaran', 'semesterAktif',
+            'jadwalMap', 'siswaList', 'presensiMap', 'routePrefix', 'layout', 'idRombel'
+        ));
+    }
+
+    /**
+     * AJAX: Store/update presensi for a single student + JP
+     */
+    public function storePresensi(Request $request)
+    {
+        $nisn = $request->input('nisn');
+        $namaSiswa = $request->input('nama_siswa');
+        $tanggal = $request->input('tanggal');
+        $idRombel = $request->input('id_rombel');
+        $jamKe = intval($request->input('jam_ke'));
+        $status = $request->input('status');
+        $mapel = $request->input('mapel', '');
+        $guru = $request->input('guru', '');
+
+        if (!$nisn || !$tanggal || !$idRombel || $jamKe < 1 || $jamKe > 10 || !$status) {
+            return response()->json(['success' => false, 'message' => 'Data tidak lengkap']);
+        }
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '';
+        $semester = $periodik->semester ?? '';
+
+        $jamColumn = "jam_ke_$jamKe";
+
+        // Check if presensi row exists for this nisn + mapel + date
+        $existing = DB::table('presensi_siswa')
+            ->where('nisn', $nisn)
+            ->where('mata_pelajaran', $mapel)
+            ->where('tanggal_presensi', $tanggal)
+            ->where('id_rombel', $idRombel)
+            ->first();
+
+        if ($existing) {
+            DB::table('presensi_siswa')
+                ->where('id', $existing->id)
+                ->update([
+                    $jamColumn => $status,
+                    'presensi' => $status,
+                    'tanggal_waktu_record' => now(),
+                ]);
+        } else {
+            DB::table('presensi_siswa')->insert([
+                'nama_siswa' => $namaSiswa,
+                'nisn' => $nisn,
+                'presensi' => $status,
+                'mata_pelajaran' => $mapel,
+                'tanggal_presensi' => $tanggal,
+                'id_rombel' => $idRombel,
+                'tahun_pelajaran' => $tahunPelajaran,
+                'semester' => $semester,
+                'guru_pengajar' => $guru,
+                $jamColumn => $status,
+                'tanggal_waktu_record' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Presensi JP $jamKe berhasil disimpan",
+        ]);
+    }
+
+    /**
      * AJAX: Get all mata pelajaran for picker
      */
     public function getAllMapel()

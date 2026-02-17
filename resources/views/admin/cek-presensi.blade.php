@@ -800,7 +800,10 @@
                     <h2><i class="fas fa-calendar-day"></i> Presensi per Jam Pelajaran</h2>
                     <div>
                         <span class="badge-count" id="jpSiswaCount">0 Siswa</span>
-                        <button class="print-btn" onclick="printPerTanggal()" style="margin-left:10px;">
+                        <button class="print-btn" onclick="goTambahPresensi()" style="margin-left:10px; background:linear-gradient(135deg,#10b981,#059669);">
+                            <i class="fas fa-plus"></i> Tambah Presensi
+                        </button>
+                        <button class="print-btn" onclick="printPerTanggal()" style="margin-left:6px;">
                             <i class="fas fa-print"></i> Cetak
                         </button>
                     </div>
@@ -2133,6 +2136,16 @@ function loadDataPerMinggu() {
                 <p>Gagal memuat data presensi.</p>
             </div></td></tr>`;
         });
+}
+
+// Navigate to tambah presensi page
+function goTambahPresensi() {
+    if (!selectedRombelTanggal || !selectedTanggal) {
+        showToast('Pilih rombel dan tanggal terlebih dahulu', 'error');
+        return;
+    }
+    const url = `{{ route("{$routePrefix}.cek-presensi.tambah-presensi") }}?id_rombel=${selectedRombelTanggal.id}&tanggal=${selectedTanggal}`;
+    window.location.href = url;
 }
 
 // Print function for per-tanggal
