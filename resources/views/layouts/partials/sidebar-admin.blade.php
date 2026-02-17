@@ -57,10 +57,6 @@
             <i class="fas fa-user-clock"></i>
             <span>Piket KBM</span>
         </a>
-        <a href="{{ route('admin.cek-presensi.index') }}" class="menu-item {{ request()->routeIs('admin.cek-presensi.*') ? 'active' : '' }}">
-            <i class="fas fa-clipboard-check"></i>
-            <span>Cek Presensi</span>
-        </a>
         <a href="{{ route('admin.ekstrakurikuler.index') }}" class="menu-item {{ request()->routeIs('admin.ekstrakurikuler.*') ? 'active' : '' }}">
             <i class="fas fa-futbol"></i>
             <span>Ekstrakurikuler</span>
@@ -68,6 +64,16 @@
         <a href="{{ route('admin.migrasi-nilai.index') }}" class="menu-item {{ request()->routeIs('admin.migrasi-nilai.*') ? 'active' : '' }}">
             <i class="fas fa-file-upload"></i>
             <span>Migrasi Nilai Manual</span>
+        </a>
+
+        <div class="menu-label">Presensi Siswa</div>
+        <a href="{{ route('admin.cek-presensi.index') }}" class="menu-item {{ request()->routeIs('admin.cek-presensi.*') ? 'active' : '' }}">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Cek Presensi</span>
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fas fa-print"></i>
+            <span>Cetak Presensi</span>
         </a>
 
         <div class="menu-label">Laporan</div>

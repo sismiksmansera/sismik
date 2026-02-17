@@ -47,10 +47,14 @@
             <span>Tugas Tambahan</span>
         </a>
 
-        <div class="menu-label">Presensi</div>
+        <div class="menu-label">Presensi Siswa</div>
         <a href="{{ route('guru_bk.cek-presensi.index') }}" class="menu-item {{ request()->routeIs('guru_bk.cek-presensi*') ? 'active' : '' }}">
             <i class="fas fa-clipboard-check"></i>
             <span>Cek Presensi</span>
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fas fa-print"></i>
+            <span>Cetak Presensi</span>
         </a>
 
         <div class="menu-label">Pengaduan</div>

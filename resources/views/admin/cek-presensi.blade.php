@@ -515,10 +515,10 @@
 
     /* JP Table (Tanggal) */
     .jp-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
-    .jp-table { border-collapse: collapse; width: 100%; font-size: 8px; min-width: 0 !important; table-layout: fixed; }
+    .jp-table { border-collapse: collapse; width: 100%; font-size: 8px !important; min-width: 0 !important; table-layout: fixed; }
     .jp-table th, .jp-table td { border: 1px solid #000 !important; padding: 0px 1px !important; text-align: center; word-wrap: break-word; overflow: hidden; }
-    .jp-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 10px; line-height: 1.2; padding: 3px 1px !important; text-align: center !important; }
-    .jp-table td { line-height: 1.5; padding: 2px 1px !important; font-size: 10px; }
+    .jp-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 10px !important; line-height: 1.2; padding: 3px 1px !important; text-align: center !important; }
+    .jp-table td { line-height: 1.5; padding: 2px 1px !important; font-size: 10px !important; }
     .jp-table col.col-no { width: 2%; }
     .jp-table col.col-nisn { width: 8%; }
     .jp-table col.col-nama { width: 25%; }
@@ -526,18 +526,18 @@
     .jp-table col.col-persen { width: 6.5%; }
     .jp-table td:nth-child(1), .jp-table td:nth-child(2) { text-align: center !important; }
     .jp-table td:nth-child(3) { text-align: left !important; }
-    .jp-table td strong { font-size: 10px; font-weight: bold; }
+    .jp-table td strong { font-size: 10px !important; font-weight: bold; }
 
     /* Minggu Table */
     .minggu-table-wrapper { overflow: visible !important; box-shadow: none !important; border-radius: 0 !important; }
-    .minggu-table { border-collapse: collapse; width: 100%; font-size: 9px; min-width: 0 !important; table-layout: fixed; }
+    .minggu-table { border-collapse: collapse; width: 100%; font-size: 9px !important; min-width: 0 !important; table-layout: fixed; }
     .minggu-table th, .minggu-table td { border: 1px solid #000 !important; padding: 2px 1px !important; text-align: center; word-wrap: break-word; overflow: hidden; }
-    .minggu-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 9px; line-height: 1.2; padding: 3px 1px !important; text-align: center !important; }
-    .minggu-table th.date-header { background: #ddd !important; color: #000 !important; font-size: 9px; }
-    .minggu-table td { line-height: 1.5; padding: 2px 1px !important; font-size: 10px; }
+    .minggu-table th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; font-size: 9px !important; line-height: 1.2; padding: 3px 1px !important; text-align: center !important; }
+    .minggu-table th.date-header { background: #ddd !important; color: #000 !important; font-size: 9px !important; }
+    .minggu-table td { line-height: 1.5; padding: 2px 1px !important; font-size: 10px !important; }
     .minggu-table td:nth-child(1), .minggu-table td:nth-child(2) { text-align: center !important; }
     .minggu-table td:nth-child(3) { text-align: left !important; }
-    .minggu-table td strong { font-size: 10px; font-weight: bold; }
+    .minggu-table td strong { font-size: 10px !important; font-weight: bold; }
     /* Print table column widths */
     #mingguPrintTable { table-layout: fixed; }
     #mingguPrintTable th:nth-child(1), #mingguPrintTable td:nth-child(1) { width: 4%; }
@@ -566,9 +566,9 @@
 
     /* Print headers & footers */
     .print-header-block { display: block !important; }
-    .print-header-block h3 { font-size: 12px; margin: 0; }
-    .print-header-block h4 { font-size: 10px; margin: 2px 0; }
-    .print-header-block table { font-size: 8px; margin-top: 4px; margin-bottom: 6px; }
+    .print-header-block h3 { font-size: 12px !important; margin: 0; }
+    .print-header-block h4 { font-size: 12px !important; margin: 2px 0; }
+    .print-header-block table { font-size: 12px !important; margin-top: 4px; margin-bottom: 6px; }
     .print-header-block table td { border: none !important; }
     .print-footer-block { display: block !important; margin-top: 15px; font-size: 9px; }
     .print-footer-block table { width: 100%; border: none; }
