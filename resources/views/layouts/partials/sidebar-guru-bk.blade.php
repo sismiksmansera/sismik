@@ -52,9 +52,9 @@
             <i class="fas fa-clipboard-check"></i>
             <span>Cek Presensi</span>
         </a>
-        <a href="#" class="menu-item">
-            <i class="fas fa-print"></i>
-            <span>Cetak Presensi</span>
+        <a href="{{ route('guru_bk.download-presensi.index') }}" class="menu-item {{ request()->routeIs('guru_bk.download-presensi.*') ? 'active' : '' }}">
+            <i class="fas fa-download"></i>
+            <span>Download Presensi</span>
         </a>
 
         <div class="menu-label">Pengaduan</div>

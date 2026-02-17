@@ -71,9 +71,9 @@
             <i class="fas fa-clipboard-check"></i>
             <span>Cek Presensi</span>
         </a>
-        <a href="#" class="menu-item">
-            <i class="fas fa-print"></i>
-            <span>Cetak Presensi</span>
+        <a href="{{ route('admin.download-presensi.index') }}" class="menu-item {{ request()->routeIs('admin.download-presensi.*') ? 'active' : '' }}">
+            <i class="fas fa-download"></i>
+            <span>Download Presensi</span>
         </a>
 
         <div class="menu-label">Laporan</div>

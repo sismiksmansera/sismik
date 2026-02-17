@@ -206,6 +206,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/cek-presensi/store-presensi', [\App\Http\Controllers\Admin\CekPresensiController::class, 'storePresensi'])->name('cek-presensi.store-presensi');
     Route::post('/cek-presensi/bulk-store-presensi', [\App\Http\Controllers\Admin\CekPresensiController::class, 'bulkStorePresensi'])->name('cek-presensi.bulk-store-presensi');
     Route::post('/cek-presensi/delete-presensi-by-date', [\App\Http\Controllers\Admin\CekPresensiController::class, 'deletePresensiByDate'])->name('cek-presensi.delete-presensi-by-date');
+    // Download Presensi
+    Route::get('/download-presensi', [\App\Http\Controllers\Admin\DownloadPresensiController::class, 'index'])->name('download-presensi.index');
+    Route::get('/download-presensi/blangko', [\App\Http\Controllers\Admin\DownloadPresensiController::class, 'downloadBlangko'])->name('download-presensi.blangko');
+    Route::get('/download-presensi/rincian-rombel', [\App\Http\Controllers\Admin\DownloadPresensiController::class, 'downloadRincianRombel'])->name('download-presensi.rincian-rombel');
     // Guru BK Management
     Route::get('/guru-bk', [GuruBKController::class, 'index'])->name('guru-bk.index');
     Route::get('/guru-bk/create', [GuruBKController::class, 'create'])->name('guru-bk.create');
@@ -513,6 +517,10 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     Route::post('/cek-presensi/store-presensi', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'storePresensi'])->name('cek-presensi.store-presensi');
     Route::post('/cek-presensi/bulk-store-presensi', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'bulkStorePresensi'])->name('cek-presensi.bulk-store-presensi');
     Route::post('/cek-presensi/delete-presensi-by-date', [\App\Http\Controllers\GuruBK\CekPresensiController::class, 'deletePresensiByDate'])->name('cek-presensi.delete-presensi-by-date');
+    // Download Presensi
+    Route::get('/download-presensi', [\App\Http\Controllers\GuruBK\DownloadPresensiController::class, 'index'])->name('download-presensi.index');
+    Route::get('/download-presensi/blangko', [\App\Http\Controllers\GuruBK\DownloadPresensiController::class, 'downloadBlangko'])->name('download-presensi.blangko');
+    Route::get('/download-presensi/rincian-rombel', [\App\Http\Controllers\GuruBK\DownloadPresensiController::class, 'downloadRincianRombel'])->name('download-presensi.rincian-rombel');
 });
 
 // Siswa Routes
