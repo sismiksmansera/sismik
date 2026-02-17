@@ -642,39 +642,14 @@
             <!-- METHOD SELECTION -->
             <div class="method-section">
                 <h3><i class="fas fa-th-large"></i> Pilih Jenis Cek Presensi</h3>
-                @if(($routePrefix ?? 'admin') === 'admin')
-                <div class="method-grid">
-                    <div class="method-card" id="methodSiswa" onclick="selectMethod('siswa')">
-                        <div class="method-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i class="fas fa-user-graduate"></i></div>
-                        <p class="method-title">Per Siswa</p>
-                        <p class="method-desc">Cek presensi individual per siswa</p>
-                    </div>
-                    <div class="method-card" id="methodMapel" onclick="selectMethod('mapel')">
-                        <div class="method-icon mapel-bg"><i class="fas fa-book"></i></div>
-                        <p class="method-title">Per Rombel per Mapel</p>
-                        <p class="method-desc">Cek presensi berdasarkan rombel dan mata pelajaran</p>
-                    </div>
-                    <div class="method-card" id="methodTanggal" onclick="selectMethod('tanggal')">
-                        <div class="method-icon tanggal-bg"><i class="fas fa-calendar-day"></i></div>
-                        <p class="method-title">Per Rombel per Tanggal</p>
-                        <p class="method-desc">Cek presensi berdasarkan rombel dan tanggal</p>
-                    </div>
-                    <div class="method-card" id="methodMinggu" onclick="selectMethod('minggu')">
-                        <div class="method-icon minggu-bg"><i class="fas fa-calendar-week"></i></div>
-                        <p class="method-title">Per Rombel per Minggu</p>
-                        <p class="method-desc">Cek presensi berdasarkan rombel dan minggu</p>
-                    </div>
-                </div>
-                @else
                 <div class="method-grid" style="grid-template-columns: 1fr;">
                     <div class="method-card" id="methodSelector" onclick="document.getElementById('methodModal').classList.add('show')" style="cursor:pointer;">
                         <div class="method-icon" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);"><i class="fas fa-list-ul"></i></div>
                         <p class="method-title" id="selectedMethodLabel">Klik untuk memilih jenis presensi</p>
-                        <p class="method-desc" id="selectedMethodDesc">Pilih jenis cek presensi: Per Mapel, Per Tanggal, atau Per Minggu</p>
+                        <p class="method-desc" id="selectedMethodDesc">Pilih jenis cek presensi: Per Siswa, Per Mapel, Per Tanggal, atau Per Minggu</p>
                         <span class="method-badge"><i class="fas fa-chevron-down"></i></span>
                     </div>
                 </div>
-                @endif
             </div>
 
             <!-- SELECTOR CARDS (hidden until method chosen) -->
@@ -987,7 +962,7 @@
 </div>
 
 <!-- METHOD SELECTION MODAL (Guru BK only) -->
-@if(($routePrefix ?? 'admin') !== 'admin')
+{{-- Method Selection Modal (all roles) --}}
 <div class="custom-modal-overlay" id="methodModal">
     <div class="custom-modal" style="max-width:500px;">
         <div class="modal-header">
@@ -1028,7 +1003,7 @@
         </div>
     </div>
 </div>
-@endif
+{{-- End Method Selection Modal --}}
 
 <!-- ROMBEL MODAL -->
 <div class="custom-modal-overlay" id="rombelModal">
