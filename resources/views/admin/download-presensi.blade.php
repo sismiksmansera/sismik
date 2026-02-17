@@ -31,43 +31,119 @@
     opacity: 0.9;
 }
 
-/* SELECTION CARDS */
-.dl-selection-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
+/* METHOD SECTION */
+.dl-method-section {
     margin-bottom: 20px;
 }
-.dl-option-card {
+.dl-method-section h3 {
+    font-size: 15px; font-weight: 700; color: #1f2937;
+    margin: 0 0 12px 0;
+    display: flex; align-items: center; gap: 8px;
+}
+.dl-method-section h3 i { color: #10b981; }
+
+/* METHOD CARD (clickable selector) */
+.dl-method-card {
     background: white;
-    border-radius: 16px;
-    padding: 24px;
+    padding: 24px 20px;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 2px solid #e5e7eb;
     cursor: pointer;
-    border: 2px solid transparent;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-    transition: all 0.3s ease;
     text-align: center;
+    transition: all 0.3s ease;
+}
+.dl-method-card:hover {
+    border-color: #10b981;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(16,185,129,0.2);
+}
+.dl-method-card.active {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+.dl-method-icon {
+    width: 50px; height: 50px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: white; margin: 0 auto 12px;
+}
+.dl-method-title {
+    font-size: 15px; font-weight: 700; color: #1f2937; margin: 0 0 4px 0;
+}
+.dl-method-desc {
+    font-size: 12px; color: #6b7280; margin: 0;
+}
+.dl-method-badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 600; color: #10b981;
+    margin-top: 8px;
+}
+.dl-method-badge i { font-size: 10px; }
+
+/* MODAL */
+.dl-modal-overlay {
+    display: none; position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+    z-index: 9999; justify-content: center; align-items: center;
+}
+.dl-modal-overlay.show { display: flex; }
+.dl-modal {
+    background: white; border-radius: 16px; width: 90%; max-width: 500px;
+    max-height: 80vh; overflow-y: auto;
+    animation: dlSlideIn 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+@keyframes dlSlideIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.dl-modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px; border-bottom: 1px solid #f3f4f6;
+}
+.dl-modal-header h3 {
+    font-size: 16px; font-weight: 700; color: #1f2937; margin: 0;
+    display: flex; align-items: center; gap: 8px;
+}
+.dl-modal-header .close-btn {
+    width: 32px; height: 32px; border-radius: 8px; border: none;
+    background: #f3f4f6; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.dl-modal-header .close-btn:hover { background: #e5e7eb; }
+.dl-modal-body { padding: 20px 24px; }
+
+/* Option cards inside modal */
+.dl-modal-option-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.dl-option-card {
+    background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px;
+    padding: 18px; cursor: pointer; text-align: center;
+    transition: all 0.3s ease;
 }
 .dl-option-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    border-color: #10b981; transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16,185,129,0.15);
 }
-.dl-option-card.active {
-    border-color: #10b981;
-    background: linear-gradient(to bottom, #ecfdf5, white);
+.dl-option-card.disabled {
+    opacity: 0.5; cursor: not-allowed;
 }
-.dl-option-icon {
-    width: 60px; height: 60px;
-    border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; color: white;
-    margin: 0 auto 14px;
+.dl-option-card.disabled:hover {
+    border-color: #e5e7eb; transform: none;
+    box-shadow: none;
 }
-.dl-option-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
-.dl-option-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.dl-option-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-.dl-option-name { font-size: 15px; font-weight: 700; color: #1f2937; margin: 0 0 6px 0; }
-.dl-option-desc { font-size: 12px; color: #6b7280; margin: 0; line-height: 1.4; }
+.dl-option-card .option-icon {
+    width: 45px; height: 45px; border-radius: 50%;
+    margin: 0 auto 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 18px; color: white;
+}
+.dl-option-card .option-name {
+    font-size: 13px; font-weight: 700; color: #1f2937; margin: 0;
+}
 
 /* FORM SECTION */
 .dl-form-section {
@@ -76,6 +152,7 @@
     padding: 24px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.06);
     display: none;
+    animation: dlSlideIn 0.3s ease;
 }
 .dl-form-section.active { display: block; }
 .dl-form-section h3 {
@@ -139,7 +216,7 @@
     background: #fef3c7; color: #92400e;
     font-size: 10px; font-weight: 700;
     padding: 3px 8px; border-radius: 6px;
-    margin-top: 8px;
+    margin-left: 8px;
 }
 
 /* Loading overlay */
@@ -182,8 +259,7 @@
 @media (max-width: 768px) {
     .dl-header .page-title { font-size: 20px !important; }
     .dl-header .header-icon-large { width: 60px; height: 60px; font-size: 28px; }
-    .dl-selection-grid { grid-template-columns: 1fr; }
-    .dl-option-card { padding: 16px; }
+    .dl-modal-option-grid { grid-template-columns: 1fr; }
 }
 </style>
 @endpush
@@ -205,23 +281,16 @@
     <p class="page-subtitle">{{ $tahunPelajaran }} — Semester {{ $semesterAktif }}</p>
 </div>
 
-<!-- Selection Cards -->
-<div class="dl-selection-grid">
-    <div class="dl-option-card" onclick="selectOption('blangko')" id="optBlangko">
-        <div class="dl-option-icon green"><i class="fas fa-file-excel"></i></div>
-        <p class="dl-option-name">Download Blangko Presensi</p>
-        <p class="dl-option-desc">Template blangko presensi kosong per rombel per tanggal dalam format Excel (.xlsx)</p>
-    </div>
-    <div class="dl-option-card" onclick="selectOption('rincian')" id="optRincian">
-        <div class="dl-option-icon blue"><i class="fas fa-table"></i></div>
-        <p class="dl-option-name">Download Rincian per Rombel</p>
-        <p class="dl-option-desc">Rincian presensi siswa per rombel dalam rentang tanggal tertentu (.xlsx)</p>
-    </div>
-    <div class="dl-option-card" onclick="selectOption('rincian-mapel')" id="optRincianMapel">
-        <div class="dl-option-icon purple"><i class="fas fa-clipboard-list"></i></div>
-        <p class="dl-option-name">Download Rincian per Rombel per Mapel</p>
-        <p class="dl-option-desc">Rincian presensi siswa per rombel per mata pelajaran (.xlsx)</p>
-        <span class="coming-soon-badge">Segera Hadir</span>
+<!-- METHOD SELECTION (clickable card that opens modal) -->
+<div class="dl-method-section">
+    <h3><i class="fas fa-th-large"></i> Pilih Jenis Download</h3>
+    <div class="dl-method-card" id="dlMethodSelector" onclick="document.getElementById('dlMethodModal').classList.add('show')">
+        <div class="dl-method-icon" style="background: linear-gradient(135deg, #10b981, #059669);" id="dlMethodIcon">
+            <i class="fas fa-list-ul" id="dlMethodIconI"></i>
+        </div>
+        <p class="dl-method-title" id="dlSelectedLabel">Klik untuk memilih jenis download</p>
+        <p class="dl-method-desc" id="dlSelectedDesc">Download Blangko, Rincian per Rombel, atau Rincian per Mapel</p>
+        <span class="dl-method-badge"><i class="fas fa-chevron-down"></i></span>
     </div>
 </div>
 
@@ -268,38 +337,55 @@
     </button>
 </div>
 
-<!-- FORM: Rincian per Rombel per Mapel -->
+<!-- FORM: Rincian per Rombel per Mapel (Coming Soon) -->
 <div class="dl-form-section" id="formRincianMapel">
-    <h3><i class="fas fa-clipboard-list"></i> Download Rincian per Rombel per Mapel</h3>
+    <h3><i class="fas fa-clipboard-list"></i> Download Rincian per Rombel per Mapel <span class="coming-soon-badge">Segera Hadir</span></h3>
     <div class="dl-info">
         <i class="fas fa-clock"></i>
         Fitur ini masih dalam tahap pengembangan dan akan segera tersedia.
     </div>
-    <div class="dl-form-group">
-        <label>Rombel</label>
-        <select id="rincianMapelRombel" disabled>
-            <option value="">— Pilih Rombel —</option>
-            @foreach($rombelList as $r)
-                <option value="{{ $r->id }}">{{ $r->nama_rombel }}</option>
-            @endforeach
-        </select>
+</div>
+
+<!-- METHOD MODAL -->
+<div class="dl-modal-overlay" id="dlMethodModal">
+    <div class="dl-modal">
+        <div class="dl-modal-header">
+            <h3><i class="fas fa-th-large" style="color:#10b981;"></i> Pilih Jenis Download</h3>
+            <button class="close-btn" onclick="document.getElementById('dlMethodModal').classList.remove('show')">&times;</button>
+        </div>
+        <div class="dl-modal-body">
+            <div class="dl-modal-option-grid">
+                <div class="dl-option-card" onclick="selectDownloadType('blangko')">
+                    <div class="option-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-file-excel"></i>
+                    </div>
+                    <p class="option-name">Blangko Presensi</p>
+                    <p style="font-size:11px; color:#6b7280; margin:4px 0 0;">Template presensi kosong per rombel</p>
+                </div>
+                <div class="dl-option-card" onclick="selectDownloadType('rincian')">
+                    <div class="option-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <p class="option-name">Rincian per Rombel</p>
+                    <p style="font-size:11px; color:#6b7280; margin:4px 0 0;">Rincian presensi per rombel & tanggal</p>
+                </div>
+                <div class="dl-option-card disabled" onclick="return false;">
+                    <div class="option-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <p class="option-name">Rincian per Mapel</p>
+                    <p style="font-size:11px; color:#6b7280; margin:4px 0 0;">Segera Hadir</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="dl-form-group">
-        <label>Mata Pelajaran</label>
-        <select id="rincianMapelMapel" disabled>
-            <option value="">— Pilih Mata Pelajaran —</option>
-        </select>
-    </div>
-    <button class="dl-btn" disabled>
-        <i class="fas fa-download"></i> Download Rincian
-    </button>
 </div>
 
 <!-- Loading Overlay -->
 <div class="dl-loading" id="dlLoading">
     <div class="dl-loading-box">
         <div class="spinner"></div>
-        <p id="dlLoadingText">Mengunduh blangko...</p>
+        <p id="dlLoadingText">Mengunduh...</p>
     </div>
 </div>
 
@@ -315,23 +401,47 @@ const csrfToken = '{{ csrf_token() }}';
 const downloadBlangkoUrl = '{{ route("{$routePrefix}.download-presensi.blangko") }}';
 const downloadRincianUrl = '{{ route("{$routePrefix}.download-presensi.rincian-rombel") }}';
 
-let currentOption = null;
-
-function selectOption(opt) {
-    currentOption = opt;
-    document.querySelectorAll('.dl-option-card').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.dl-form-section').forEach(f => f.classList.remove('active'));
-
-    if (opt === 'blangko') {
-        document.getElementById('optBlangko').classList.add('active');
-        document.getElementById('formBlangko').classList.add('active');
-    } else if (opt === 'rincian') {
-        document.getElementById('optRincian').classList.add('active');
-        document.getElementById('formRincian').classList.add('active');
-    } else if (opt === 'rincian-mapel') {
-        document.getElementById('optRincianMapel').classList.add('active');
-        document.getElementById('formRincianMapel').classList.add('active');
+const dlTypeConfig = {
+    blangko: {
+        label: 'Download Blangko Presensi',
+        desc: 'Template presensi kosong untuk semua rombel aktif',
+        icon: 'fas fa-file-excel',
+        gradient: 'linear-gradient(135deg, #10b981, #059669)',
+        formId: 'formBlangko'
+    },
+    rincian: {
+        label: 'Download Rincian per Rombel',
+        desc: 'Rincian presensi per rombel dalam rentang tanggal',
+        icon: 'fas fa-table',
+        gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+        formId: 'formRincian'
+    },
+    'rincian-mapel': {
+        label: 'Download Rincian per Rombel per Mapel',
+        desc: 'Segera Hadir',
+        icon: 'fas fa-clipboard-list',
+        gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+        formId: 'formRincianMapel'
     }
+};
+
+function selectDownloadType(type) {
+    const cfg = dlTypeConfig[type];
+    if (!cfg) return;
+
+    // Update the method card
+    document.getElementById('dlSelectedLabel').textContent = cfg.label;
+    document.getElementById('dlSelectedDesc').textContent = cfg.desc;
+    document.getElementById('dlMethodIcon').style.background = cfg.gradient;
+    document.getElementById('dlMethodIconI').className = cfg.icon;
+    document.getElementById('dlMethodSelector').classList.add('active');
+
+    // Hide all forms, show selected
+    document.querySelectorAll('.dl-form-section').forEach(f => f.classList.remove('active'));
+    document.getElementById(cfg.formId).classList.add('active');
+
+    // Close modal
+    document.getElementById('dlMethodModal').classList.remove('show');
 }
 
 function showDlLoading(msg) {
