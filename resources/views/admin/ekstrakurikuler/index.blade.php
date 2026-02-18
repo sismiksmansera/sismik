@@ -381,7 +381,7 @@
                             
                             <div class="ekstra-info">
                                 <div class="info-grid">
-                                    <a href="{{ url('admin/anggota_ekstrakurikuler.php?id=' . $ekstra->id) }}" class="info-item">
+                                    <a href="{{ route('admin.ekstrakurikuler.anggota', $ekstra->id) }}" class="info-item">
                                         <div class="info-icon">
                                             <i class="fas fa-users"></i>
                                         </div>
