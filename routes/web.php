@@ -255,6 +255,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/ekstrakurikuler/{id}/anggota/hapus', [\App\Http\Controllers\Admin\AnggotaEkstrakurikulerController::class, 'hapusAnggota'])->name('ekstrakurikuler.anggota.hapus');
     Route::post('/ekstrakurikuler/{id}/anggota/update-nilai', [\App\Http\Controllers\Admin\AnggotaEkstrakurikulerController::class, 'updateNilai'])->name('ekstrakurikuler.anggota.update-nilai');
 
+    // Tugas Tambahan Lainnya
+    Route::get('/tugas-tambahan', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'index'])->name('tugas-tambahan.index');
+
     
     // Keamanan (Security) Management
     Route::get('/keamanan', [\App\Http\Controllers\Admin\KeamananController::class, 'index'])->name('keamanan.index');
