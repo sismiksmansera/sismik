@@ -260,6 +260,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/tugas-tambahan/jenis/store', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'storeJenis'])->name('tugas-tambahan.jenis.store');
     Route::post('/tugas-tambahan/jenis/delete', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'deleteJenis'])->name('tugas-tambahan.jenis.delete');
     Route::post('/tugas-tambahan/jenis/update', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'updateJenis'])->name('tugas-tambahan.jenis.update');
+    Route::post('/tugas-tambahan/store', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'storeTugas'])->name('tugas-tambahan.store');
+    Route::post('/tugas-tambahan/delete', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'deleteTugas'])->name('tugas-tambahan.delete');
 
     
     // Keamanan (Security) Management
