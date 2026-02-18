@@ -215,7 +215,16 @@ class TugasTambahanController extends Controller
                 ->get();
         }
         
-        $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbingan > 0 ? 1 : 0) + ($piketHariIni ? 1 : 0);
+        // 5. TUGAS TAMBAHAN LAINNYA
+        $tugasTambahanLain = DB::table('tugas_tambahan_guru as t')
+            ->join('jenis_tugas_tambahan_lain as j', 't.jenis_tugas_id', '=', 'j.id')
+            ->where('t.tipe_guru', 'guru')
+            ->where('t.guru_id', $guru->id)
+            ->select('t.*', 'j.nama_tugas as jenis_nama', 'j.deskripsi as jenis_deskripsi')
+            ->orderBy('j.nama_tugas', 'ASC')
+            ->get();
+
+        $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbingan > 0 ? 1 : 0) + ($piketHariIni ? 1 : 0) + count($tugasTambahanLain);
 
         return view('guru.tugas-tambahan', compact(
             'guru',
@@ -228,7 +237,8 @@ class TugasTambahanController extends Controller
             'totalTugas',
             'piketHariIni',
             'hariIni',
-            'semuaPiketHariIni'
+            'semuaPiketHariIni',
+            'tugasTambahanLain'
         ));
     }
 }

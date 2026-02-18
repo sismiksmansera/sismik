@@ -58,7 +58,7 @@
                             <th>Nama Guru</th>
                             <th>Tipe</th>
                             <th>Keterangan</th>
-                            <th width="70">Aksi</th>
+                            <th width="100">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,9 +79,14 @@
                             </td>
                             <td>{{ $tugas->keterangan ?? '-' }}</td>
                             <td class="text-center">
-                                <button class="tt-btn-del-tugas" onclick="hapusTugas({{ $tugas->id }})" title="Hapus">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
+                                <div class="tt-tugas-actions">
+                                    <button class="tt-btn-edit-tugas" onclick="openEditTugas({{ $tugas->id }}, {{ $tugas->jenis_tugas_id }}, '{{ addslashes($tugas->keterangan ?? '') }}')" title="Edit">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <button class="tt-btn-del-tugas" onclick="hapusTugas({{ $tugas->id }})" title="Hapus">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @endforeach
@@ -189,6 +194,38 @@
             {{-- Submit --}}
             <button type="button" id="btnSimpanTugas" onclick="simpanTugas()" class="btn-simpan-tugas">
                 <i class="fas fa-save"></i> Simpan Tugas Tambahan
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- ===================== MODAL: EDIT TUGAS ===================== --}}
+<div id="editTugasModal" class="tt-modal">
+    <div class="tt-modal-content" style="max-width: 500px;">
+        <div class="tt-modal-header" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <h3><i class="fas fa-edit"></i> Edit Tugas Tambahan</h3>
+            <button class="tt-modal-close" onclick="closeEditTugas()">&times;</button>
+        </div>
+        <div class="tt-modal-body">
+            <input type="hidden" id="editTugasId">
+
+            <div class="tt-input-group">
+                <label><i class="fas fa-tag"></i> Jenis Tugas Tambahan</label>
+                <select id="editSelectJenisTugas">
+                    <option value="">-- Pilih Jenis Tugas --</option>
+                    @foreach($jenisList as $jenis)
+                        <option value="{{ $jenis->id }}">{{ $jenis->nama_tugas }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="tt-input-group">
+                <label><i class="fas fa-sticky-note"></i> Keterangan <span class="optional">(opsional)</span></label>
+                <textarea id="editKeteranganTugas" placeholder="Keterangan tambahan..." rows="2" maxlength="1000"></textarea>
+            </div>
+
+            <button type="button" id="btnUpdateTugas" onclick="updateTugas()" class="btn-update-tugas">
+                <i class="fas fa-save"></i> Simpan Perubahan
             </button>
         </div>
     </div>
@@ -336,6 +373,16 @@
 .tt-guru-name { font-weight: 600; color: #1f2937; }
 .tt-guru-nip { font-size: 12px; color: #9ca3af; margin-top: 2px; }
 
+.tt-tugas-actions { display: flex; gap: 6px; justify-content: center; }
+
+.tt-btn-edit-tugas {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: rgba(245,158,11,0.08); border: none; color: #f59e0b;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; transition: all 0.2s;
+}
+.tt-btn-edit-tugas:hover { background: rgba(245,158,11,0.18); transform: scale(1.1); }
+
 .tt-btn-del-tugas {
     width: 34px; height: 34px; border-radius: 8px;
     background: rgba(239,68,68,0.08); border: none; color: #ef4444;
@@ -343,6 +390,16 @@
     font-size: 13px; transition: all 0.2s;
 }
 .tt-btn-del-tugas:hover { background: rgba(239,68,68,0.15); transform: scale(1.1); }
+
+.btn-update-tugas {
+    width: 100%; padding: 12px;
+    background: linear-gradient(135deg, #f59e0b, #d97706); color: white;
+    border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s; box-shadow: 0 3px 10px rgba(245,158,11,0.3);
+}
+.btn-update-tugas:hover { transform: translateY(-1px); }
+.btn-update-tugas:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
 /* ===== MODAL ===== */
 .tt-modal {
@@ -850,6 +907,48 @@ function hapusTugas(id) {
         } else { showToast(data.message, 'error'); }
     })
     .catch(() => showToast('Terjadi kesalahan!', 'error'));
+}
+
+/* ===== EDIT TUGAS ===== */
+function openEditTugas(id, jenisId, keterangan) {
+    document.getElementById('editTugasId').value = id;
+    document.getElementById('editSelectJenisTugas').value = jenisId;
+    document.getElementById('editKeteranganTugas').value = keterangan;
+    document.getElementById('editTugasModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeEditTugas() {
+    document.getElementById('editTugasModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+document.getElementById('editTugasModal').addEventListener('click', function(e) { if (e.target === this) closeEditTugas(); });
+
+function updateTugas() {
+    const id = document.getElementById('editTugasId').value;
+    const jenisId = document.getElementById('editSelectJenisTugas').value;
+    const keterangan = document.getElementById('editKeteranganTugas').value.trim();
+
+    if (!jenisId) { showToast('Pilih jenis tugas!', 'error'); return; }
+
+    const btn = document.getElementById('btnUpdateTugas');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+    fetch('{{ route("admin.tugas-tambahan.update") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+        body: JSON.stringify({ id: parseInt(id), jenis_tugas_id: parseInt(jenisId), keterangan: keterangan })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            closeEditTugas();
+            setTimeout(() => location.reload(), 800);
+        } else { showToast(data.message, 'error'); }
+    })
+    .catch(() => showToast('Terjadi kesalahan!', 'error'))
+    .finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan'; });
 }
 
 function updateTugasCount() {

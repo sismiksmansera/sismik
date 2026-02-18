@@ -39,12 +39,13 @@
 /* STATS GRID */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 15px;
     margin-bottom: 25px;
 }
 
 .stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.stat-icon.teal { background: linear-gradient(135deg, #14b8a6, #0d9488); }
 
 .stat-card {
     background: white;
@@ -148,6 +149,7 @@
 
 .task-card-header.ekstra { background: linear-gradient(135deg, var(--card-color) 0%, var(--card-color-dark) 100%); }
 .task-card-header.wali { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.task-card-header.lainnya { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
 
 .task-icon {
     width: 50px;
@@ -300,6 +302,8 @@
     .stat-info p { font-size: 10px; }
     
     .task-cards-grid { grid-template-columns: 1fr; gap: 15px; }
+    .task-card-body-lainnya { padding: 16px; }
+    .lainnya-detail-row { flex-direction: column; gap: 6px; }
     
     .task-info h3 { font-size: 0.95rem; }
     .task-badge { font-size: 0.65rem; }
@@ -496,6 +500,15 @@
                         <p>{{ ucfirst($semesterAktif) }}</p>
                     </div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon teal">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ count($tugasTambahanLain) }}</h3>
+                        <p>Tugas Lainnya</p>
+                    </div>
+                </div>
             </div>
 
             @if($piketHariIni)
@@ -690,6 +703,53 @@
                                 @endif
                             </div>
                         </div>
+                    </div>
+                @endif
+
+                {{-- TUGAS TAMBAHAN LAINNYA --}}
+                @if(count($tugasTambahanLain) > 0)
+                    <div class="section-header">
+                        <div class="section-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <h2>Tugas Tambahan Lainnya</h2>
+                    </div>
+                    
+                    <div class="task-cards-grid">
+                        @foreach($tugasTambahanLain as $lainnya)
+                            <div class="task-card">
+                                <div class="task-card-header lainnya">
+                                    <div class="task-icon">
+                                        <i class="fas fa-clipboard-check"></i>
+                                    </div>
+                                    <div class="task-info">
+                                        <h3>{{ $lainnya->jenis_nama }}</h3>
+                                        <span class="task-badge">
+                                            <i class="fas fa-bookmark"></i> Tugas Tambahan
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="task-card-body" style="padding: 20px;">
+                                    @if($lainnya->jenis_deskripsi)
+                                    <div style="margin-bottom: 12px;">
+                                        <div style="font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Deskripsi Tugas</div>
+                                        <div style="font-size: 13px; color: #374151; line-height: 1.5;">{{ $lainnya->jenis_deskripsi }}</div>
+                                    </div>
+                                    @endif
+                                    @if($lainnya->keterangan)
+                                    <div style="background: #fffbeb; padding: 10px 14px; border-radius: 10px; border-left: 3px solid #f59e0b;">
+                                        <div style="font-size: 11px; font-weight: 600; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">Keterangan</div>
+                                        <div style="font-size: 13px; color: #78350f;">{{ $lainnya->keterangan }}</div>
+                                    </div>
+                                    @endif
+                                    @if(!$lainnya->jenis_deskripsi && !$lainnya->keterangan)
+                                    <div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 10px 0;">
+                                        <i class="fas fa-info-circle"></i> Tidak ada keterangan tambahan
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @endif
             @else

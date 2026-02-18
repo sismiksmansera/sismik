@@ -263,4 +263,54 @@ class TugasTambahanController extends Controller
             'message' => 'Tugas tambahan berhasil dihapus!'
         ]);
     }
+
+    /**
+     * Update a tugas tambahan guru (AJAX)
+     */
+    public function updateTugas(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'jenis_tugas_id' => 'required|integer|exists:jenis_tugas_tambahan_lain,id',
+            'keterangan' => 'nullable|string|max:1000',
+        ]);
+
+        $id = $request->input('id');
+        $jenisId = $request->input('jenis_tugas_id');
+        $keterangan = trim($request->input('keterangan', ''));
+
+        $tugas = DB::table('tugas_tambahan_guru')->where('id', $id)->first();
+        if (!$tugas) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan!'
+            ]);
+        }
+
+        // Check duplicate (same jenis + same guru, exclude current)
+        $duplicate = DB::table('tugas_tambahan_guru')
+            ->where('jenis_tugas_id', $jenisId)
+            ->where('tipe_guru', $tugas->tipe_guru)
+            ->where('guru_id', $tugas->guru_id)
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($duplicate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Guru ini sudah memiliki tugas tambahan tersebut!'
+            ]);
+        }
+
+        DB::table('tugas_tambahan_guru')->where('id', $id)->update([
+            'jenis_tugas_id' => $jenisId,
+            'keterangan' => $keterangan ?: null,
+            'updated_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tugas tambahan berhasil diperbarui!'
+        ]);
+    }
 }

@@ -44,8 +44,17 @@ class TugasTambahanController extends Controller
         $guruWaliData = $this->getGuruWaliData($guru_nama, $periodeAktif);
         $totalSiswaBimbinganWali = array_sum(array_column($guruWaliData, 'jumlah'));
 
+        // 4. TUGAS TAMBAHAN LAINNYA
+        $tugasTambahanLain = DB::table('tugas_tambahan_guru as t')
+            ->join('jenis_tugas_tambahan_lain as j', 't.jenis_tugas_id', '=', 'j.id')
+            ->where('t.tipe_guru', 'guru_bk')
+            ->where('t.guru_id', $guruBK->id)
+            ->select('t.*', 'j.nama_tugas as jenis_nama', 'j.deskripsi as jenis_deskripsi')
+            ->orderBy('j.nama_tugas', 'ASC')
+            ->get();
+
         // Total tugas
-        $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbinganWali > 0 ? 1 : 0);
+        $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbinganWali > 0 ? 1 : 0) + count($tugasTambahanLain);
 
         return view('guru-bk.tugas-tambahan', compact(
             'tugasPembina',
@@ -53,7 +62,8 @@ class TugasTambahanController extends Controller
             'guruWaliData',
             'totalSiswaBimbinganWali',
             'totalTugas',
-            'periodeAktif'
+            'periodeAktif',
+            'tugasTambahanLain'
         ));
     }
 
