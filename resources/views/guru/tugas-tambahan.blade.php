@@ -36,6 +36,20 @@
     letter-spacing: 1px;
 }
 
+.tugas-header-section .header-periode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 12px;
+    backdrop-filter: blur(5px);
+}
+
 /* STATS GRID */
 .stats-grid {
     display: grid;
@@ -460,6 +474,10 @@
                     <i class="fas fa-tasks"></i>
                 </div>
                 <h1 class="page-title">Tugas Tambahan</h1>
+                <div class="header-periode-badge">
+                    <i class="fas fa-calendar-alt"></i>
+                    {{ $tahunPelajaran }} - {{ $semesterAktif }}
+                </div>
             </div>
 
             <!-- STATS CARDS -->
