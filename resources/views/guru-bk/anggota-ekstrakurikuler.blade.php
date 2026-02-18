@@ -40,7 +40,7 @@
 
     {{-- Action Buttons --}}
     <div class="action-buttons-center">
-        <a href="{{ route('guru_bk.tugas-tambahan') }}" class="btn-back">
+        <a href="{{ url()->previous() }}" class="btn-back">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
         <button onclick="openModal()" class="btn-add-member">
