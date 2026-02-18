@@ -18,8 +18,9 @@
                 <span class="header-stat"><i class="fas fa-chart-line"></i> {{ $totalAktif }} Aktif</span>
                 <span class="header-stat"><i class="fas fa-database"></i> {{ count($ekstrakurikulerList) }} Data</span>
             </div>
-            <div style="margin-top: 14px;">
+            <div class="header-actions-row">
                 <a href="{{ route('guru.koordinator-ekstra.create') }}" class="btn-tambah-baru"><i class="fas fa-plus"></i> Tambah Baru</a>
+                <a href="{{ url()->previous() }}" class="btn-kembali"><i class="fas fa-arrow-left"></i> Kembali</a>
             </div>
         </div>
 
@@ -190,6 +191,16 @@
     transition: all 0.3s; box-shadow: 0 4px 12px rgba(16,185,129,0.3);
 }
 .btn-tambah-baru:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16,185,129,0.4); color: white; }
+.header-actions-row {
+    display: flex; justify-content: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+}
+.btn-kembali {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px;
+    background: white; color: #374151; border: 2px solid #d1d5db;
+    border-radius: 10px; font-weight: 600; font-size: 13px; text-decoration: none;
+    transition: all 0.3s;
+}
+.btn-kembali:hover { background: #f3f4f6; transform: translateY(-2px); color: #1f2937; }
 
 /* Content Section */
 .content-section {
