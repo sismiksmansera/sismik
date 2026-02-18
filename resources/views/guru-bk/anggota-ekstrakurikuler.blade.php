@@ -1033,12 +1033,14 @@
     }
 
     .action-buttons-center {
-        flex-direction: column;
+        flex-direction: row;
     }
 
     .btn-back, .btn-add-member {
-        width: 100%;
+        flex: 1;
         justify-content: center;
+        padding: 10px 12px;
+        font-size: 13px;
     }
 
     .stats-grid {

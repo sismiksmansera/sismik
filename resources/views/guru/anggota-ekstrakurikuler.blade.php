@@ -349,8 +349,8 @@
     .stat-info h3 { font-size: 16px; }
     .stat-info p { font-size: 10px; }
     
-    .action-buttons-header { flex-direction: column; }
-    .btn-modern { width: 100%; justify-content: center; }
+    .action-buttons-header { flex-direction: row; gap: 10px; }
+    .btn-modern { flex: 1; justify-content: center; padding: 10px 12px; font-size: 13px; }
     
     .members-cards-grid { grid-template-columns: 1fr; padding: 15px; }
     
