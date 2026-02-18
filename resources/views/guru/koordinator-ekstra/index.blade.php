@@ -2,348 +2,52 @@
 
 @section('title', 'Manajemen Ekstrakurikuler | SISMIK')
 
-@push('styles')
-<style>
-    /* Header */
-    .content-header {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        border-radius: 16px;
-        padding: 1.5rem 2rem;
-        margin-bottom: 2rem;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-    }
-    .header-content { display: flex; align-items: center; gap: 1.5rem; }
-    .header-icon {
-        width: 60px; height: 60px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 12px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem;
-    }
-    .header-text h1 { margin: 0 0 0.5rem 0; font-size: 1.75rem; font-weight: 700; }
-    .header-subtitle { display: flex; gap: 1.5rem; font-size: 0.875rem; opacity: 0.9; }
-    .header-actions { display: flex; gap: 0.75rem; }
-    
-    /* Filter Card */
-    .filter-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-        margin-bottom: 2rem;
-    }
-    .filter-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    .filter-title { display: flex; align-items: center; gap: 0.75rem; }
-    .filter-title h3 { margin: 0; color: #1f2937; font-size: 1.125rem; }
-    .filter-title i { color: #3b82f6; }
-    .filter-form { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
-    .filter-group label { display: block; font-size: 12px; font-weight: 600; color: #4b5563; margin-bottom: 5px; }
-    .filter-control {
-        padding: 10px 15px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 14px;
-        min-width: 180px;
-    }
-    
-    /* Content Section */
-    .content-section {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-    }
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-    }
-    .section-title { display: flex; align-items: center; gap: 0.75rem; }
-    .section-title i { color: #3b82f6; }
-    .section-title h2 { margin: 0; font-size: 1.125rem; color: #1f2937; }
-    .badge-count {
-        background: #3b82f6;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-    }
-    
-    /* Ekstrakurikuler Grid */
-    .ekstra-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 1.25rem;
-    }
-    
-    /* Ekstra Card */
-    .ekstra-card {
-        background: white;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .ekstra-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-    }
-    .ekstra-card.active { border-color: #10b981; border-width: 2px; }
-    
-    .ekstra-status {
-        padding: 8px 12px;
-        background: #f8fafc;
-        border-bottom: 1px solid #e5e7eb;
-        display: flex;
-        justify-content: flex-end;
-    }
-    .status-badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .status-badge.active { background: #d1fae5; color: #10b981; }
-    .status-badge.inactive { background: #f3f4f6; color: #6b7280; }
-    
-    .ekstra-header {
-        padding: 1rem;
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    .ekstra-icon {
-        width: 48px; height: 48px;
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        color: white;
-        font-size: 1.25rem;
-        flex-shrink: 0;
-    }
-    .ekstra-title h3 { margin: 0 0 6px 0; font-size: 1rem; font-weight: 600; color: #1f2937; }
-    .ekstra-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .meta-item { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 4px; }
-    .meta-badge {
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 500;
-    }
-    .semester-ganjil { background: #dbeafe; color: #1d4ed8; }
-    .semester-genap { background: #fce7f3; color: #db2777; }
-    
-    .ekstra-info { padding: 0 1rem 1rem; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .info-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        background: #f8fafc;
-        border-radius: 8px;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-    .info-item:hover { background: #f1f5f9; }
-    .info-icon {
-        width: 36px; height: 36px;
-        background: rgba(59,130,246,0.1);
-        color: #3b82f6;
-        border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-    }
-    .info-value { font-size: 1.125rem; font-weight: 700; color: #1f2937; }
-    .info-label { font-size: 11px; color: #6b7280; }
-    
-    .pembina-list {
-        background: #fffbeb;
-        border: 1px solid #fcd34d;
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 12px;
-    }
-    .pembina-label { color: #92400e; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-    .pembina-names { color: #78350f; }
-    
-    .ekstra-actions {
-        padding: 12px;
-        border-top: 1px solid #e5e7eb;
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-    }
-    .btn-action {
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        border: none;
-        cursor: pointer;
-    }
-    .btn-action:hover { transform: translateY(-1px); }
-    .btn-action.btn-edit { background: #dbeafe; color: #1d4ed8; }
-    .btn-action.btn-danger { background: #fee2e2; color: #dc2626; }
-    
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-    }
-    .empty-state i { font-size: 64px; color: #d1d5db; margin-bottom: 20px; }
-    .empty-state h3 { margin: 0 0 10px; color: #374151; }
-    .empty-state p { color: #6b7280; margin-bottom: 20px; }
-    
-    /* Modal */
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-    }
-    .modal-content {
-        background: white;
-        padding: 30px;
-        border-radius: 16px;
-        width: 420px;
-        max-width: 90%;
-        text-align: center;
-    }
-    .modal-icon { font-size: 48px; color: #f59e0b; margin-bottom: 15px; }
-    .modal-actions { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
-</style>
-@endpush
-
 @section('content')
 <div class="layout">
     @include('layouts.partials.sidebar-guru')
 
-    <div class="main-content">
-        <!-- Header -->
-        <div class="content-header">
-            <div class="header-content">
-                <div class="header-icon">
-                    <i class="fas fa-futbol"></i>
-                </div>
-                <div class="header-text">
-                    <h1>Manajemen Ekstrakurikuler</h1>
-                    <div class="header-subtitle">
-                        <span><i class="fas fa-calendar-alt"></i> Periode Aktif: <strong>{{ $tahunAktif }} - {{ $semesterAktif }}</strong></span>
-                        <span><i class="fas fa-chart-line"></i> {{ $totalAktif }} Ekstrakurikuler Aktif</span>
-                    </div>
-                </div>
+    <div class="main-content ekstra-page">
+        {{-- Header --}}
+        <div class="page-header-center">
+            <div class="header-icon-large">
+                <i class="fas fa-futbol"></i>
             </div>
-            <div class="header-actions">
-                <a href="{{ route('guru.koordinator-ekstra.create') }}" class="btn btn-primary" style="background: white; color: #3b82f6;">
-                    <i class="fas fa-plus"></i> Tambah Baru
-                </a>
+            <h1>Manajemen Ekstrakurikuler</h1>
+            <div class="header-periode-badge"><i class="fas fa-calendar-alt"></i> {{ $tahunAktif }} - {{ $semesterAktif }}</div>
+            <div class="header-stats-row">
+                <span class="header-stat"><i class="fas fa-chart-line"></i> {{ $totalAktif }} Aktif</span>
+                <span class="header-stat"><i class="fas fa-database"></i> {{ count($ekstrakurikulerList) }} Data</span>
+            </div>
+            <div style="margin-top: 14px;">
+                <a href="{{ route('guru.koordinator-ekstra.create') }}" class="btn-tambah-baru"><i class="fas fa-plus"></i> Tambah Baru</a>
             </div>
         </div>
 
-        <!-- Filter -->
-        <div class="filter-card">
-            <div class="filter-header">
-                <div class="filter-title">
-                    <i class="fas fa-filter"></i>
-                    <h3>Filter Data</h3>
-                </div>
-                <span class="badge-count">{{ count($ekstrakurikulerList) }} Data</span>
-            </div>
-            <form method="GET" class="filter-form">
-                <div class="filter-group">
-                    <label><i class="fas fa-calendar"></i> Tahun Pelajaran</label>
-                    <select name="tahun" class="filter-control">
-                        @foreach($allYears as $y)
-                            <option value="{{ $y }}" {{ $y == $filterTahun ? 'selected' : '' }}>
-                                {{ $y }} {{ $y == $tahunAktif ? '(Aktif)' : '' }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label><i class="fas fa-layer-group"></i> Semester</label>
-                    <select name="semester" class="filter-control">
-                        <option value="Ganjil" {{ $filterSemester == 'Ganjil' ? 'selected' : '' }}>Ganjil</option>
-                        <option value="Genap" {{ $filterSemester == 'Genap' ? 'selected' : '' }}>Genap</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i> Terapkan Filter
-                </button>
-                @if($filterTahun != $tahunAktif || $filterSemester != $semesterAktif)
-                    <a href="{{ route('guru.koordinator-ekstra.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-undo"></i> Reset
-                    </a>
-                @endif
-            </form>
-        </div>
-
-        <!-- Content -->
+        {{-- Content --}}
         <div class="content-section">
             <div class="section-header">
                 <div class="section-title">
                     <i class="fas fa-list"></i>
                     <h2>Daftar Ekstrakurikuler</h2>
                 </div>
+                <span class="badge-count">{{ count($ekstrakurikulerList) }} Data</span>
             </div>
 
             @if(count($ekstrakurikulerList) > 0)
                 @php
                     $icons = [
-                        'Pramuka' => 'fa-campground',
-                        'Paskibra' => 'fa-flag',
-                        'PMR' => 'fa-heartbeat',
-                        'OSIS' => 'fa-users-cog',
-                        'Basket' => 'fa-basketball-ball',
-                        'Futsal' => 'fa-futbol',
-                        'Voli' => 'fa-volleyball-ball',
-                        'Seni Musik' => 'fa-music',
-                        'Seni Tari' => 'fa-gem',
-                        'English Club' => 'fa-language',
-                        'Japanese Club' => 'fa-language',
-                        'IT Club' => 'fa-laptop-code',
-                        'KIR' => 'fa-flask',
-                        'Paduan Suara' => 'fa-microphone-alt'
+                        'Pramuka' => 'fa-campground', 'Paskibra' => 'fa-flag', 'PMR' => 'fa-heartbeat',
+                        'OSIS' => 'fa-users-cog', 'Basket' => 'fa-basketball-ball', 'Futsal' => 'fa-futbol',
+                        'Voli' => 'fa-volleyball-ball', 'Seni Musik' => 'fa-music', 'Seni Tari' => 'fa-gem',
+                        'English Club' => 'fa-language', 'Japanese Club' => 'fa-language', 'IT Club' => 'fa-laptop-code',
+                        'KIR' => 'fa-flask', 'Paduan Suara' => 'fa-microphone-alt'
                     ];
                     $colors = [
-                        'Pramuka' => '#3b82f6',
-                        'Paskibra' => '#ef4444',
-                        'PMR' => '#dc2626',
-                        'OSIS' => '#8b5cf6',
-                        'Basket' => '#f59e0b',
-                        'Futsal' => '#10b981',
-                        'Voli' => '#ec4899',
-                        'Seni Musik' => '#06b6d4',
-                        'Seni Tari' => '#f97316',
-                        'English Club' => '#6366f1',
-                        'Japanese Club' => '#8b5cf6',
-                        'IT Club' => '#0ea5e9',
-                        'KIR' => '#84cc16',
-                        'Paduan Suara' => '#d946ef'
+                        'Pramuka' => '#3b82f6', 'Paskibra' => '#ef4444', 'PMR' => '#dc2626',
+                        'OSIS' => '#8b5cf6', 'Basket' => '#f59e0b', 'Futsal' => '#10b981',
+                        'Voli' => '#ec4899', 'Seni Musik' => '#06b6d4', 'Seni Tari' => '#f97316',
+                        'English Club' => '#6366f1', 'Japanese Club' => '#8b5cf6', 'IT Club' => '#0ea5e9',
+                        'KIR' => '#84cc16', 'Paduan Suara' => '#d946ef'
                     ];
                 @endphp
                 <div class="ekstra-grid">
@@ -419,10 +123,10 @@
                 </div>
             @else
                 <div class="empty-state">
-                    <i class="fas fa-futbol"></i>
+                    <div class="empty-icon"><i class="fas fa-futbol"></i></div>
                     <h3>Tidak Ada Data Ekstrakurikuler</h3>
-                    <p>Belum ada data ekstrakurikuler untuk periode yang dipilih</p>
-                    <a href="{{ route('guru.koordinator-ekstra.create') }}" class="btn btn-primary">
+                    <p>Belum ada data ekstrakurikuler untuk periode aktif</p>
+                    <a href="{{ route('guru.koordinator-ekstra.create') }}" class="btn-tambah-baru" style="margin-top: 16px;">
                         <i class="fas fa-plus"></i> Tambah Ekstrakurikuler
                     </a>
                 </div>
@@ -451,7 +155,138 @@
     </div>
 </div>
 
+<style>
+/* Page */
+.ekstra-page { padding: 30px; background: #f8f9fa; min-height: calc(100vh - 60px); }
 
+/* Header - Jurnal Harian Style */
+.ekstra-page .page-header-center { text-align: center; margin-bottom: 25px; }
+.ekstra-page .header-icon-large {
+    width: 70px; height: 70px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: white; margin: 0 auto 16px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    box-shadow: 0 8px 25px rgba(59,130,246,0.4);
+}
+.ekstra-page .page-header-center h1 { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; color: #1f2937; }
+.ekstra-page .header-periode-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.1); color: #1d4ed8;
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(59,130,246,0.2);
+}
+.header-stats-row {
+    display: flex; justify-content: center; gap: 16px; margin-top: 10px;
+}
+.header-stat {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; color: #6b7280; font-weight: 500;
+}
+.header-stat i { color: #3b82f6; }
+.btn-tambah-baru {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px;
+    background: linear-gradient(135deg, #10b981, #059669); color: white;
+    border-radius: 10px; font-weight: 600; font-size: 13px; text-decoration: none;
+    transition: all 0.3s; box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+.btn-tambah-baru:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16,185,129,0.4); color: white; }
+
+/* Content Section */
+.content-section {
+    background: white; border-radius: 16px; padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06); border: 1px solid #e5e7eb;
+}
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.section-title { display: flex; align-items: center; gap: 0.75rem; }
+.section-title i { color: #3b82f6; }
+.section-title h2 { margin: 0; font-size: 1.125rem; color: #1f2937; }
+.badge-count { background: #3b82f6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+
+/* Ekstra Grid */
+.ekstra-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+
+/* Ekstra Card */
+.ekstra-card {
+    background: white; border-radius: 12px; border: 1px solid #e5e7eb;
+    overflow: hidden; transition: all 0.3s ease;
+}
+.ekstra-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+.ekstra-card.active { border-color: #10b981; border-width: 2px; }
+.ekstra-status { padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: flex-end; }
+.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+.status-badge.active { background: #d1fae5; color: #10b981; }
+.status-badge.inactive { background: #f3f4f6; color: #6b7280; }
+.ekstra-header { padding: 1rem; display: flex; align-items: flex-start; gap: 12px; }
+.ekstra-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; flex-shrink: 0; }
+.ekstra-title h3 { margin: 0 0 6px 0; font-size: 1rem; font-weight: 600; color: #1f2937; }
+.ekstra-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.meta-item { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 4px; }
+.meta-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.semester-ganjil { background: #dbeafe; color: #1d4ed8; }
+.semester-genap { background: #fce7f3; color: #db2777; }
+.ekstra-info { padding: 0 1rem 1rem; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.info-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8fafc; border-radius: 8px; text-decoration: none; transition: all 0.2s ease; }
+.info-item:hover { background: #f1f5f9; }
+.info-icon { width: 36px; height: 36px; background: rgba(59,130,246,0.1); color: #3b82f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.info-value { font-size: 1.125rem; font-weight: 700; color: #1f2937; }
+.info-label { font-size: 11px; color: #6b7280; }
+.pembina-list { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 12px; font-size: 12px; }
+.pembina-label { color: #92400e; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.pembina-names { color: #78350f; }
+.ekstra-actions { padding: 12px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 8px; }
+.btn-action { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; transition: all 0.2s ease; border: none; cursor: pointer; }
+.btn-action:hover { transform: translateY(-1px); }
+.btn-action.btn-edit { background: #dbeafe; color: #1d4ed8; }
+.btn-action.btn-danger { background: #fee2e2; color: #dc2626; }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-icon { width: 70px; height: 70px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+.empty-icon i { font-size: 28px; color: #d1d5db; }
+.empty-state h3 { margin: 0 0 10px; color: #374151; }
+.empty-state p { color: #6b7280; margin-bottom: 0; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 9999; }
+.modal-content { background: white; padding: 30px; border-radius: 16px; width: 420px; max-width: 90%; text-align: center; }
+.modal-icon { font-size: 48px; color: #f59e0b; margin-bottom: 15px; }
+.modal-actions { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .ekstra-page { padding: 12px; }
+    .ekstra-page .header-icon-large { width: 56px; height: 56px; font-size: 26px; border-radius: 14px; margin-bottom: 12px; }
+    .ekstra-page .page-header-center h1 { font-size: 20px; }
+    .header-stats-row { gap: 10px; }
+    .header-stat { font-size: 12px; }
+    .ekstra-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .content-section { padding: 1rem; }
+    .section-header { flex-wrap: wrap; gap: 8px; }
+    .ekstra-header { padding: 0.75rem; }
+    .ekstra-icon { width: 40px; height: 40px; font-size: 1rem; }
+    .ekstra-title h3 { font-size: 0.9rem; }
+    .info-grid { gap: 8px; }
+    .info-item { padding: 8px; gap: 8px; }
+    .info-icon { width: 30px; height: 30px; font-size: 12px; }
+    .info-value { font-size: 1rem; }
+    .pembina-list { font-size: 11px; padding: 8px 10px; }
+    .ekstra-actions { padding: 10px; }
+    .modal-content { padding: 20px; }
+}
+
+@media (max-width: 480px) {
+    .ekstra-page { padding: 8px; }
+    .ekstra-page .header-icon-large { width: 48px; height: 48px; font-size: 22px; border-radius: 12px; }
+    .ekstra-page .page-header-center h1 { font-size: 18px; }
+    .header-periode-badge { font-size: 11px; padding: 4px 12px; }
+    .header-stats-row { flex-direction: column; gap: 4px; }
+    .btn-tambah-baru { font-size: 12px; padding: 8px 18px; }
+    .content-section { padding: 0.75rem; border-radius: 12px; }
+    .section-title h2 { font-size: 0.95rem; }
+    .badge-count { font-size: 11px; padding: 3px 10px; }
+}
+</style>
 @endsection
 
 @push('scripts')
@@ -468,7 +303,5 @@
     document.getElementById('deleteModal').addEventListener('click', (e) => {
         if (e.target.id === 'deleteModal') closeDeleteModal();
     });
-    
-
 </script>
 @endpush
