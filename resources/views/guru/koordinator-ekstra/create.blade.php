@@ -1,4 +1,4 @@
-@extends('layouts.app-guru')
+@extends('layouts.app')
 
 @section('title', 'Tambah Ekstrakurikuler | SISMIK')
 
