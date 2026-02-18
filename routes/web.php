@@ -492,6 +492,16 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     // Tugas Tambahan route
     Route::get('/tugas-tambahan', [\App\Http\Controllers\GuruBK\TugasTambahanController::class, 'index'])->name('tugas-tambahan');
     
+    // Koordinator Ekstrakurikuler routes
+    Route::get('/koordinator-ekstra', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'index'])->name('koordinator-ekstra.index');
+    Route::get('/koordinator-ekstra/create', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'create'])->name('koordinator-ekstra.create');
+    Route::post('/koordinator-ekstra', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'store'])->name('koordinator-ekstra.store');
+    Route::get('/koordinator-ekstra/{id}/edit', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'edit'])->name('koordinator-ekstra.edit');
+    Route::put('/koordinator-ekstra/{id}', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'update'])->name('koordinator-ekstra.update');
+    Route::delete('/koordinator-ekstra/{id}', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'destroy'])->name('koordinator-ekstra.destroy');
+    Route::post('/koordinator-ekstra/get-siswa', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'getSiswa'])->name('koordinator-ekstra.get-siswa');
+    Route::get('/koordinator-ekstra/get-siswa-by-ids', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'getSiswaByIds'])->name('koordinator-ekstra.get-siswa-by-ids');
+    
     // Siswa Wali (guru wali) route
     Route::get('/siswa-wali', [\App\Http\Controllers\GuruBK\SiswaWaliController::class, 'index'])->name('siswa-wali');
     

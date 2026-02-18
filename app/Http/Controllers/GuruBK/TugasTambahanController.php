@@ -53,6 +53,22 @@ class TugasTambahanController extends Controller
             ->orderBy('j.nama_tugas', 'ASC')
             ->get();
 
+        // Enrich tugas tambahan with extra data
+        foreach ($tugasTambahanLain as $item) {
+            $item->extra_count = null;
+            $item->extra_route = null;
+            // If this is "Koordinator Ekstrakurikuler" (or variant spelling), count ekstra in active period
+            if (stripos($item->jenis_nama, 'ekstrakurikuler') !== false) {
+                $item->extra_count = DB::table('ekstrakurikuler')
+                    ->where('tahun_pelajaran', $periodeAktif->tahun_pelajaran)
+                    ->where('semester', $periodeAktif->semester)
+                    ->count();
+                $item->extra_route = 'guru_bk.koordinator-ekstra.index';
+                $item->extra_label = 'Ekstrakurikuler';
+                $item->extra_icon = 'fa-futbol';
+            }
+        }
+
         // Total tugas
         $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbinganWali > 0 ? 1 : 0) + count($tugasTambahanLain);
 

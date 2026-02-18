@@ -228,8 +228,8 @@ class TugasTambahanController extends Controller
         foreach ($tugasTambahanLain as $item) {
             $item->extra_count = null;
             $item->extra_route = null;
-            // If this is "Koordinator Ekstrakurikuler", count ekstra in active period
-            if (stripos($item->jenis_nama, 'koordinator ekstrakurikuler') !== false) {
+            // If this is "Koordinator Ekstrakurikuler" (or variant spelling), count ekstra in active period
+            if (stripos($item->jenis_nama, 'ekstrakurikuler') !== false) {
                 $item->extra_count = DB::table('ekstrakurikuler')
                     ->where('tahun_pelajaran', $tahunPelajaran)
                     ->where('semester', $semesterAktif)
