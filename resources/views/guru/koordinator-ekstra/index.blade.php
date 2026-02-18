@@ -19,8 +19,8 @@
                 <span class="header-stat"><i class="fas fa-database"></i> {{ count($ekstrakurikulerList) }} Data</span>
             </div>
             <div class="header-actions-row">
-                <a href="{{ route('guru.koordinator-ekstra.create') }}" class="btn-tambah-baru"><i class="fas fa-plus"></i> Tambah Baru</a>
                 <a href="{{ url()->previous() }}" class="btn-kembali"><i class="fas fa-arrow-left"></i> Kembali</a>
+                <a href="{{ route('guru.koordinator-ekstra.create') }}" class="btn-tambah-baru"><i class="fas fa-plus"></i> Tambah Baru</a>
             </div>
         </div>
 
