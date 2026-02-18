@@ -257,6 +257,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
 
     // Tugas Tambahan Lainnya
     Route::get('/tugas-tambahan', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'index'])->name('tugas-tambahan.index');
+    Route::post('/tugas-tambahan/jenis/store', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'storeJenis'])->name('tugas-tambahan.jenis.store');
+    Route::post('/tugas-tambahan/jenis/delete', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'deleteJenis'])->name('tugas-tambahan.jenis.delete');
+    Route::post('/tugas-tambahan/jenis/update', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'updateJenis'])->name('tugas-tambahan.jenis.update');
 
     
     // Keamanan (Security) Management
