@@ -1019,19 +1019,90 @@
 /* Responsive */
 @media (max-width: 768px) {
     .anggota-ekstra-page {
-        padding: 20px;
+        padding: 12px;
+    }
+
+    .header-icon-large {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+    }
+
+    .page-header-center h1 {
+        font-size: 20px;
+    }
+
+    .action-buttons-center {
+        flex-direction: column;
+    }
+
+    .btn-back, .btn-add-member {
+        width: 100%;
+        justify-content: center;
     }
 
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 12px 8px;
+        gap: 8px;
+    }
+
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+
+    .stat-info h3 {
+        font-size: 16px;
+    }
+
+    .stat-info p {
+        font-size: 10px;
+    }
+
+    .members-header {
+        padding: 14px 16px;
+        flex-wrap: wrap;
+        gap: 8px;
     }
 
     .members-cards-grid {
         grid-template-columns: 1fr;
+        padding: 12px;
+        gap: 12px;
     }
 
-    .siswa-list {
-        grid-template-columns: 1fr;
+    .member-card-header {
+        padding: 12px;
+    }
+
+    .member-avatar-photo {
+        width: 38px;
+        height: 38px;
+    }
+
+    .member-name-info h4 {
+        font-size: 14px;
+    }
+
+    .member-name-info .member-rombel {
+        font-size: 11px;
+    }
+
+    .nilai-badge-header {
+        font-size: 10px;
+        padding: 2px 8px;
+    }
+
+    .member-card.expanded .member-card-body {
+        padding: 12px;
     }
 
     .member-actions-row {
@@ -1041,6 +1112,64 @@
 
     .action-buttons-card {
         justify-content: flex-end;
+    }
+
+    .siswa-list {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .anggota-ekstra-page {
+        padding: 8px;
+    }
+
+    .header-icon-large {
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
+        border-radius: 14px;
+    }
+
+    .page-header-center h1 {
+        font-size: 18px;
+    }
+
+    .stat-card {
+        padding: 8px 4px;
+    }
+
+    .stat-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+        border-radius: 7px;
+    }
+
+    .stat-info h3 {
+        font-size: 14px;
+    }
+
+    .stat-info p {
+        font-size: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .members-cards-grid {
+        padding: 8px;
+        gap: 10px;
+    }
+
+    .btn-back, .btn-add-member {
+        padding: 10px 18px;
+        font-size: 13px;
     }
 }
 </style>
