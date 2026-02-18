@@ -381,7 +381,7 @@
 
             <!-- ACTION BUTTONS -->
             <div class="action-buttons-header">
-                <a href="{{ route('guru.tugas-tambahan') }}" class="btn-modern btn-back">
+                <a href="{{ url()->previous() }}" class="btn-modern btn-back">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
                 <button type="button" class="btn-modern btn-add" onclick="openModalTambah()">

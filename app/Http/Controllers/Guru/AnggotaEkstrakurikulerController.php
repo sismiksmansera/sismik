@@ -79,9 +79,18 @@ class AnggotaEkstrakurikulerController extends Controller
             return redirect()->route('guru.tugas-tambahan')->with('error', 'Data ekstrakurikuler tidak ditemukan!');
         }
 
-        // Verify guru is pembina
+        // Verify guru is pembina OR is Koordinator Ekstrakurikuler
         $isPembina = ($ekstra->pembina_1 == $guruNama || $ekstra->pembina_2 == $guruNama || $ekstra->pembina_3 == $guruNama);
-        if (!$isPembina) {
+        
+        // Check if user is Koordinator Ekstrakurikuler
+        $isKoordinator = DB::table('tugas_tambahan_guru as t')
+            ->join('jenis_tugas_tambahan_lain as j', 't.jenis_tugas_id', '=', 'j.id')
+            ->where('t.tipe_guru', 'guru')
+            ->where('t.guru_id', $guru->id)
+            ->where('j.nama_tugas', 'like', '%ekstrakurikuler%')
+            ->exists();
+        
+        if (!$isPembina && !$isKoordinator) {
             return redirect()->route('guru.tugas-tambahan')->with('error', 'Anda tidak memiliki akses ke ekstrakurikuler ini!');
         }
 
