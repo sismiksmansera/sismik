@@ -388,6 +388,16 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::post('/anggota-ekstrakurikuler/update-nilai', [\App\Http\Controllers\Guru\AnggotaEkstrakurikulerController::class, 'updateNilai'])->name('anggota-ekstrakurikuler.update-nilai');
     Route::get('/anggota-ekstrakurikuler/cari-siswa', [\App\Http\Controllers\Guru\AnggotaEkstrakurikulerController::class, 'cariSiswa'])->name('anggota-ekstrakurikuler.cari-siswa');
     
+    // Koordinator Ekstrakurikuler routes
+    Route::get('/koordinator-ekstra', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'index'])->name('koordinator-ekstra.index');
+    Route::get('/koordinator-ekstra/create', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'create'])->name('koordinator-ekstra.create');
+    Route::post('/koordinator-ekstra', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'store'])->name('koordinator-ekstra.store');
+    Route::get('/koordinator-ekstra/{id}/edit', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'edit'])->name('koordinator-ekstra.edit');
+    Route::put('/koordinator-ekstra/{id}', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'update'])->name('koordinator-ekstra.update');
+    Route::delete('/koordinator-ekstra/{id}', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'destroy'])->name('koordinator-ekstra.destroy');
+    Route::post('/koordinator-ekstra/get-siswa', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'getSiswa'])->name('koordinator-ekstra.get-siswa');
+    Route::get('/koordinator-ekstra/get-siswa-by-ids', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'getSiswaByIds'])->name('koordinator-ekstra.get-siswa-by-ids');
+    
     // Lihat Prestasi routes
     Route::get('/lihat-prestasi', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'index'])->name('lihat-prestasi');
     Route::post('/lihat-prestasi/hapus', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'hapus'])->name('lihat-prestasi.hapus');

@@ -730,6 +730,18 @@
                                     </div>
                                 </div>
                                 <div class="task-card-body" style="padding: 20px;">
+                                    @if($lainnya->extra_count !== null)
+                                    <a href="{{ route($lainnya->extra_route) }}" style="display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #fef3c7, #fffbeb); padding: 14px 16px; border-radius: 12px; border: 1px solid #fcd34d; text-decoration: none; margin-bottom: 12px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(245,158,11,0.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                                        <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; flex-shrink: 0;">
+                                            <i class="fas {{ $lainnya->extra_icon }}"></i>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 20px; font-weight: 700; color: #92400e;">{{ $lainnya->extra_count }}</div>
+                                            <div style="font-size: 11px; color: #b45309; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">{{ $lainnya->extra_label }}</div>
+                                        </div>
+                                        <i class="fas fa-chevron-right" style="color: #d97706; font-size: 14px;"></i>
+                                    </a>
+                                    @endif
                                     @if($lainnya->jenis_deskripsi)
                                     <div style="margin-bottom: 12px;">
                                         <div style="font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Deskripsi Tugas</div>
@@ -742,7 +754,7 @@
                                         <div style="font-size: 13px; color: #78350f;">{{ $lainnya->keterangan }}</div>
                                     </div>
                                     @endif
-                                    @if(!$lainnya->jenis_deskripsi && !$lainnya->keterangan)
+                                    @if($lainnya->extra_count === null && !$lainnya->jenis_deskripsi && !$lainnya->keterangan)
                                     <div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 10px 0;">
                                         <i class="fas fa-info-circle"></i> Tidak ada keterangan tambahan
                                     </div>
