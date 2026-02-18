@@ -53,7 +53,7 @@
 /* STATS GRID */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     margin-bottom: 25px;
 }
@@ -507,15 +507,6 @@
                     <div class="stat-info">
                         <h3>{{ $totalSiswaBimbingan }}</h3>
                         <p>Siswa Bimbingan</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon warning">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>{{ $tahunPelajaran }}</h3>
-                        <p>{{ ucfirst($semesterAktif) }}</p>
                     </div>
                 </div>
                 <div class="stat-card">
