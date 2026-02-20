@@ -87,6 +87,27 @@
                         </div>
                         @endif
                     </div>
+
+                    <div class="ajang-info-grid">
+                        <div class="ajang-info-item">
+                            <div class="ajang-info-icon blue">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <div class="ajang-info-value">0</div>
+                                <div class="ajang-info-label">Peserta</div>
+                            </div>
+                        </div>
+                        <div class="ajang-info-item">
+                            <div class="ajang-info-icon amber">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div>
+                                <div class="ajang-info-value">0</div>
+                                <div class="ajang-info-label">Prestasi</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 @endforeach
             </div>
@@ -327,6 +348,34 @@
         font-size: 12px; color: #64748b;
     }
     .ajang-detail-item i { width: 14px; text-align: center; font-size: 11px; color: #94a3b8; }
+
+    /* AJANG INFO GRID */
+    .ajang-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid #e2e8f0;
+    }
+    .ajang-info-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px;
+        background: #f8fafc;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .ajang-info-item:hover { background: #f1f5f9; }
+    .ajang-info-icon {
+        width: 36px; height: 36px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; flex-shrink: 0;
+    }
+    .ajang-info-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .ajang-info-icon.amber { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .ajang-info-value { font-size: 18px; font-weight: 700; color: #1e293b; line-height: 1; }
+    .ajang-info-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 
     /* CONTENT */
     .mt-content-section {
