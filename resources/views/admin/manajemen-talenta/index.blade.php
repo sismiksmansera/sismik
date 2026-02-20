@@ -15,17 +15,13 @@
                 </div>
                 <div class="mt-header-text">
                     <h1>Manajemen Talenta</h1>
-                    <p>Data peserta Olimpiade Sains Nasional 2026</p>
+                    <p>Kelola ajang talenta dan prestasi siswa</p>
                 </div>
             </div>
             <div class="mt-header-stats">
                 <div class="mt-stat-badge">
-                    <i class="fas fa-users"></i>
-                    <span>{{ count($siswaList) }} Peserta Terdaftar</span>
-                </div>
-                <div class="mt-stat-badge gold">
-                    <i class="fas fa-trophy"></i>
-                    <span>{{ count($mapelStats) }} Mata Pelajaran</span>
+                    <i class="fas fa-flag"></i>
+                    <span>{{ count($ajangList) }} Ajang</span>
                 </div>
             </div>
         </div>
@@ -34,7 +30,7 @@
         <div class="mt-content-section" style="margin-bottom: 24px;">
             <div class="mt-section-header">
                 <div class="mt-section-title">
-                    <i class="fas fa-flag" style="color: #8b5cf6;"></i>
+                    <i class="fas fa-flag"></i>
                     <h2>Ajang Talenta</h2>
                 </div>
                 <button class="mt-btn-add" onclick="openAjangModal()">
@@ -136,51 +132,53 @@
 <style>
     /* HEADER */
     .mt-header {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
-        border: 1px solid rgba(139, 92, 246, 0.2);
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
         border-radius: 16px;
         padding: 24px 28px;
         margin-bottom: 24px;
         display: flex; align-items: center; justify-content: space-between;
         flex-wrap: wrap; gap: 16px;
+        color: white;
     }
     .mt-header-content { display: flex; align-items: center; gap: 16px; }
     .mt-header-icon {
         width: 52px; height: 52px; border-radius: 14px;
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        background: rgba(255, 255, 255, 0.2);
         display: flex; align-items: center; justify-content: center;
         color: white; font-size: 22px;
     }
-    .mt-header-text h1 { font-size: 22px; font-weight: 800; color: #f1f5f9; margin: 0; }
-    .mt-header-text p { font-size: 13px; color: #94a3b8; margin: 4px 0 0; }
+    .mt-header-text h1 { font-size: 22px; font-weight: 800; color: white; margin: 0; }
+    .mt-header-text p { font-size: 13px; color: rgba(255,255,255,0.8); margin: 4px 0 0; }
     .mt-header-stats { display: flex; gap: 12px; }
     .mt-stat-badge {
         display: flex; align-items: center; gap: 8px;
         padding: 8px 16px; border-radius: 10px;
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        color: #60a5fa; font-size: 13px; font-weight: 600;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: white; font-size: 13px; font-weight: 600;
     }
     .mt-stat-badge.gold {
-        background: rgba(245, 158, 11, 0.1);
-        border-color: rgba(245, 158, 11, 0.2);
-        color: #fbbf24;
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: #fef3c7;
     }
 
     /* BTN ADD */
     .mt-btn-add {
         padding: 10px 20px; border-radius: 10px;
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
-        border: none; color: white;
+        background: white; color: #3b82f6;
+        border: none;
         font-size: 13px; font-weight: 600;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Poppins', sans-serif;
         cursor: pointer;
         display: flex; align-items: center; gap: 8px;
         transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
     .mt-btn-add:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
+        background: #f0f9ff;
     }
 
     /* AJANG GRID */
@@ -190,17 +188,17 @@
         gap: 16px;
     }
     .ajang-card {
-        background: rgba(15, 23, 42, 0.5);
-        border: 1px solid rgba(148, 163, 184, 0.1);
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
         border-radius: 14px;
         padding: 20px;
         transition: all 0.3s;
         position: relative;
     }
     .ajang-card:hover {
-        border-color: rgba(139, 92, 246, 0.3);
+        border-color: #93c5fd;
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.08);
     }
     .ajang-card-header {
         display: flex; align-items: center; justify-content: space-between;
@@ -208,216 +206,85 @@
     }
     .ajang-icon {
         width: 38px; height: 38px; border-radius: 10px;
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(234, 88, 12, 0.15));
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
         display: flex; align-items: center; justify-content: center;
-        color: #fbbf24; font-size: 16px;
+        color: #f59e0b; font-size: 16px;
     }
     .ajang-delete {
         width: 26px; height: 26px; border-radius: 6px;
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.15);
-        color: #f87171; font-size: 11px;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #ef4444; font-size: 11px;
         cursor: pointer; display: flex;
         align-items: center; justify-content: center;
         transition: all 0.2s; opacity: 0;
     }
     .ajang-card:hover .ajang-delete { opacity: 1; }
     .ajang-delete:hover {
-        background: rgba(239, 68, 68, 0.2);
+        background: #fecaca;
         transform: scale(1.1);
     }
     .ajang-name {
-        font-size: 15px; font-weight: 700; color: #f1f5f9;
+        font-size: 15px; font-weight: 700; color: #1e293b;
         margin-bottom: 12px; line-height: 1.3;
     }
     .ajang-details { display: flex; flex-direction: column; gap: 6px; }
     .ajang-detail-item {
         display: flex; align-items: center; gap: 8px;
-        font-size: 12px; color: #94a3b8;
+        font-size: 12px; color: #64748b;
     }
-    .ajang-detail-item i { width: 14px; text-align: center; font-size: 11px; color: #64748b; }
-
-    /* STATS GRID */
-    .mt-stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 14px; margin-bottom: 24px;
-    }
-    .mt-stat-card {
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid rgba(148, 163, 184, 0.08);
-        border-radius: 14px;
-        padding: 18px;
-        display: flex; align-items: center; gap: 14px;
-        transition: all 0.3s;
-        border-left: 3px solid var(--card-color);
-    }
-    .mt-stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    }
-    .mt-stat-icon {
-        width: 40px; height: 40px; border-radius: 10px;
-        background: color-mix(in srgb, var(--card-color) 15%, transparent);
-        display: flex; align-items: center; justify-content: center;
-        color: var(--card-color); font-size: 16px;
-    }
-    .mt-stat-count {
-        font-size: 22px; font-weight: 800; color: #f1f5f9;
-        display: block; line-height: 1;
-    }
-    .mt-stat-label {
-        font-size: 11px; color: #94a3b8; font-weight: 600;
-        text-transform: uppercase; letter-spacing: 0.3px;
-    }
-
-    /* FILTER */
-    .mt-filter-bar {
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid rgba(148, 163, 184, 0.08);
-        border-radius: 14px;
-        padding: 16px 20px;
-        margin-bottom: 24px;
-    }
-    .mt-filter-form { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-    .mt-filter-group { display: flex; flex-direction: column; gap: 6px; }
-    .mt-filter-group label {
-        font-size: 11px; font-weight: 600; color: #94a3b8;
-        text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .mt-filter-group label i { margin-right: 4px; font-size: 10px; }
-    .mt-filter-group select {
-        padding: 10px 14px; border-radius: 10px;
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        color: #e2e8f0; font-size: 13px; font-family: 'Inter', sans-serif;
-        min-width: 180px; cursor: pointer;
-    }
-    .mt-filter-group select:focus {
-        outline: none;
-        border-color: rgba(139, 92, 246, 0.5);
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-    }
-    .mt-filter-reset {
-        padding: 10px 16px; border-radius: 10px;
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        color: #f87171; font-size: 13px; font-weight: 600;
-        text-decoration: none; align-self: flex-end;
-        transition: all 0.2s;
-    }
-    .mt-filter-reset:hover {
-        background: rgba(239, 68, 68, 0.2);
-        color: #fca5a5;
-    }
+    .ajang-detail-item i { width: 14px; text-align: center; font-size: 11px; color: #94a3b8; }
 
     /* CONTENT */
     .mt-content-section {
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid rgba(148, 163, 184, 0.08);
+        background: white;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
     .mt-section-header {
         display: flex; align-items: center; justify-content: space-between;
         margin-bottom: 20px; padding-bottom: 16px;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+        border-bottom: 1px solid #f1f5f9;
     }
     .mt-section-title { display: flex; align-items: center; gap: 10px; }
-    .mt-section-title i { color: #fbbf24; font-size: 18px; }
-    .mt-section-title h2 { font-size: 17px; font-weight: 700; color: #f1f5f9; margin: 0; }
+    .mt-section-title i { color: #3b82f6; font-size: 18px; }
+    .mt-section-title h2 { font-size: 17px; font-weight: 700; color: #1e293b; margin: 0; }
     .mt-section-count {
         padding: 6px 14px; border-radius: 8px;
-        background: rgba(139, 92, 246, 0.1);
-        border: 1px solid rgba(139, 92, 246, 0.2);
-        color: #a78bfa; font-size: 12px; font-weight: 600;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #2563eb; font-size: 12px; font-weight: 600;
     }
 
     /* EMPTY STATE */
     .mt-empty-state { text-align: center; padding: 50px 20px; }
     .mt-empty-icon {
         width: 70px; height: 70px; border-radius: 50%;
-        background: rgba(139, 92, 246, 0.1);
+        background: #eff6ff;
         display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 16px; font-size: 28px; color: #8b5cf6;
+        margin: 0 auto 16px; font-size: 28px; color: #3b82f6;
     }
-    .mt-empty-state h3 { font-size: 16px; color: #e2e8f0; margin-bottom: 8px; }
+    .mt-empty-state h3 { font-size: 16px; color: #334155; margin-bottom: 8px; }
     .mt-empty-state p { color: #94a3b8; font-size: 13px; }
-
-    /* TABLE */
-    .mt-table-wrapper { overflow-x: auto; }
-    .mt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .mt-table thead th {
-        padding: 12px 14px; text-align: left;
-        font-size: 11px; font-weight: 700;
-        color: #94a3b8; text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-        white-space: nowrap;
-    }
-    .mt-table tbody tr {
-        border-bottom: 1px solid rgba(148, 163, 184, 0.05);
-        transition: background 0.2s;
-    }
-    .mt-table tbody tr:hover { background: rgba(139, 92, 246, 0.05); }
-    .mt-table tbody td { padding: 12px 14px; color: #e2e8f0; vertical-align: middle; }
-
-    /* AVATAR */
-    .mt-avatar { width: 38px; height: 38px; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
-    .mt-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .mt-avatar-initials {
-        width: 100%; height: 100%;
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
-        display: flex; align-items: center; justify-content: center;
-        color: white; font-weight: 700; font-size: 13px; border-radius: 10px;
-    }
-
-    /* NAME CELL */
-    .mt-name-cell strong { display: block; color: #f1f5f9; font-weight: 600; }
-    .mt-name-cell span { font-size: 11px; color: #94a3b8; }
-
-    /* BADGES */
-    .mt-badge {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 4px 10px; border-radius: 8px;
-        font-size: 11px; font-weight: 600; white-space: nowrap;
-    }
-    .mt-badge.blue { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
-    .mt-badge.green { background: rgba(16, 185, 129, 0.12); color: #34d399; }
-    .mt-badge.gray { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
-    .mt-badge.mapel {
-        background: color-mix(in srgb, var(--badge-color) 12%, transparent);
-        color: var(--badge-color);
-    }
-
-    /* REMOVE BUTTON */
-    .mt-btn-remove {
-        width: 32px; height: 32px; border-radius: 8px;
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        color: #f87171; font-size: 13px;
-        cursor: pointer; display: flex;
-        align-items: center; justify-content: center;
-        transition: all 0.2s;
-    }
-    .mt-btn-remove:hover { background: rgba(239, 68, 68, 0.2); transform: scale(1.1); }
 
     /* MODAL */
     .mt-modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+        background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);
         z-index: 9999;
         display: none; align-items: center; justify-content: center;
         padding: 20px;
     }
     .mt-modal-overlay.active { display: flex; }
     .mt-modal {
-        background: #1e293b;
-        border: 1px solid rgba(148, 163, 184, 0.15);
+        background: white;
+        border: 1px solid #e2e8f0;
         border-radius: 18px;
         width: 100%; max-width: 500px;
         animation: modalSlideIn 0.3s ease;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
     @keyframes modalSlideIn {
         from { opacity: 0; transform: translateY(-20px); }
@@ -426,78 +293,76 @@
     .mt-modal-header {
         display: flex; align-items: center; justify-content: space-between;
         padding: 20px 24px;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+        border-bottom: 1px solid #f1f5f9;
     }
     .mt-modal-title { display: flex; align-items: center; gap: 10px; }
-    .mt-modal-title i { color: #8b5cf6; font-size: 18px; }
-    .mt-modal-title h3 { font-size: 16px; font-weight: 700; color: #f1f5f9; margin: 0; }
+    .mt-modal-title i { color: #3b82f6; font-size: 18px; }
+    .mt-modal-title h3 { font-size: 16px; font-weight: 700; color: #1e293b; margin: 0; }
     .mt-modal-close {
         width: 32px; height: 32px; border-radius: 8px;
-        background: rgba(148, 163, 184, 0.1); border: none; color: #94a3b8;
+        background: #f1f5f9; border: none; color: #64748b;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
         transition: all 0.2s;
     }
-    .mt-modal-close:hover { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    .mt-modal-close:hover { background: #fee2e2; color: #ef4444; }
     .mt-modal-body { padding: 24px; }
     .mt-form-group { margin-bottom: 18px; }
     .mt-form-group label {
         display: block; font-size: 12px; font-weight: 600;
-        color: #94a3b8; text-transform: uppercase;
+        color: #64748b; text-transform: uppercase;
         letter-spacing: 0.5px; margin-bottom: 8px;
     }
-    .mt-form-group label .required { color: #f87171; }
+    .mt-form-group label .required { color: #ef4444; }
     .mt-form-group input {
         width: 100%; padding: 12px 15px;
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        border-radius: 10px; color: #e2e8f0;
-        font-size: 14px; font-family: 'Inter', sans-serif;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px; color: #1e293b;
+        font-size: 14px; font-family: 'Poppins', sans-serif;
         transition: all 0.2s;
     }
-    .mt-form-group input::placeholder { color: #475569; }
+    .mt-form-group input::placeholder { color: #94a3b8; }
     .mt-form-group input:focus {
         outline: none;
-        border-color: rgba(139, 92, 246, 0.5);
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        background: white;
     }
     .mt-modal-footer {
         padding: 16px 24px;
-        border-top: 1px solid rgba(148, 163, 184, 0.08);
+        border-top: 1px solid #f1f5f9;
         display: flex; justify-content: flex-end; gap: 10px;
     }
     .mt-btn-cancel {
         padding: 10px 20px; border-radius: 10px;
-        background: rgba(148, 163, 184, 0.1);
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        color: #94a3b8; font-size: 13px; font-weight: 600;
-        font-family: 'Inter', sans-serif;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #64748b; font-size: 13px; font-weight: 600;
+        font-family: 'Poppins', sans-serif;
         cursor: pointer; transition: all 0.2s;
     }
-    .mt-btn-cancel:hover { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+    .mt-btn-cancel:hover { background: #e2e8f0; color: #475569; }
     .mt-btn-save {
         padding: 10px 24px; border-radius: 10px;
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        background: #3b82f6;
         border: none; color: white;
         font-size: 13px; font-weight: 600;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Poppins', sans-serif;
         cursor: pointer;
         display: flex; align-items: center; gap: 8px;
         transition: all 0.3s;
     }
     .mt-btn-save:hover {
+        background: #2563eb;
         transform: translateY(-1px);
-        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
     }
     .mt-btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
         .mt-header { flex-direction: column; align-items: flex-start; }
-        .mt-stats-grid { grid-template-columns: repeat(2, 1fr); }
         .ajang-grid { grid-template-columns: 1fr; }
-        .mt-filter-form { flex-direction: column; }
-        .mt-filter-group select { min-width: 100%; }
-        .mt-filter-reset { align-self: flex-start; }
     }
 </style>
 
@@ -574,35 +439,6 @@ function deleteAjang(ajangId, nama) {
             }
         } else {
             alert(data.message || 'Gagal menghapus');
-        }
-    })
-    .catch(() => alert('Gagal menghubungi server'));
-}
-
-function removeOsn(siswaId, nama, mapel) {
-    if (!confirm(`Yakin ingin menghapus pendaftaran OSN ${mapel} untuk ${nama}?`)) return;
-
-    fetch('{{ route("admin.manajemen-talenta.remove-osn") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ siswa_id: siswaId })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            const row = document.getElementById('row-' + siswaId);
-            if (row) {
-                row.style.transition = 'opacity 0.3s, transform 0.3s';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(20px)';
-                setTimeout(() => row.remove(), 300);
-            }
-            alert(data.message);
-        } else {
-            alert(data.message || 'Gagal menghapus pendaftaran');
         }
     })
     .catch(() => alert('Gagal menghubungi server'));
