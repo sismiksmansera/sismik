@@ -48,19 +48,16 @@ class PesertaAjangTalentaController extends Controller
                 'peserta_ajang_talenta.siswa_id',
                 'peserta_ajang_talenta.status',
                 'peserta_ajang_talenta.created_at as tanggal_bergabung',
-                'siswa.nama',
-                'siswa.nis',
-                'siswa.nisn',
-                'siswa.jk',
-                'siswa.foto',
-                'siswa.angkatan_masuk',
-                'siswa.nama_rombel',
-                'siswa.rombel_semester_1',
-                'siswa.rombel_semester_2',
-                'siswa.rombel_semester_3',
-                'siswa.rombel_semester_4',
-                'siswa.rombel_semester_5',
-                'siswa.rombel_semester_6'
+                'siswa.nama', 'siswa.nis', 'siswa.nisn', 'siswa.jk',
+                'siswa.foto', 'siswa.angkatan_masuk', 'siswa.nama_rombel',
+                'siswa.agama', 'siswa.tempat_lahir', 'siswa.tgl_lahir',
+                'siswa.provinsi', 'siswa.kota', 'siswa.kecamatan',
+                'siswa.kelurahan', 'siswa.dusun', 'siswa.rt_rw',
+                'siswa.email', 'siswa.nohp_siswa',
+                'siswa.mapel_osn_2026',
+                'siswa.rombel_semester_1', 'siswa.rombel_semester_2',
+                'siswa.rombel_semester_3', 'siswa.rombel_semester_4',
+                'siswa.rombel_semester_5', 'siswa.rombel_semester_6'
             )
             ->orderBy('siswa.nama', 'ASC')
             ->get();
