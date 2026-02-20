@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\DataPeriodik;
+use App\Models\AjangTalenta;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class ManajemenTalentaController extends Controller
 {
@@ -40,7 +42,7 @@ class ManajemenTalentaController extends Controller
      */
     public function index(Request $request)
     {
-        $admin = \Illuminate\Support\Facades\Auth::guard('admin')->user();
+        $admin = Auth::guard('admin')->user();
 
         // Get active period
         $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
@@ -100,6 +102,9 @@ class ManajemenTalentaController extends Controller
             ->pluck('angkatan_masuk')
             ->filter();
 
+        // Get ajang talenta list
+        $ajangList = AjangTalenta::orderBy('created_at', 'DESC')->get();
+
         return view('admin.manajemen-talenta.index', compact(
             'admin',
             'siswaList',
@@ -109,7 +114,8 @@ class ManajemenTalentaController extends Controller
             'filterMapel',
             'filterAngkatan',
             'tahunAktif',
-            'semesterAktif'
+            'semesterAktif',
+            'ajangList'
         ));
     }
 
@@ -132,6 +138,53 @@ class ManajemenTalentaController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Pendaftaran OSN {$siswa->nama} ({$mapel}) berhasil dihapus.",
+        ]);
+    }
+
+    /**
+     * Store a new Ajang Talenta (AJAX)
+     */
+    public function storeAjang(Request $request)
+    {
+        $request->validate([
+            'nama_ajang' => 'required|string|max:200',
+            'tahun' => 'nullable|string|max:10',
+            'penyelenggara' => 'nullable|string|max:200',
+            'pembina' => 'nullable|string|max:200',
+        ], [
+            'nama_ajang.required' => 'Nama ajang talenta wajib diisi.',
+        ]);
+
+        $ajang = AjangTalenta::create([
+            'nama_ajang' => $request->nama_ajang,
+            'tahun' => $request->tahun,
+            'penyelenggara' => $request->penyelenggara,
+            'pembina' => $request->pembina,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ajang Talenta berhasil ditambahkan!',
+            'ajang' => $ajang,
+        ]);
+    }
+
+    /**
+     * Delete an Ajang Talenta (AJAX)
+     */
+    public function deleteAjang(Request $request)
+    {
+        $request->validate([
+            'ajang_id' => 'required|exists:ajang_talenta,id',
+        ]);
+
+        $ajang = AjangTalenta::findOrFail($request->ajang_id);
+        $nama = $ajang->nama_ajang;
+        $ajang->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Ajang Talenta '{$nama}' berhasil dihapus.",
         ]);
     }
 }
