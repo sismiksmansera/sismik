@@ -251,6 +251,21 @@
         }
         .btn-hapus:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-1px); }
 
+        .btn-buka-akses {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 14px; border-radius: 8px;
+            font-size: 11px; font-weight: 600;
+            background: rgba(16, 185, 129, 0.1); color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            cursor: pointer; transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-buka-akses:hover { background: rgba(16, 185, 129, 0.2); transform: translateY(-1px); }
+
+        .peserta-card-actions {
+            display: flex; gap: 6px;
+        }
+
         /* EMPTY */
         .empty-state {
             text-align: center; padding: 60px 20px;
@@ -387,9 +402,14 @@
                     <i class="fas {{ $mapelIcons[$siswa->mapel_osn_2026] ?? 'fa-book' }}"></i>
                     {{ $siswa->mapel_osn_2026 }}
                 </div>
-                <button class="btn-hapus" onclick="hapusPeserta({{ $siswa->id }}, '{{ addslashes($siswa->nama) }}')">
-                    <i class="fas fa-trash"></i> Hapus
-                </button>
+                <div class="peserta-card-actions">
+                    <button class="btn-buka-akses" onclick="bukaAkses({{ $siswa->id }}, '{{ addslashes($siswa->nama) }}')">
+                        <i class="fas fa-unlock-alt"></i> Buka Akses
+                    </button>
+                    <button class="btn-hapus" onclick="hapusPeserta({{ $siswa->id }}, '{{ addslashes($siswa->nama) }}')">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                </div>
             </div>
         </div>
         @endforeach
@@ -436,6 +456,29 @@ function hapusPeserta(siswaId, nama) {
             location.reload();
         } else {
             alert(data.message || 'Gagal menghapus.');
+        }
+    })
+    .catch(() => alert('Terjadi kesalahan.'));
+}
+
+function bukaAkses(siswaId, nama) {
+    if (!confirm(`Buka akses edit data dan foto profil untuk ${nama}?\nSiswa akan dapat mengisi ulang formulir pendaftaran OSN.`)) return;
+
+    fetch('{{ route("peserta-osn") }}/buka-akses', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ siswa_id: siswaId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message || 'Gagal membuka akses.');
         }
     })
     .catch(() => alert('Terjadi kesalahan.'));

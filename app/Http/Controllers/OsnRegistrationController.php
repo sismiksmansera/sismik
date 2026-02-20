@@ -286,4 +286,31 @@ class OsnRegistrationController extends Controller
             'message' => "Pendaftaran OSN untuk {$siswa->nama} berhasil dihapus.",
         ]);
     }
+
+    /**
+     * Buka akses edit data & foto profil agar siswa bisa mengisi ulang form
+     */
+    public function bukaAkses(Request $request)
+    {
+        $request->validate([
+            'siswa_id' => 'required|exists:siswa,id',
+        ]);
+
+        $siswa = Siswa::findOrFail($request->siswa_id);
+
+        // Clear mapel_osn_2026 so student can re-register and edit data/photo
+        $siswa->update([
+            'mapel_osn_2026' => null,
+        ]);
+
+        // Also remove from peserta_ajang_talenta
+        DB::table('peserta_ajang_talenta')
+            ->where('siswa_id', $siswa->id)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Akses edit data untuk {$siswa->nama} telah dibuka. Siswa dapat mengisi ulang formulir pendaftaran OSN.",
+        ]);
+    }
 }

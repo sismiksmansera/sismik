@@ -36,6 +36,7 @@ Route::post('/pendaftaran-osn/store', [\App\Http\Controllers\OsnRegistrationCont
 Route::post('/pendaftaran-osn/upload-foto', [\App\Http\Controllers\OsnRegistrationController::class, 'uploadFoto'])->name('pendaftaran-osn.upload-foto');
 Route::get('/peserta-osn', [\App\Http\Controllers\OsnRegistrationController::class, 'pesertaList'])->name('peserta-osn');
 Route::post('/peserta-osn/hapus', [\App\Http\Controllers\OsnRegistrationController::class, 'hapusPeserta'])->name('peserta-osn.hapus');
+Route::post('/peserta-osn/buka-akses', [\App\Http\Controllers\OsnRegistrationController::class, 'bukaAkses'])->name('peserta-osn.buka-akses');
 
 // Home redirect to login
 Route::get('/', function () {

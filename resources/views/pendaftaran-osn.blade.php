@@ -767,6 +767,14 @@
                     <i class="fas fa-cloud-upload-alt"></i>
                     <p>Klik untuk pilih foto</p>
                     <small>Format: JPG, PNG, GIF — Maks. 2MB</small>
+                    <div style="margin-top: 12px; padding: 10px 14px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; text-align: center;">
+                        <div style="font-size: 12px; color: #fbbf24; font-weight: 600;">
+                            <i class="fas fa-exclamation-triangle"></i> Keterangan:
+                        </div>
+                        <div style="font-size: 11px; color: #f59e0b; margin-top: 4px; line-height: 1.5;">
+                            Gunakan Foto Profil Resmi Menggunakan Seragam dan Almamater Sekolah
+                        </div>
+                    </div>
                 </div>
                 <input type="file" id="fotoFileInput" accept="image/*" style="display:none" onchange="previewUpload(this)">
 
