@@ -9,6 +9,7 @@ use App\Models\AjangTalenta;
 use App\Models\Siswa;
 use App\Models\DataPeriodik;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PesertaAjangTalentaController extends Controller
 {
@@ -183,9 +184,18 @@ class PesertaAjangTalentaController extends Controller
         $tanggalSurat = Carbon::parse($tanggalSuratRaw)->translatedFormat('d F Y');
         $mapelOsn = $request->query('mapel', $siswa->mapel_osn_2026 ?? '-');
 
-        return view('cetak.surat-keterangan-osn', compact(
+        // Logos as base64 for dompdf
+        $logoLampungPath = public_path('images/logo-lampung.png');
+        $logoSekolahPath = public_path('images/logo-sekolah.png');
+        $logoLampung = file_exists($logoLampungPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoLampungPath)) : null;
+        $logoSekolah = file_exists($logoSekolahPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoSekolahPath)) : null;
+
+        $pdf = Pdf::loadView('cetak.surat-keterangan-osn', compact(
             'siswa', 'rombelAktif', 'kepalaSekolah', 'nipKepala',
-            'nomorSurat', 'tanggalSurat', 'mapelOsn'
-        ));
+            'nomorSurat', 'tanggalSurat', 'mapelOsn', 'logoLampung', 'logoSekolah'
+        ))->setPaper('a4', 'portrait');
+
+        $filename = 'Surat_Keterangan_' . str_replace(' ', '_', $siswa->nama) . '.pdf';
+        return $pdf->download($filename);
     }
 }

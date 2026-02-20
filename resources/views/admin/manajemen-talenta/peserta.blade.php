@@ -825,7 +825,7 @@ function downloadSuratKeterangan() {
         '?nomor_surat=' + encodeURIComponent(nomorSurat) +
         '&tanggal_surat=' + encodeURIComponent(tanggalSurat) +
         '&mapel=' + encodeURIComponent(currentBerkasMapel);
-    window.open(url, '_blank');
+    window.location.href = url;
     closeSuratKeteranganModal();
     closeBerkasModal();
 }
