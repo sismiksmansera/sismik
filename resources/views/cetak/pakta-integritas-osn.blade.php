@@ -10,7 +10,7 @@
             font-family: 'Times New Roman', Times, serif;
             font-size: 12pt;
             color: #000;
-            line-height: 1.5;
+            line-height: 1.15;
         }
         .container {
             padding: 15mm 20mm;
@@ -19,8 +19,8 @@
         /* TITLE */
         .pakta-title {
             text-align: center;
-            margin-bottom: 20px;
-            line-height: 1.3;
+            margin-bottom: 10px;
+            line-height: 1.2;
         }
         .pakta-title h2 {
             font-size: 14pt;
@@ -37,12 +37,12 @@
             text-align: justify;
         }
         .pakta-body p {
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         /* INFO TABLE */
         .info-table {
-            margin: 5px 0 10px 0;
+            margin: 3px 0 8px 0;
         }
         .info-table td {
             padding: 1px 0;
@@ -58,11 +58,11 @@
 
         /* ORDERED LIST */
         .pakta-list {
-            margin: 10px 0 10px 0;
+            margin: 5px 0 5px 0;
             padding-left: 20px;
         }
         .pakta-list > li {
-            margin-bottom: 6px;
+            margin-bottom: 3px;
             text-align: justify;
         }
         .pakta-sublist {
@@ -84,14 +84,14 @@
 
         /* CLOSING */
         .pakta-closing {
-            margin-top: 15px;
+            margin-top: 8px;
             text-align: justify;
         }
 
         /* SIGNATURE */
         .signature-table {
             width: 100%;
-            margin-top: 25px;
+            margin-top: 15px;
         }
         .signature-table td {
             vertical-align: top;
