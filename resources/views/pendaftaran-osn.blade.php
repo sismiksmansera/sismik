@@ -459,6 +459,73 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .hidden { display: none !important; }
+
+        /* PESERTA BUTTON */
+        .peserta-btn-wrapper {
+            text-align: center; margin-bottom: 25px;
+        }
+        .btn-peserta {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 28px; border-radius: 12px;
+            font-size: 14px; font-weight: 600; text-decoration: none;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #a78bfa; cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+        }
+        .btn-peserta:hover { background: rgba(139, 92, 246, 0.25); transform: translateY(-2px); }
+
+        /* PASSWORD MODAL */
+        .pw-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(6px);
+            z-index: 10000; display: none;
+            align-items: center; justify-content: center;
+        }
+        .pw-overlay.show { display: flex; }
+        .pw-modal {
+            background: #1e293b;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 20px; padding: 35px;
+            max-width: 380px; width: 90%;
+            text-align: center;
+            animation: fadeInUp 0.3s ease;
+        }
+        .pw-modal h3 { font-size: 18px; color: #f1f5f9; margin-bottom: 8px; }
+        .pw-modal p { font-size: 13px; color: #94a3b8; margin-bottom: 22px; }
+        .pw-modal input {
+            width: 100%; padding: 14px 18px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 12px; color: #e2e8f0;
+            font-size: 14px; font-family: 'Inter', sans-serif;
+            text-align: center; letter-spacing: 2px;
+        }
+        .pw-modal input:focus {
+            outline: none; border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        .pw-error { color: #f87171; font-size: 12px; margin-top: 8px; display: none; }
+        .pw-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .pw-actions button {
+            flex: 1; padding: 12px; border-radius: 10px;
+            font-size: 13px; font-weight: 600;
+            font-family: 'Inter', sans-serif; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pw-btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+        }
+        .pw-btn-cancel:hover { background: rgba(255, 255, 255, 0.1); }
+        .pw-btn-submit {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: none; color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        .pw-btn-submit:hover { transform: translateY(-1px); }
     </style>
 </head>
 <body>
@@ -475,6 +542,13 @@
             <div class="school-badge">
                 <i class="fas fa-school"></i> SMAN 1 Seputih Raman
             </div>
+        </div>
+
+        <!-- PESERTA BUTTON -->
+        <div class="peserta-btn-wrapper">
+            <button class="btn-peserta" onclick="document.getElementById('pwOverlay').classList.add('show')">
+                <i class="fas fa-users"></i> Peserta Terdaftar
+            </button>
         </div>
 
         <!-- STEP 1: SEARCH -->
@@ -1034,5 +1108,36 @@
         }
     });
     </script>
+<!-- PASSWORD MODAL -->
+<div class="pw-overlay" id="pwOverlay">
+    <div class="pw-modal">
+        <h3><i class="fas fa-lock" style="color: #a78bfa;"></i> Verifikasi</h3>
+        <p>Masukkan password untuk melihat daftar peserta</p>
+        <input type="password" id="pwInput" placeholder="Password" onkeypress="if(event.key==='Enter'){checkPw();}">
+        <div class="pw-error" id="pwError">Password salah!</div>
+        <div class="pw-actions">
+            <button class="pw-btn-cancel" onclick="closePwModal()">Batal</button>
+            <button class="pw-btn-submit" onclick="checkPw()">Masuk</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function checkPw() {
+    const pw = document.getElementById('pwInput').value;
+    if (pw === 'Admin123') {
+        window.location.href = '{{ route("peserta-osn") }}';
+    } else {
+        document.getElementById('pwError').style.display = 'block';
+        document.getElementById('pwInput').value = '';
+        document.getElementById('pwInput').focus();
+    }
+}
+function closePwModal() {
+    document.getElementById('pwOverlay').classList.remove('show');
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwError').style.display = 'none';
+}
+</script>
 </body>
 </html>

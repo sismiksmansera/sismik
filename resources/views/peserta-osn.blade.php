@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Peserta OSN 2026 | SISMIK</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -233,6 +234,23 @@
         .mapel-badge.ekonomi { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
         .mapel-badge.kebumian { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
 
+        /* CARD FOOTER */
+        .peserta-card-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 12px; padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .btn-hapus {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 14px; border-radius: 8px;
+            font-size: 11px; font-weight: 600;
+            background: rgba(239, 68, 68, 0.1); color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            cursor: pointer; transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-hapus:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-1px); }
+
         /* EMPTY */
         .empty-state {
             text-align: center; padding: 60px 20px;
@@ -259,7 +277,7 @@
         <h1>Peserta OSN 2026</h1>
         <p>Daftar Siswa Terdaftar Olimpiade Sains Nasional</p>
         <div class="school-badge">
-            <i class="fas fa-school"></i> SMA Negeri 1 Seram Bagian Timur
+            <i class="fas fa-school"></i> SMAN 1 Seputih Raman
         </div>
     </div>
 
@@ -364,9 +382,14 @@
                 <div class="meta-row"><i class="fas fa-check-circle" style="color: #34d399;"></i> Pernah ikut OSN 2025</div>
                 @endif
             </div>
-            <div class="mapel-badge {{ $mapelLower }}">
-                <i class="fas {{ $mapelIcons[$siswa->mapel_osn_2026] ?? 'fa-book' }}"></i>
-                {{ $siswa->mapel_osn_2026 }}
+            <div class="peserta-card-footer">
+                <div class="mapel-badge {{ $mapelLower }}">
+                    <i class="fas {{ $mapelIcons[$siswa->mapel_osn_2026] ?? 'fa-book' }}"></i>
+                    {{ $siswa->mapel_osn_2026 }}
+                </div>
+                <button class="btn-hapus" onclick="hapusPeserta({{ $siswa->id }}, '{{ addslashes($siswa->nama) }}')">
+                    <i class="fas fa-trash"></i> Hapus
+                </button>
             </div>
         </div>
         @endforeach
@@ -384,11 +407,8 @@ function filterPeserta() {
 }
 
 function filterByMapel(mapel, el) {
-    // Update active tab
     document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-
-    // Filter cards
     document.querySelectorAll('.peserta-card').forEach(card => {
         if (mapel === 'all' || card.dataset.mapel === mapel) {
             card.style.display = '';
@@ -396,6 +416,29 @@ function filterByMapel(mapel, el) {
             card.style.display = 'none';
         }
     });
+}
+
+function hapusPeserta(siswaId, nama) {
+    if (!confirm(`Yakin ingin menghapus pendaftaran OSN untuk ${nama}?`)) return;
+
+    fetch('{{ route("peserta-osn") }}/hapus', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ siswa_id: siswaId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message || 'Gagal menghapus.');
+        }
+    })
+    .catch(() => alert('Terjadi kesalahan.'));
 }
 </script>
 </body>

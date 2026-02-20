@@ -261,4 +261,29 @@ class OsnRegistrationController extends Controller
 
         return view('peserta-osn', compact('pesertaAll', 'grouped'));
     }
+
+    public function hapusPeserta(Request $request)
+    {
+        $request->validate([
+            'siswa_id' => 'required|exists:siswa,id',
+        ]);
+
+        $siswa = Siswa::findOrFail($request->siswa_id);
+
+        // Clear mapel_osn_2026 from siswa table
+        $siswa->update([
+            'mapel_osn_2026' => null,
+            'ikut_osn_2025' => null,
+        ]);
+
+        // Delete all peserta_ajang_talenta entries for this siswa
+        DB::table('peserta_ajang_talenta')
+            ->where('siswa_id', $siswa->id)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Pendaftaran OSN untuk {$siswa->nama} berhasil dihapus.",
+        ]);
+    }
 }
