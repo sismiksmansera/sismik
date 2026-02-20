@@ -166,7 +166,7 @@
         <!-- KOP SURAT -->
         <div class="letter-header">
             <div class="header-logo">
-                <img src="{{ asset('simas/assets/images/logo-lampung.png') }}" alt="Logo Lampung" onerror="this.style.display='none'">
+                <img src="{{ asset('images/logo-lampung.png') }}" alt="Logo Lampung" onerror="this.style.display='none'">
             </div>
             <div class="header-text">
                 <p class="gov">PEMERINTAH PROVINSI LAMPUNG</p>
@@ -181,7 +181,7 @@
                 <p class="address">Website : <a href="http://www.sman1seputihraman.sch.id" style="color: #2563eb;">www.sman1seputihraman.sch.id</a></p>
             </div>
             <div class="header-logo">
-                <img src="{{ asset('simas/assets/images/logo-sekolah.png') }}" alt="Logo SMANSA" onerror="this.style.display='none'">
+                <img src="{{ asset('images/logo-sekolah.png') }}" alt="Logo SMANSA" onerror="this.style.display='none'">
             </div>
         </div>
         <div class="letter-border"></div>
