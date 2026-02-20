@@ -200,10 +200,10 @@
             </tr>
             <tr>
                 <td class="sig-left" style="height: 15px;"></td>
-                <td class="sig-left"><br>Materai 10.000</td>
+                <td class="sig-left"><br><span style="font-size: 9pt;">Materai 10.000</span></td>
             </tr>
             <tr>
-                <td class="sig-left" style="height: 30px;"></td>
+                <td class="sig-left" style="height: 50px;"></td>
                 <td class="sig-left"></td>
             </tr>
             <tr>
