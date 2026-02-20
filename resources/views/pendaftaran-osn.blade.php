@@ -160,6 +160,11 @@
             border: 1px solid rgba(239, 68, 68, 0.25);
             color: #f87171;
         }
+        .notif-box.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+        }
         .notif-box i { font-size: 22px; }
         .notif-box .notif-text { flex: 1; }
         .notif-box .notif-text strong { display: block; font-size: 15px; }
@@ -753,8 +758,14 @@
 
             if (data.found) {
                 siswaData = data.siswa;
-                showNotif('success', 'Data Ditemukan!', `${data.siswa.nama} - ${data.siswa.rombel_aktif || 'Belum ada rombel'}`);
-                document.getElementById('btnDaftar').classList.remove('hidden');
+                if (data.siswa.already_registered) {
+                    showNotif('warning', 'Sudah Terdaftar!', `${data.siswa.nama} sudah terdaftar sebagai peserta OSN 2026 Mata Pelajaran <strong>${data.siswa.registered_mapel}</strong> pada tingkat sekolah. Selanjutnya tunggu informasi dari sekolah.`);
+                    document.getElementById('btnDaftar').classList.add('hidden');
+                    document.getElementById('formSection').classList.add('hidden');
+                } else {
+                    showNotif('success', 'Data Ditemukan!', `${data.siswa.nama} - ${data.siswa.rombel_aktif || 'Belum ada rombel'}`);
+                    document.getElementById('btnDaftar').classList.remove('hidden');
+                }
             } else {
                 siswaData = null;
                 showNotif('error', 'Tidak Ditemukan', data.message);
@@ -773,7 +784,7 @@
         const box = document.getElementById('notifBox');
         box.className = `notif-box ${type}`;
         box.innerHTML = `
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i>
             <div class="notif-text">
                 <strong>${title}</strong>
                 <span>${msg}</span>

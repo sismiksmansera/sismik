@@ -99,6 +99,8 @@ class OsnRegistrationController extends Controller
                     ->join(''),
                 'rombel_aktif' => $rombelAktif,
                 'angkatan' => $siswa->angkatan_masuk,
+                'already_registered' => !empty($siswa->mapel_osn_2026),
+                'registered_mapel' => $siswa->mapel_osn_2026,
             ]
         ]);
     }
