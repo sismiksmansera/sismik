@@ -471,7 +471,7 @@
                 <i class="fas fa-trophy"></i>
             </div>
             <h1>PENDAFTARAN OSN 2026</h1>
-            <p>Olimpiade Sains Nasional Tingkat Sekolah</p>
+            <p>Olimpiade Sains Nasional</p>
             <div class="school-badge">
                 <i class="fas fa-school"></i> SMAN 1 Seputih Raman
             </div>
