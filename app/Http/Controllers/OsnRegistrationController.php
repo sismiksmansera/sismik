@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Siswa;
 use App\Models\DataPeriodik;
+use App\Models\AjangTalenta;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class OsnRegistrationController extends Controller
@@ -162,6 +164,31 @@ class OsnRegistrationController extends Controller
             'mapel_osn_2026' => $request->mapel_osn_2026,
             'ikut_osn_2025' => $request->ikut_osn_2025,
         ]);
+
+        // Auto-register siswa as peserta ajang talenta based on mapel
+        $mapel = $request->mapel_osn_2026;
+        if ($mapel) {
+            // Find ajang talenta matching "OSN {mapel}" pattern
+            $ajang = AjangTalenta::where('nama_ajang', 'LIKE', "%OSN%{$mapel}%")->first();
+
+            if ($ajang) {
+                // Insert if not already registered
+                $exists = DB::table('peserta_ajang_talenta')
+                    ->where('ajang_talenta_id', $ajang->id)
+                    ->where('siswa_id', $siswa->id)
+                    ->exists();
+
+                if (!$exists) {
+                    DB::table('peserta_ajang_talenta')->insert([
+                        'ajang_talenta_id' => $ajang->id,
+                        'siswa_id' => $siswa->id,
+                        'status' => 'Aktif',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
 
         return response()->json([
             'success' => true,
