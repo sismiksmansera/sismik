@@ -29,6 +29,11 @@ Route::post('/setup/test-connection', [\App\Http\Controllers\SetupController::cl
 Route::post('/setup/install', [\App\Http\Controllers\SetupController::class, 'install']);
 Route::get('/setup/success', [\App\Http\Controllers\SetupController::class, 'success']);
 
+// Pendaftaran OSN (public, no auth required)
+Route::get('/pendaftaran-osn', [\App\Http\Controllers\OsnRegistrationController::class, 'index'])->name('pendaftaran-osn');
+Route::post('/pendaftaran-osn/search', [\App\Http\Controllers\OsnRegistrationController::class, 'search'])->name('pendaftaran-osn.search');
+Route::post('/pendaftaran-osn/store', [\App\Http\Controllers\OsnRegistrationController::class, 'store'])->name('pendaftaran-osn.store');
+
 // Home redirect to login
 Route::get('/', function () {
     return redirect()->route('login');

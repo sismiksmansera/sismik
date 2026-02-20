@@ -69,6 +69,10 @@ class Siswa extends Authenticatable
         'foto_size',
         'foto_original_name',
         'status_siswa',
+        'dusun',
+        'rt_rw',
+        'mapel_osn_2026',
+        'ikut_osn_2025',
     ];
 
     protected $hidden = [
