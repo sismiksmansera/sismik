@@ -307,13 +307,13 @@
     }
     .tugas-header-section .page-title { font-size: 20px; }
     
-    .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
     .stat-card {
-        flex-direction: column; text-align: center; padding: 12px 8px; gap: 8px;
+        flex-direction: column; text-align: center; padding: 10px 4px; gap: 6px;
     }
-    .stat-icon { width: 35px; height: 35px; font-size: 14px; }
-    .stat-info h3 { font-size: 16px; }
-    .stat-info p { font-size: 10px; }
+    .stat-icon { width: 32px; height: 32px; font-size: 13px; }
+    .stat-info h3 { font-size: 14px; }
+    .stat-info p { font-size: 9px; }
     
     .task-cards-grid { grid-template-columns: 1fr; gap: 15px; }
     .task-card-body-lainnya { padding: 16px; }
