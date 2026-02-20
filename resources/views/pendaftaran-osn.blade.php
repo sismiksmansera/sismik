@@ -542,12 +542,14 @@
                                 <input type="text" class="form-input" id="fAgama" disabled>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Tempat Lahir</label>
-                                <input type="text" class="form-input" name="tempat_lahir" id="fTempatLahir" placeholder="Masukkan tempat lahir">
+                                <label class="form-label">Tempat Lahir <span class="required">*</span></label>
+                                <input type="text" class="form-input" name="tempat_lahir" id="fTempatLahir" placeholder="Masukkan tempat lahir" required>
+                                <span class="validation-error" id="errTempatLahir"></span>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Tanggal Lahir</label>
-                                <input type="date" class="form-input" name="tgl_lahir" id="fTglLahir">
+                                <label class="form-label">Tanggal Lahir <span class="required">*</span></label>
+                                <input type="date" class="form-input" name="tgl_lahir" id="fTglLahir" required>
+                                <span class="validation-error" id="errTglLahir"></span>
                             </div>
                         </div>
                     </div>
@@ -559,20 +561,24 @@
                         </div>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">Provinsi</label>
-                                <input type="text" class="form-input" name="provinsi" id="fProvinsi" placeholder="Masukkan provinsi">
+                                <label class="form-label">Provinsi <span class="required">*</span></label>
+                                <input type="text" class="form-input" name="provinsi" id="fProvinsi" placeholder="Masukkan provinsi" required>
+                                <span class="validation-error" id="errProvinsi"></span>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Kota / Kabupaten</label>
-                                <input type="text" class="form-input" name="kota" id="fKota" placeholder="Masukkan kota/kabupaten">
+                                <label class="form-label">Kota / Kabupaten <span class="required">*</span></label>
+                                <input type="text" class="form-input" name="kota" id="fKota" placeholder="Masukkan kota/kabupaten" required>
+                                <span class="validation-error" id="errKota"></span>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Kecamatan</label>
-                                <input type="text" class="form-input" name="kecamatan" id="fKecamatan" placeholder="Masukkan kecamatan">
+                                <label class="form-label">Kecamatan <span class="required">*</span></label>
+                                <input type="text" class="form-input" name="kecamatan" id="fKecamatan" placeholder="Masukkan kecamatan" required>
+                                <span class="validation-error" id="errKecamatan"></span>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Kampung</label>
-                                <input type="text" class="form-input" name="kelurahan" id="fKelurahan" placeholder="Masukkan kampung">
+                                <label class="form-label">Kampung <span class="required">*</span></label>
+                                <input type="text" class="form-input" name="kelurahan" id="fKelurahan" placeholder="Masukkan kampung" required>
+                                <span class="validation-error" id="errKelurahan"></span>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Dusun</label>
@@ -934,6 +940,12 @@
         const data = Object.fromEntries(formData);
 
         let hasError = false;
+        if (!data.tempat_lahir) { showFieldError('errTempatLahir', 'Tempat lahir wajib diisi'); hasError = true; }
+        if (!data.tgl_lahir) { showFieldError('errTglLahir', 'Tanggal lahir wajib diisi'); hasError = true; }
+        if (!data.provinsi) { showFieldError('errProvinsi', 'Provinsi wajib diisi'); hasError = true; }
+        if (!data.kota) { showFieldError('errKota', 'Kota/Kabupaten wajib diisi'); hasError = true; }
+        if (!data.kecamatan) { showFieldError('errKecamatan', 'Kecamatan wajib diisi'); hasError = true; }
+        if (!data.kelurahan) { showFieldError('errKelurahan', 'Kampung wajib diisi'); hasError = true; }
         if (!data.email) { showFieldError('errEmail', 'Email wajib diisi'); hasError = true; }
         if (!data.nohp_siswa) { showFieldError('errNohp', 'Nomor HP wajib diisi'); hasError = true; }
         if (!data.mapel_osn_2026) { showFieldError('errMapel', 'Pilih Mapel OSN'); hasError = true; }

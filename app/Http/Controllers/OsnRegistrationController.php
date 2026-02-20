@@ -3,10 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Models\Siswa;
+use App\Models\DataPeriodik;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class OsnRegistrationController extends Controller
 {
+    /**
+     * Helper: Calculate active semester based on angkatan
+     */
+    private function calculateActiveSemester($angkatan, $tahunAktif, $semesterAktif)
+    {
+        if (empty($angkatan) || empty($tahunAktif) || empty($semesterAktif)) {
+            return 1;
+        }
+
+        $tahunParts = explode('/', $tahunAktif);
+        $tahunMulai = intval($tahunParts[0] ?? 0);
+        $angkatanInt = intval($angkatan);
+        $selisihTahun = $tahunMulai - $angkatanInt;
+
+        if ($selisihTahun == 0) {
+            return (strtolower($semesterAktif) == 'ganjil') ? 1 : 2;
+        } elseif ($selisihTahun == 1) {
+            return (strtolower($semesterAktif) == 'ganjil') ? 3 : 4;
+        } elseif ($selisihTahun == 2) {
+            return (strtolower($semesterAktif) == 'ganjil') ? 5 : 6;
+        }
+        return 1;
+    }
+
     public function index()
     {
         return view('pendaftaran-osn');
@@ -26,6 +52,20 @@ class OsnRegistrationController extends Controller
                 'message' => 'Data siswa dengan NISN tersebut tidak ditemukan.'
             ]);
         }
+
+        // Get active period and calculate rombel
+        $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodeAktif->tahun_pelajaran ?? '';
+        $semesterAktif = $periodeAktif->semester ?? '';
+
+        $semesterNumber = $this->calculateActiveSemester(
+            $siswa->angkatan_masuk,
+            $tahunAktif,
+            $semesterAktif
+        );
+
+        $rombelField = "rombel_semester_{$semesterNumber}";
+        $rombelAktif = $siswa->$rombelField ?? $siswa->nama_rombel ?? '-';
 
         return response()->json([
             'found' => true,
@@ -50,14 +90,14 @@ class OsnRegistrationController extends Controller
                 'nohp_siswa' => $siswa->nohp_siswa,
                 'mapel_osn_2026' => $siswa->mapel_osn_2026,
                 'ikut_osn_2025' => $siswa->ikut_osn_2025,
-                'foto' => $siswa->foto && \Illuminate\Support\Facades\Storage::disk('public')->exists('siswa/' . $siswa->foto)
+                'foto' => $siswa->foto && Storage::disk('public')->exists('siswa/' . $siswa->foto)
                     ? asset('storage/siswa/' . $siswa->foto)
                     : null,
                 'initials' => collect(explode(' ', $siswa->nama))
                     ->map(fn($p) => strtoupper(substr($p, 0, 1)))
                     ->take(2)
                     ->join(''),
-                'rombel_aktif' => $siswa->nama_rombel,
+                'rombel_aktif' => $rombelAktif,
                 'angkatan' => $siswa->angkatan_masuk,
             ]
         ]);
@@ -69,12 +109,12 @@ class OsnRegistrationController extends Controller
             'siswa_id' => 'required|exists:siswa,id',
             'email' => 'required|email',
             'nohp_siswa' => 'required|string|min:8',
-            'tempat_lahir' => 'nullable|string|max:100',
-            'tgl_lahir' => 'nullable|date',
-            'provinsi' => 'nullable|string|max:100',
-            'kota' => 'nullable|string|max:100',
-            'kecamatan' => 'nullable|string|max:100',
-            'kelurahan' => 'nullable|string|max:100',
+            'tempat_lahir' => 'required|string|max:100',
+            'tgl_lahir' => 'required|date',
+            'provinsi' => 'required|string|max:100',
+            'kota' => 'required|string|max:100',
+            'kecamatan' => 'required|string|max:100',
+            'kelurahan' => 'required|string|max:100',
             'dusun' => 'nullable|string|max:100',
             'rt_rw' => 'nullable|string|max:20',
             'mapel_osn_2026' => 'required|in:Matematika,Fisika,Kimia,Biologi,Geografi,Astronomi,Informatika,Ekonomi,Kebumian',
@@ -84,6 +124,12 @@ class OsnRegistrationController extends Controller
             'email.email' => 'Format email tidak valid.',
             'nohp_siswa.required' => 'Nomor HP wajib diisi.',
             'nohp_siswa.min' => 'Nomor HP minimal 8 digit.',
+            'tempat_lahir.required' => 'Tempat lahir wajib diisi.',
+            'tgl_lahir.required' => 'Tanggal lahir wajib diisi.',
+            'provinsi.required' => 'Provinsi wajib diisi.',
+            'kota.required' => 'Kota/Kabupaten wajib diisi.',
+            'kecamatan.required' => 'Kecamatan wajib diisi.',
+            'kelurahan.required' => 'Kampung wajib diisi.',
             'mapel_osn_2026.required' => 'Pilih Mapel OSN 2026.',
             'mapel_osn_2026.in' => 'Mapel OSN 2026 tidak valid.',
             'ikut_osn_2025.required' => 'Pilih apakah ikut OSN 2025.',
@@ -122,8 +168,8 @@ class OsnRegistrationController extends Controller
         $siswa = Siswa::findOrFail($request->siswa_id);
 
         // Delete old photo if exists
-        if ($siswa->foto && \Illuminate\Support\Facades\Storage::disk('public')->exists('siswa/' . $siswa->foto)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete('siswa/' . $siswa->foto);
+        if ($siswa->foto && Storage::disk('public')->exists('siswa/' . $siswa->foto)) {
+            Storage::disk('public')->delete('siswa/' . $siswa->foto);
         }
 
         // Store new photo
@@ -133,8 +179,6 @@ class OsnRegistrationController extends Controller
 
         $siswa->update([
             'foto' => $filename,
-            'foto_original_name' => $file->getClientOriginalName(),
-            'foto_size' => $file->getSize(),
         ]);
 
         return response()->json([
