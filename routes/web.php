@@ -419,6 +419,7 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     
     // Koordinator OSN routes
     Route::get('/koordinator-osn', [\App\Http\Controllers\Guru\KoordinatorOsnController::class, 'index'])->name('koordinator-osn.index');
+    Route::get('/koordinator-osn/{id}/peserta', [\App\Http\Controllers\Guru\KoordinatorOsnController::class, 'peserta'])->name('koordinator-osn.peserta');
     
     // Lihat Prestasi routes
     Route::get('/lihat-prestasi', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'index'])->name('lihat-prestasi');

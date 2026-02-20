@@ -241,7 +241,7 @@
                         </div>
 
                         <div class="osn-info-grid">
-                            <a href="{{ route('admin.manajemen-talenta.ajang.peserta', $osn->id) }}" class="osn-info-item clickable">
+                            <a href="{{ route('guru.koordinator-osn.peserta', $osn->id) }}" class="osn-info-item clickable">
                                 <div class="osn-info-icon blue">
                                     <i class="fas fa-users"></i>
                                 </div>
