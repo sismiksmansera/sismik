@@ -192,9 +192,10 @@
 }
 
 @media (max-width: 400px) {
-    .stats-row { grid-template-columns: 1fr 1fr; gap: 6px; }
-    .osn-stat-value { font-size: 20px; }
-    .osn-info-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .osn-stat-value { font-size: 16px; }
+    .osn-stat-label { font-size: 9px; }
+    .osn-info-grid { grid-template-columns: 1fr 1fr; }
     .osn-header-section h1 { font-size: 1.05rem; }
 }
 </style>
