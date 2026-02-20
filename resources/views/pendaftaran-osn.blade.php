@@ -196,11 +196,11 @@
             position: relative; flex-shrink: 0;
         }
         .profile-avatar {
-            width: 80px; height: 80px;
-            border-radius: 50%; overflow: hidden;
+            width: 120px; height: 120px;
+            border-radius: 20px; overflow: hidden;
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 800; font-size: 28px;
+            color: white; font-weight: 800; font-size: 36px;
             cursor: pointer;
             border: 3px solid rgba(59, 130, 246, 0.3);
             transition: transform 0.3s, box-shadow 0.3s;
@@ -209,7 +209,7 @@
             transform: scale(1.05);
             box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
         }
-        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
         .btn-edit-avatar {
             position: absolute; bottom: -4px; right: -4px;
             width: 28px; height: 28px; border-radius: 50%;
