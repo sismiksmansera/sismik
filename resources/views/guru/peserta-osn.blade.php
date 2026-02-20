@@ -481,11 +481,11 @@
     .btn-back { padding: 10px 16px; font-size: 13px; border-radius: 8px; }
 
     /* Stats */
-    .stats-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 16px; }
-    .stat-card { padding: 14px; gap: 12px; border-radius: 10px; }
-    .stat-icon { width: 42px; height: 42px; border-radius: 8px; font-size: 16px; }
-    .stat-info h3 { font-size: 17px; }
-    .stat-info p { font-size: 11px; }
+    .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .stat-card { padding: 10px 8px; gap: 8px; border-radius: 10px; flex-direction: column; align-items: center; text-align: center; }
+    .stat-icon { width: 36px; height: 36px; border-radius: 8px; font-size: 14px; }
+    .stat-info h3 { font-size: 15px; }
+    .stat-info p { font-size: 10px; }
 
     /* Members container */
     .members-container { border-radius: 12px; }

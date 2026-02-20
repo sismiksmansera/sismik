@@ -159,9 +159,9 @@
     .btn-back { padding: 8px 14px; font-size: 12px; margin-bottom: 14px; border-radius: 8px; }
 
     /* Stats */
-    .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
-    .osn-stat-card { padding: 14px 10px; border-radius: 10px; }
-    .osn-stat-value { font-size: 22px; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .osn-stat-card { padding: 12px 6px; border-radius: 10px; }
+    .osn-stat-value { font-size: 18px; }
     .osn-stat-label { font-size: 10px; }
 
     /* Card grid */
