@@ -129,7 +129,8 @@ class KoordinatorOsnController extends Controller
             'nomorSurat', 'tanggalSurat', 'mapelOsn', 'logoLampung', 'logoSekolah'
         ))->setPaper('a4', 'portrait');
 
-        $filename = $mapelOsn . ' - ' . $siswa->nama . ' - Surat Keterangan.pdf';
+        $mapelLabel = str_starts_with($mapelOsn, 'OSN') ? $mapelOsn : 'OSN ' . $mapelOsn;
+        $filename = $mapelLabel . ' - ' . $siswa->nama . ' - Surat Keterangan.pdf';
         return $pdf->download($filename);
     }
 }
