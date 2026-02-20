@@ -33,6 +33,7 @@ Route::get('/setup/success', [\App\Http\Controllers\SetupController::class, 'suc
 Route::get('/pendaftaran-osn', [\App\Http\Controllers\OsnRegistrationController::class, 'index'])->name('pendaftaran-osn');
 Route::post('/pendaftaran-osn/search', [\App\Http\Controllers\OsnRegistrationController::class, 'search'])->name('pendaftaran-osn.search');
 Route::post('/pendaftaran-osn/store', [\App\Http\Controllers\OsnRegistrationController::class, 'store'])->name('pendaftaran-osn.store');
+Route::post('/pendaftaran-osn/upload-foto', [\App\Http\Controllers\OsnRegistrationController::class, 'uploadFoto'])->name('pendaftaran-osn.upload-foto');
 
 // Home redirect to login
 Route::get('/', function () {

@@ -39,6 +39,7 @@ class OsnRegistrationController extends Controller
                 'agama' => $siswa->agama,
                 'tempat_lahir' => $siswa->tempat_lahir,
                 'tgl_lahir' => $siswa->tgl_lahir ? $siswa->tgl_lahir->format('d M Y') : '-',
+                'tgl_lahir_raw' => $siswa->tgl_lahir ? $siswa->tgl_lahir->format('Y-m-d') : '',
                 'provinsi' => $siswa->provinsi,
                 'kota' => $siswa->kota,
                 'kecamatan' => $siswa->kecamatan,
@@ -68,6 +69,12 @@ class OsnRegistrationController extends Controller
             'siswa_id' => 'required|exists:siswa,id',
             'email' => 'required|email',
             'nohp_siswa' => 'required|string|min:8',
+            'tempat_lahir' => 'nullable|string|max:100',
+            'tgl_lahir' => 'nullable|date',
+            'provinsi' => 'nullable|string|max:100',
+            'kota' => 'nullable|string|max:100',
+            'kecamatan' => 'nullable|string|max:100',
+            'kelurahan' => 'nullable|string|max:100',
             'dusun' => 'nullable|string|max:100',
             'rt_rw' => 'nullable|string|max:20',
             'mapel_osn_2026' => 'required|in:Matematika,Fisika,Kimia,Biologi,Geografi,Astronomi,Informatika,Ekonomi,Kebumian',
@@ -87,6 +94,12 @@ class OsnRegistrationController extends Controller
         $siswa->update([
             'email' => $request->email,
             'nohp_siswa' => $request->nohp_siswa,
+            'tempat_lahir' => $request->tempat_lahir,
+            'tgl_lahir' => $request->tgl_lahir,
+            'provinsi' => $request->provinsi,
+            'kota' => $request->kota,
+            'kecamatan' => $request->kecamatan,
+            'kelurahan' => $request->kelurahan,
             'dusun' => $request->dusun,
             'rt_rw' => $request->rt_rw,
             'mapel_osn_2026' => $request->mapel_osn_2026,
@@ -96,6 +109,38 @@ class OsnRegistrationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pendaftaran OSN 2026 berhasil disimpan!'
+        ]);
+    }
+
+    public function uploadFoto(Request $request)
+    {
+        $request->validate([
+            'siswa_id' => 'required|exists:siswa,id',
+            'foto' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        $siswa = Siswa::findOrFail($request->siswa_id);
+
+        // Delete old photo if exists
+        if ($siswa->foto && \Illuminate\Support\Facades\Storage::disk('public')->exists('siswa/' . $siswa->foto)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete('siswa/' . $siswa->foto);
+        }
+
+        // Store new photo
+        $file = $request->file('foto');
+        $filename = 'siswa_' . $siswa->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('siswa', $filename, 'public');
+
+        $siswa->update([
+            'foto' => $filename,
+            'foto_original_name' => $file->getClientOriginalName(),
+            'foto_size' => $file->getSize(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto profil berhasil diperbarui!',
+            'foto_url' => asset('storage/siswa/' . $filename),
         ]);
     }
 }
