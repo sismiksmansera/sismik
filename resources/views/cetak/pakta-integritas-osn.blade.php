@@ -188,28 +188,30 @@
         </div>
 
         <!-- TANDA TANGAN -->
-        <div class="sig-date">
+        <br><br>
+        <div style="text-align: center; margin-bottom: 10px;">
             Seputih Raman, {{ $tanggalSurat }}
         </div>
 
         <table class="signature-table">
             <tr>
                 <td class="sig-left">Kepala SMA Negeri 1 Seputih Raman</td>
-                <td class="sig-right">Peserta OSN</td>
+                <td class="sig-left">Peserta OSN</td>
             </tr>
             <tr>
-                <td colspan="2" class="materai-space">(MATERAI)</td>
+                <td class="sig-left" style="height: 15px;"></td>
+                <td class="sig-left"><br>Materai 10.000</td>
             </tr>
             <tr>
                 <td class="sig-left" style="height: 30px;"></td>
-                <td class="sig-right"></td>
+                <td class="sig-left"></td>
             </tr>
             <tr>
                 <td class="sig-left">
                     <span class="sig-name">{{ $kepalaSekolah }}</span><br>
                     NIP. {{ $nipKepala }}
                 </td>
-                <td class="sig-right">
+                <td class="sig-left">
                     <span class="sig-name">({{ $siswa->nama }})</span>
                 </td>
             </tr>
