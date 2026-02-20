@@ -133,12 +133,10 @@
         /* SIGNATURE */
         .signature-section {
             margin-top: 25px;
-            text-align: left;
+            margin-left: 55%;
         }
         .signature-block {
-            display: inline-block;
-            text-align: center;
-            min-width: 250px;
+            text-align: left;
         }
         .signature-block .title {
             margin-bottom: 60px;
