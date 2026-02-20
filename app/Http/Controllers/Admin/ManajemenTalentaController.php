@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\DataPeriodik;
 use App\Models\AjangTalenta;
+use App\Models\JenisAjangTalenta;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -105,6 +106,9 @@ class ManajemenTalentaController extends Controller
         // Get ajang talenta list
         $ajangList = AjangTalenta::orderBy('created_at', 'DESC')->get();
 
+        // Get jenis ajang talenta list
+        $jenisAjangList = JenisAjangTalenta::orderBy('nama_jenis', 'ASC')->get();
+
         return view('admin.manajemen-talenta.index', compact(
             'admin',
             'siswaList',
@@ -115,7 +119,8 @@ class ManajemenTalentaController extends Controller
             'filterAngkatan',
             'tahunAktif',
             'semesterAktif',
-            'ajangList'
+            'ajangList',
+            'jenisAjangList'
         ));
     }
 
@@ -185,6 +190,48 @@ class ManajemenTalentaController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Ajang Talenta '{$nama}' berhasil dihapus.",
+        ]);
+    }
+
+    /**
+     * Store a new Jenis Ajang Talenta (AJAX)
+     */
+    public function storeJenisAjang(Request $request)
+    {
+        $request->validate([
+            'nama_jenis' => 'required|string|max:200|unique:jenis_ajang_talenta,nama_jenis',
+        ], [
+            'nama_jenis.required' => 'Nama jenis ajang talenta wajib diisi.',
+            'nama_jenis.unique' => 'Jenis ajang talenta sudah ada.',
+        ]);
+
+        $jenis = JenisAjangTalenta::create([
+            'nama_jenis' => $request->nama_jenis,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Jenis Ajang Talenta berhasil ditambahkan!',
+            'jenis' => $jenis,
+        ]);
+    }
+
+    /**
+     * Delete a Jenis Ajang Talenta (AJAX)
+     */
+    public function deleteJenisAjang(Request $request)
+    {
+        $request->validate([
+            'jenis_id' => 'required|exists:jenis_ajang_talenta,id',
+        ]);
+
+        $jenis = JenisAjangTalenta::findOrFail($request->jenis_id);
+        $nama = $jenis->nama_jenis;
+        $jenis->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Jenis Ajang Talenta '{$nama}' berhasil dihapus.",
         ]);
     }
 }

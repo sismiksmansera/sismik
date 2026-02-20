@@ -33,9 +33,14 @@
                     <i class="fas fa-flag"></i>
                     <h2>Ajang Talenta</h2>
                 </div>
-                <button class="mt-btn-add" onclick="openAjangModal()">
-                    <i class="fas fa-plus-circle"></i> Tambah Ajang Talenta
-                </button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="mt-btn-secondary" onclick="openJenisModal()">
+                        <i class="fas fa-tags"></i> Jenis Ajang Talenta
+                    </button>
+                    <button class="mt-btn-add" onclick="openAjangModal()">
+                        <i class="fas fa-plus-circle"></i> Tambah Ajang Talenta
+                    </button>
+                </div>
             </div>
 
             @if(count($ajangList) == 0)
@@ -129,6 +134,52 @@
     </div>
 </div>
 
+{{-- Modal Jenis Ajang Talenta --}}
+<div class="mt-modal-overlay" id="jenisModalOverlay" onclick="closeJenisModal(event)">
+    <div class="mt-modal" onclick="event.stopPropagation()">
+        <div class="mt-modal-header">
+            <div class="mt-modal-title">
+                <i class="fas fa-tags" style="color: #f59e0b;"></i>
+                <h3>Jenis Ajang Talenta</h3>
+            </div>
+            <button class="mt-modal-close" onclick="closeJenisModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mt-modal-body">
+            {{-- Input Tambah --}}
+            <div class="jenis-input-row">
+                <input type="text" id="namaJenis" placeholder="Masukkan jenis ajang talenta..." class="jenis-input">
+                <button type="button" class="jenis-btn-add" onclick="submitJenis()" id="btnAddJenis">
+                    <i class="fas fa-plus"></i> Tambah
+                </button>
+            </div>
+
+            {{-- Daftar Jenis --}}
+            <div class="jenis-list" id="jenisList">
+                @if(count($jenisAjangList) == 0)
+                <div class="jenis-empty" id="jenisEmpty">
+                    <i class="fas fa-inbox"></i>
+                    <p>Belum ada jenis ajang talenta</p>
+                </div>
+                @else
+                @foreach($jenisAjangList as $jenis)
+                <div class="jenis-item" id="jenis-{{ $jenis->id }}">
+                    <div class="jenis-item-info">
+                        <i class="fas fa-tag"></i>
+                        <span>{{ $jenis->nama_jenis }}</span>
+                    </div>
+                    <button class="jenis-item-delete" onclick="deleteJenis({{ $jenis->id }}, '{{ addslashes($jenis->nama_jenis) }}')" title="Hapus">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                @endforeach
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     /* HEADER */
     .mt-header {
@@ -157,13 +208,8 @@
         border: 1px solid rgba(255, 255, 255, 0.25);
         color: white; font-size: 13px; font-weight: 600;
     }
-    .mt-stat-badge.gold {
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.3);
-        color: #fef3c7;
-    }
 
-    /* BTN ADD */
+    /* BUTTONS */
     .mt-btn-add {
         padding: 10px 20px; border-radius: 10px;
         background: white; color: #3b82f6;
@@ -179,6 +225,21 @@
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
         background: #f0f9ff;
+    }
+    .mt-btn-secondary {
+        padding: 10px 20px; border-radius: 10px;
+        background: #fffbeb; color: #b45309;
+        border: 1px solid #fde68a;
+        font-size: 13px; font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer;
+        display: flex; align-items: center; gap: 8px;
+        transition: all 0.3s;
+    }
+    .mt-btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.12);
+        background: #fef3c7;
     }
 
     /* AJANG GRID */
@@ -251,12 +312,6 @@
     .mt-section-title { display: flex; align-items: center; gap: 10px; }
     .mt-section-title i { color: #3b82f6; font-size: 18px; }
     .mt-section-title h2 { font-size: 17px; font-weight: 700; color: #1e293b; margin: 0; }
-    .mt-section-count {
-        padding: 6px 14px; border-radius: 8px;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        color: #2563eb; font-size: 12px; font-weight: 600;
-    }
 
     /* EMPTY STATE */
     .mt-empty-state { text-align: center; padding: 50px 20px; }
@@ -359,24 +414,95 @@
     }
     .mt-btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
+    /* JENIS AJANG MODAL STYLES */
+    .jenis-input-row {
+        display: flex; gap: 10px; margin-bottom: 20px;
+    }
+    .jenis-input {
+        flex: 1; padding: 12px 15px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px; color: #1e293b;
+        font-size: 14px; font-family: 'Poppins', sans-serif;
+        transition: all 0.2s;
+    }
+    .jenis-input::placeholder { color: #94a3b8; }
+    .jenis-input:focus {
+        outline: none;
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        background: white;
+    }
+    .jenis-btn-add {
+        padding: 10px 18px; border-radius: 10px;
+        background: #10b981; color: white;
+        border: none;
+        font-size: 13px; font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer;
+        display: flex; align-items: center; gap: 6px;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .jenis-btn-add:hover { background: #059669; }
+    .jenis-btn-add:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .jenis-list {
+        max-height: 320px; overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+    .jenis-empty {
+        text-align: center; padding: 40px 20px; color: #94a3b8;
+    }
+    .jenis-empty i { font-size: 28px; margin-bottom: 8px; display: block; }
+    .jenis-empty p { font-size: 13px; margin: 0; }
+
+    .jenis-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        transition: background 0.2s;
+    }
+    .jenis-item:last-child { border-bottom: none; }
+    .jenis-item:hover { background: #eff6ff; }
+    .jenis-item-info {
+        display: flex; align-items: center; gap: 10px;
+        font-size: 14px; color: #1e293b; font-weight: 500;
+    }
+    .jenis-item-info i { color: #f59e0b; font-size: 12px; }
+    .jenis-item-delete {
+        width: 28px; height: 28px; border-radius: 6px;
+        background: transparent; border: none;
+        color: #cbd5e1; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s; font-size: 12px;
+    }
+    .jenis-item:hover .jenis-item-delete { color: #ef4444; }
+    .jenis-item-delete:hover {
+        background: #fee2e2; color: #ef4444 !important;
+    }
+
     /* RESPONSIVE */
     @media (max-width: 768px) {
         .mt-header { flex-direction: column; align-items: flex-start; }
         .ajang-grid { grid-template-columns: 1fr; }
+        .mt-section-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+        .jenis-input-row { flex-direction: column; }
     }
 </style>
 
 <script>
+// === Ajang Talenta Modal ===
 function openAjangModal() {
     document.getElementById('ajangForm').reset();
     document.getElementById('ajangModalOverlay').classList.add('active');
 }
-
 function closeAjangModal(e) {
     if (e && e.target !== e.currentTarget) return;
     document.getElementById('ajangModalOverlay').classList.remove('active');
 }
-
 function submitAjang(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSaveAjang');
@@ -392,22 +518,15 @@ function submitAjang(e) {
 
     fetch('{{ route("admin.manajemen-talenta.ajang.store") }}', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
         body: JSON.stringify(formData)
     })
     .then(r => r.json())
     .then(data => {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
-        if (data.success) {
-            closeAjangModal();
-            location.reload();
-        } else {
-            alert(data.message || 'Gagal menyimpan');
-        }
+        if (data.success) { closeAjangModal(); location.reload(); }
+        else { alert(data.message || 'Gagal menyimpan'); }
     })
     .catch(() => {
         btn.disabled = false;
@@ -415,16 +534,11 @@ function submitAjang(e) {
         alert('Gagal menghubungi server');
     });
 }
-
 function deleteAjang(ajangId, nama) {
     if (!confirm(`Yakin ingin menghapus ajang "${nama}"?`)) return;
-
     fetch('{{ route("admin.manajemen-talenta.ajang.delete") }}', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
         body: JSON.stringify({ ajang_id: ajangId })
     })
     .then(r => r.json())
@@ -437,15 +551,110 @@ function deleteAjang(ajangId, nama) {
                 card.style.transform = 'scale(0.95)';
                 setTimeout(() => card.remove(), 300);
             }
-        } else {
-            alert(data.message || 'Gagal menghapus');
-        }
+        } else { alert(data.message || 'Gagal menghapus'); }
     })
     .catch(() => alert('Gagal menghubungi server'));
 }
 
+// === Jenis Ajang Talenta Modal ===
+function openJenisModal() {
+    document.getElementById('jenisModalOverlay').classList.add('active');
+    document.getElementById('namaJenis').value = '';
+}
+function closeJenisModal(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('jenisModalOverlay').classList.remove('active');
+}
+function submitJenis() {
+    const input = document.getElementById('namaJenis');
+    const nama = input.value.trim();
+    if (!nama) { input.focus(); return; }
+
+    const btn = document.getElementById('btnAddJenis');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch('{{ route("admin.manajemen-talenta.jenis-ajang.store") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ nama_jenis: nama })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus"></i> Tambah';
+        if (data.success) {
+            input.value = '';
+            // Remove empty state if present
+            const empty = document.getElementById('jenisEmpty');
+            if (empty) empty.remove();
+            // Add new item to list
+            const list = document.getElementById('jenisList');
+            const item = document.createElement('div');
+            item.className = 'jenis-item';
+            item.id = 'jenis-' + data.jenis.id;
+            item.innerHTML = `
+                <div class="jenis-item-info">
+                    <i class="fas fa-tag"></i>
+                    <span>${data.jenis.nama_jenis}</span>
+                </div>
+                <button class="jenis-item-delete" onclick="deleteJenis(${data.jenis.id}, '${data.jenis.nama_jenis.replace(/'/g, "\\'")}')" title="Hapus">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+            list.appendChild(item);
+            input.focus();
+        } else {
+            alert(data.message || 'Gagal menyimpan');
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus"></i> Tambah';
+        alert('Gagal menghubungi server');
+    });
+}
+function deleteJenis(jenisId, nama) {
+    if (!confirm(`Yakin ingin menghapus jenis "${nama}"?`)) return;
+
+    fetch('{{ route("admin.manajemen-talenta.jenis-ajang.delete") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ jenis_id: jenisId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const el = document.getElementById('jenis-' + jenisId);
+            if (el) {
+                el.style.transition = 'opacity 0.3s, transform 0.3s';
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    el.remove();
+                    // Show empty state if no items left
+                    const list = document.getElementById('jenisList');
+                    if (list.querySelectorAll('.jenis-item').length === 0) {
+                        list.innerHTML = '<div class="jenis-empty" id="jenisEmpty"><i class="fas fa-inbox"></i><p>Belum ada jenis ajang talenta</p></div>';
+                    }
+                }, 300);
+            }
+        } else { alert(data.message || 'Gagal menghapus'); }
+    })
+    .catch(() => alert('Gagal menghubungi server'));
+}
+
+// Enter key support for jenis input
+document.getElementById('namaJenis').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); submitJenis(); }
+});
+
+// Escape to close modals
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeAjangModal();
+    if (e.key === 'Escape') {
+        closeAjangModal();
+        closeJenisModal();
+    }
 });
 </script>
 @endsection

@@ -266,6 +266,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/manajemen-talenta/remove-osn', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'removeOsn'])->name('manajemen-talenta.remove-osn');
     Route::post('/manajemen-talenta/ajang/store', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'storeAjang'])->name('manajemen-talenta.ajang.store');
     Route::post('/manajemen-talenta/ajang/delete', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'deleteAjang'])->name('manajemen-talenta.ajang.delete');
+    Route::post('/manajemen-talenta/jenis-ajang/store', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'storeJenisAjang'])->name('manajemen-talenta.jenis-ajang.store');
+    Route::post('/manajemen-talenta/jenis-ajang/delete', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'deleteJenisAjang'])->name('manajemen-talenta.jenis-ajang.delete');
 
     // Tugas Tambahan Lainnya
     Route::get('/tugas-tambahan', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'index'])->name('tugas-tambahan.index');
