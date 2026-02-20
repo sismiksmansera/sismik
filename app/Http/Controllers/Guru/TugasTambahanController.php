@@ -238,6 +238,18 @@ class TugasTambahanController extends Controller
                 $item->extra_label = 'Ekstrakurikuler';
                 $item->extra_icon = 'fa-futbol';
             }
+
+            // If this is "Koordinator OSN" (or variant), count ajang_talenta with "OSN" in name
+            if (stripos($item->jenis_nama, 'osn') !== false || stripos($item->jenis_nama, 'olimpiade') !== false) {
+                $currentYear = date('Y');
+                $item->extra_count = DB::table('ajang_talenta')
+                    ->where('nama_ajang', 'LIKE', '%OSN%')
+                    ->where('tahun', $currentYear)
+                    ->count();
+                $item->extra_route = 'guru.koordinator-osn.index';
+                $item->extra_label = "Ajang OSN {$currentYear}";
+                $item->extra_icon = 'fa-trophy';
+            }
         }
 
         $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbingan > 0 ? 1 : 0) + ($piketHariIni ? 1 : 0) + count($tugasTambahanLain);

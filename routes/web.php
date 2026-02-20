@@ -417,6 +417,9 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::post('/koordinator-ekstra/get-siswa', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'getSiswa'])->name('koordinator-ekstra.get-siswa');
     Route::get('/koordinator-ekstra/get-siswa-by-ids', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'getSiswaByIds'])->name('koordinator-ekstra.get-siswa-by-ids');
     
+    // Koordinator OSN routes
+    Route::get('/koordinator-osn', [\App\Http\Controllers\Guru\KoordinatorOsnController::class, 'index'])->name('koordinator-osn.index');
+    
     // Lihat Prestasi routes
     Route::get('/lihat-prestasi', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'index'])->name('lihat-prestasi');
     Route::post('/lihat-prestasi/hapus', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'hapus'])->name('lihat-prestasi.hapus');
