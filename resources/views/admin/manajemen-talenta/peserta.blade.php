@@ -751,7 +751,7 @@ function openPhotoModal(fotoUrl, initial, nama, mapel) {
     const dlBtn = document.getElementById('btnPhotoDownload');
 
     nameEl.textContent = nama;
-    currentPhotoFilename = mapel + ' - ' + nama;
+    currentPhotoFilename = (mapel.startsWith('OSN') ? mapel : 'OSN ' + mapel) + ' - ' + nama;
 
     if (fotoUrl) {
         img.src = fotoUrl;
