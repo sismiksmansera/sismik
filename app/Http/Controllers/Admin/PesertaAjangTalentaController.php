@@ -195,7 +195,7 @@ class PesertaAjangTalentaController extends Controller
             'nomorSurat', 'tanggalSurat', 'mapelOsn', 'logoLampung', 'logoSekolah'
         ))->setPaper('a4', 'portrait');
 
-        $filename = 'Surat_Keterangan_' . str_replace(' ', '_', $siswa->nama) . '.pdf';
+        $filename = 'OSN ' . $mapelOsn . ' - ' . $siswa->nama . ' - Surat Keterangan.pdf';
         return $pdf->download($filename);
     }
 }
