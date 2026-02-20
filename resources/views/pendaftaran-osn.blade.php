@@ -951,6 +951,10 @@
         const data = Object.fromEntries(formData);
 
         let hasError = false;
+        if (!siswaData.foto) {
+            showToast('Foto profil wajib diupload sebelum mendaftar. Klik ikon foto untuk upload.', 'error');
+            hasError = true;
+        }
         if (!data.tempat_lahir) { showFieldError('errTempatLahir', 'Tempat lahir wajib diisi'); hasError = true; }
         if (!data.tgl_lahir) { showFieldError('errTglLahir', 'Tanggal lahir wajib diisi'); hasError = true; }
         if (!data.provinsi) { showFieldError('errProvinsi', 'Provinsi wajib diisi'); hasError = true; }

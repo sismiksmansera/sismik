@@ -139,6 +139,15 @@ class OsnRegistrationController extends Controller
         ]);
 
         $siswa = Siswa::findOrFail($request->siswa_id);
+
+        // Require photo
+        if (empty($siswa->foto) || !Storage::disk('public')->exists('siswa/' . $siswa->foto)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Foto profil wajib diupload sebelum mendaftar.',
+            ], 422);
+        }
+
         $siswa->update([
             'email' => $request->email,
             'nohp_siswa' => $request->nohp_siswa,
