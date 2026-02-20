@@ -8,7 +8,7 @@
         @media print {
             .no-print { display: none !important; }
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            @page { size: A4 portrait; margin: 15mm 20mm; }
+            @page { size: A4 portrait; margin: 0; }
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
