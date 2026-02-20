@@ -225,4 +225,40 @@ class OsnRegistrationController extends Controller
             'foto_url' => asset('storage/siswa/' . $filename),
         ]);
     }
+
+    public function pesertaList()
+    {
+        $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodeAktif->tahun_pelajaran ?? '';
+        $semesterAktif = $periodeAktif->semester ?? '';
+
+        // Get all siswa registered for OSN
+        $pesertaAll = Siswa::whereNotNull('mapel_osn_2026')
+            ->where('mapel_osn_2026', '!=', '')
+            ->orderBy('mapel_osn_2026', 'ASC')
+            ->orderBy('nama', 'ASC')
+            ->get();
+
+        // Calculate rombel_aktif for each
+        foreach ($pesertaAll as $siswa) {
+            $semesterNumber = $this->calculateActiveSemester(
+                $siswa->angkatan_masuk, $tahunAktif, $semesterAktif
+            );
+            $rombelField = "rombel_semester_{$semesterNumber}";
+            $siswa->rombel_aktif = $siswa->$rombelField ?? $siswa->nama_rombel ?? '-';
+
+            $siswa->foto_url = $siswa->foto && Storage::disk('public')->exists('siswa/' . $siswa->foto)
+                ? asset('storage/siswa/' . $siswa->foto)
+                : null;
+
+            $siswa->initials = collect(explode(' ', $siswa->nama))
+                ->map(fn($p) => strtoupper(substr($p, 0, 1)))
+                ->take(2)->join('');
+        }
+
+        // Group by mapel
+        $grouped = $pesertaAll->groupBy('mapel_osn_2026');
+
+        return view('peserta-osn', compact('pesertaAll', 'grouped'));
+    }
 }
