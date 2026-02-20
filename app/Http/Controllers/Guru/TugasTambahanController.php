@@ -215,6 +215,34 @@ class TugasTambahanController extends Controller
                 ->get();
         }
         
+        // 6. PEMBINA AJANG TALENTA
+        $tugasPembinaAjang = [];
+        $ajangTalentaPembina = DB::table('ajang_talenta')
+            ->where('pembina', $guruNama)
+            ->orderBy('tahun', 'DESC')
+            ->orderBy('nama_ajang', 'ASC')
+            ->get();
+
+        foreach ($ajangTalentaPembina as $ajang) {
+            $jumlahPeserta = DB::table('peserta_ajang_talenta')
+                ->where('ajang_talenta_id', $ajang->id)
+                ->count();
+
+            $jumlahPrestasi = DB::table('prestasi_siswa')
+                ->where('sumber_prestasi', 'ajang_talenta')
+                ->where('sumber_id', $ajang->id)
+                ->count();
+
+            $tugasPembinaAjang[] = [
+                'id' => $ajang->id,
+                'nama' => $ajang->nama_ajang,
+                'jenis' => $ajang->jenis_ajang ?? '',
+                'tahun' => $ajang->tahun ?? '',
+                'jumlah_peserta' => $jumlahPeserta,
+                'jumlah_prestasi' => $jumlahPrestasi,
+            ];
+        }
+
         // 5. TUGAS TAMBAHAN LAINNYA
         $tugasTambahanLain = DB::table('tugas_tambahan_guru as t')
             ->join('jenis_tugas_tambahan_lain as j', 't.jenis_tugas_id', '=', 'j.id')
@@ -252,7 +280,7 @@ class TugasTambahanController extends Controller
             }
         }
 
-        $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbingan > 0 ? 1 : 0) + ($piketHariIni ? 1 : 0) + count($tugasTambahanLain);
+        $totalTugas = count($tugasPembina) + count($tugasWaliKelas) + ($totalSiswaBimbingan > 0 ? 1 : 0) + ($piketHariIni ? 1 : 0) + count($tugasTambahanLain) + count($tugasPembinaAjang);
 
         return view('guru.tugas-tambahan', compact(
             'guru',
@@ -266,7 +294,8 @@ class TugasTambahanController extends Controller
             'piketHariIni',
             'hariIni',
             'semuaPiketHariIni',
-            'tugasTambahanLain'
+            'tugasTambahanLain',
+            'tugasPembinaAjang'
         ));
     }
 }

@@ -715,6 +715,54 @@
                     </div>
                 @endif
 
+                {{-- PEMBINA AJANG TALENTA --}}
+                @if(count($tugasPembinaAjang) > 0)
+                    <div class="section-header">
+                        <div class="section-icon" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h2>Pembina Ajang Talenta</h2>
+                    </div>
+                    
+                    <div class="task-cards-grid">
+                        @foreach($tugasPembinaAjang as $ajang)
+                            <div class="task-card">
+                                <div class="task-card-header" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+                                    <div class="task-icon">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <div class="task-info">
+                                        <h3>{{ $ajang['nama'] }}</h3>
+                                        <span class="task-badge">
+                                            @if($ajang['jenis'])
+                                                <i class="fas fa-tag"></i> {{ $ajang['jenis'] }}
+                                            @else
+                                                <i class="fas fa-medal"></i> Pembina
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="task-card-body">
+                                    <div class="task-stats-grid">
+                                        <a href="{{ route('guru.koordinator-osn.peserta', $ajang['id']) }}" class="task-stat-item clickable">
+                                            <div class="task-stat-value" style="color: #7c3aed;">{{ $ajang['jumlah_peserta'] }}</div>
+                                            <div class="task-stat-label">Peserta</div>
+                                        </a>
+                                        <div class="task-stat-item">
+                                            <div class="task-stat-value yellow"><i class="fas fa-trophy"></i> {{ $ajang['jumlah_prestasi'] }}</div>
+                                            <div class="task-stat-label">Prestasi</div>
+                                        </div>
+                                        <div class="task-stat-item">
+                                            <div class="task-stat-value dark">{{ $ajang['tahun'] }}</div>
+                                            <div class="task-stat-label">Tahun</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
                 {{-- TUGAS TAMBAHAN LAINNYA --}}
                 @if(count($tugasTambahanLain) > 0)
                     <div class="section-header">
