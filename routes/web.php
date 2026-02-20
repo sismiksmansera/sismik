@@ -268,6 +268,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/manajemen-talenta/ajang/delete', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'deleteAjang'])->name('manajemen-talenta.ajang.delete');
     Route::post('/manajemen-talenta/jenis-ajang/store', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'storeJenisAjang'])->name('manajemen-talenta.jenis-ajang.store');
     Route::post('/manajemen-talenta/jenis-ajang/delete', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'deleteJenisAjang'])->name('manajemen-talenta.jenis-ajang.delete');
+    Route::get('/manajemen-talenta/ajang/{id}/peserta', [\App\Http\Controllers\Admin\PesertaAjangTalentaController::class, 'index'])->name('manajemen-talenta.ajang.peserta');
+    Route::post('/manajemen-talenta/ajang/{id}/peserta/tambah', [\App\Http\Controllers\Admin\PesertaAjangTalentaController::class, 'tambah'])->name('manajemen-talenta.ajang.peserta.tambah');
+    Route::post('/manajemen-talenta/ajang/{id}/peserta/hapus', [\App\Http\Controllers\Admin\PesertaAjangTalentaController::class, 'hapus'])->name('manajemen-talenta.ajang.peserta.hapus');
 
     // Tugas Tambahan Lainnya
     Route::get('/tugas-tambahan', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'index'])->name('tugas-tambahan.index');

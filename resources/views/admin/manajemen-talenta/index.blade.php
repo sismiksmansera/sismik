@@ -89,15 +89,15 @@
                     </div>
 
                     <div class="ajang-info-grid">
-                        <div class="ajang-info-item">
+                        <a href="{{ route('admin.manajemen-talenta.ajang.peserta', $ajang->id) }}" class="ajang-info-item clickable">
                             <div class="ajang-info-icon blue">
                                 <i class="fas fa-users"></i>
                             </div>
                             <div>
-                                <div class="ajang-info-value">0</div>
+                                <div class="ajang-info-value">{{ $ajang->jumlah_peserta ?? 0 }}</div>
                                 <div class="ajang-info-label">Peserta</div>
                             </div>
-                        </div>
+                        </a>
                         <div class="ajang-info-item">
                             <div class="ajang-info-icon amber">
                                 <i class="fas fa-trophy"></i>
@@ -376,6 +376,14 @@
     .ajang-info-icon.amber { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
     .ajang-info-value { font-size: 18px; font-weight: 700; color: #1e293b; line-height: 1; }
     .ajang-info-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .ajang-info-item.clickable {
+        text-decoration: none; cursor: pointer;
+    }
+    .ajang-info-item.clickable:hover {
+        background: #eff6ff;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
 
     /* CONTENT */
     .mt-content-section {
