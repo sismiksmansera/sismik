@@ -133,7 +133,7 @@
         /* SIGNATURE */
         .signature-section {
             margin-top: 25px;
-            text-align: right;
+            text-align: left;
         }
         .signature-block {
             display: inline-block;
