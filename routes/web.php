@@ -275,6 +275,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/manajemen-talenta/ajang/{id}/peserta/tambah', [\App\Http\Controllers\Admin\PesertaAjangTalentaController::class, 'tambah'])->name('manajemen-talenta.ajang.peserta.tambah');
     Route::post('/manajemen-talenta/ajang/{id}/peserta/hapus', [\App\Http\Controllers\Admin\PesertaAjangTalentaController::class, 'hapus'])->name('manajemen-talenta.ajang.peserta.hapus');
     Route::get('/manajemen-talenta/ajang/{ajangId}/peserta/{siswaId}/surat-keterangan', [\App\Http\Controllers\Admin\PesertaAjangTalentaController::class, 'cetakSuratKeterangan'])->name('manajemen-talenta.ajang.peserta.surat-keterangan');
+    Route::get('/manajemen-talenta/ajang/{ajangId}/peserta/{siswaId}/pakta-integritas', [\App\Http\Controllers\Admin\PesertaAjangTalentaController::class, 'cetakPaktaIntegritas'])->name('manajemen-talenta.ajang.peserta.pakta-integritas');
 
     // Tugas Tambahan Lainnya
     Route::get('/tugas-tambahan', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'index'])->name('tugas-tambahan.index');
@@ -423,6 +424,7 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::get('/koordinator-osn', [\App\Http\Controllers\Guru\KoordinatorOsnController::class, 'index'])->name('koordinator-osn.index');
     Route::get('/koordinator-osn/{id}/peserta', [\App\Http\Controllers\Guru\KoordinatorOsnController::class, 'peserta'])->name('koordinator-osn.peserta');
     Route::get('/koordinator-osn/surat-keterangan/{id}', [\App\Http\Controllers\Guru\KoordinatorOsnController::class, 'cetakSuratKeterangan'])->name('koordinator-osn.surat-keterangan');
+    Route::get('/koordinator-osn/pakta-integritas/{id}', [\App\Http\Controllers\Guru\KoordinatorOsnController::class, 'cetakPaktaIntegritas'])->name('koordinator-osn.pakta-integritas');
     
     // Lihat Prestasi routes
     Route::get('/lihat-prestasi', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'index'])->name('lihat-prestasi');

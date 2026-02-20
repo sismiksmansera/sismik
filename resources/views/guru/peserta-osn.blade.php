@@ -232,7 +232,7 @@
             <p id="berkasNama"></p>
         </div>
         <div class="berkas-list">
-            <div class="berkas-item" onclick="alert('Format Pakta Integritas belum disusun.')">
+            <div class="berkas-item" onclick="openPaktaIntegritasModal()">
                 <div class="berkas-item-icon" style="background: linear-gradient(135deg, #7c3aed, #6d28d9);">
                     <i class="fas fa-file-signature"></i>
                 </div>
@@ -285,6 +285,34 @@
                 <i class="fas fa-download"></i> Download / Cetak
             </button>
             <button class="btn-photo-close" onclick="closeSuratKeteranganModal()">
+                <i class="fas fa-times"></i> Batal
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- PAKTA INTEGRITAS FORM MODAL --}}
+<div id="paktaIntegritasModal" class="photo-modal" onclick="if(event.target===this)closePaktaIntegritasModal()">
+    <div class="photo-modal-content berkas-modal-content">
+        <button class="photo-modal-close" onclick="closePaktaIntegritasModal()">&times;</button>
+        <div class="berkas-header">
+            <div class="berkas-icon" style="background: linear-gradient(135deg, #7c3aed, #6d28d9);">
+                <i class="fas fa-file-signature"></i>
+            </div>
+            <h3>Pakta Integritas</h3>
+            <p id="paktaNama"></p>
+        </div>
+        <div class="sk-form">
+            <div class="sk-form-group">
+                <label for="piTanggalSurat"><i class="fas fa-calendar-alt"></i> Tanggal Surat</label>
+                <input type="date" id="piTanggalSurat" class="sk-input">
+            </div>
+        </div>
+        <div class="sk-form-actions">
+            <button class="btn-photo-download" onclick="downloadPaktaIntegritas()">
+                <i class="fas fa-download"></i> Download / Cetak
+            </button>
+            <button class="btn-photo-close" onclick="closePaktaIntegritasModal()">
                 <i class="fas fa-times"></i> Batal
             </button>
         </div>
@@ -706,7 +734,32 @@ document.addEventListener('keydown', e => {
         closePhotoModal();
         closeBerkasModal();
         closeSuratKeteranganModal();
+        closePaktaIntegritasModal();
     }
 });
+
+// Pakta Integritas Modal
+function openPaktaIntegritasModal() {
+    document.getElementById('piTanggalSurat').value = new Date().toISOString().split('T')[0];
+    document.getElementById('paktaIntegritasModal').classList.add('active');
+}
+
+function closePaktaIntegritasModal() {
+    document.getElementById('paktaIntegritasModal').classList.remove('active');
+}
+
+function downloadPaktaIntegritas() {
+    const tanggalSurat = document.getElementById('piTanggalSurat').value;
+
+    if (!tanggalSurat) { alert('Mohon isi Tanggal Surat terlebih dahulu.'); return; }
+
+    const baseUrl = '{{ url("guru/koordinator-osn/pakta-integritas") }}';
+    const url = baseUrl + '/' + currentBerkasSiswaId +
+        '?tanggal_surat=' + encodeURIComponent(tanggalSurat) +
+        '&mapel=' + encodeURIComponent(currentBerkasMapel);
+    window.location.href = url;
+    closePaktaIntegritasModal();
+    closeBerkasModal();
+}
 </script>
 @endsection

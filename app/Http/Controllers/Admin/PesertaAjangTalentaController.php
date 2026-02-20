@@ -199,4 +199,33 @@ class PesertaAjangTalentaController extends Controller
         $filename = $mapelLabel . ' - ' . $siswa->nama . ' - Surat Keterangan.pdf';
         return $pdf->download($filename);
     }
+
+    /**
+     * Cetak Pakta Integritas OSN
+     */
+    public function cetakPaktaIntegritas(Request $request, $ajangId, $siswaId)
+    {
+        $siswa = Siswa::findOrFail($siswaId);
+
+        $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
+
+        // Kepala Sekolah
+        $kepalaSekolah = $periodeAktif->nama_kepala ?? '-';
+        $nipKepala = $periodeAktif->nip_kepala ?? '-';
+
+        // From request
+        $tanggalSuratRaw = $request->query('tanggal_surat', now()->format('Y-m-d'));
+        $tanggalSurat = Carbon::parse($tanggalSuratRaw)->translatedFormat('d F Y');
+        $mapelOsn = $request->query('mapel', $siswa->mapel_osn_2026 ?? '-');
+        $tahun = date('Y');
+
+        $pdf = Pdf::loadView('cetak.pakta-integritas-osn', compact(
+            'siswa', 'kepalaSekolah', 'nipKepala',
+            'tanggalSurat', 'mapelOsn', 'tahun'
+        ))->setPaper('a4', 'portrait');
+
+        $mapelLabel = str_starts_with($mapelOsn, 'OSN') ? $mapelOsn : 'OSN ' . $mapelOsn;
+        $filename = $mapelLabel . ' - ' . $siswa->nama . ' - Pakta Integritas.pdf';
+        return $pdf->download($filename);
+    }
 }
