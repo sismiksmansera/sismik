@@ -208,11 +208,6 @@
     <div class="main-content">
         <div style="max-width: 1100px; margin: 0 auto; padding: 20px;">
 
-            {{-- BACK BUTTON --}}
-            <a href="{{ route('guru.tugas-tambahan') }}" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Kembali ke Tugas Tambahan
-            </a>
-
             {{-- HEADER --}}
             <div class="osn-header-section">
                 <div class="header-icon-large">
@@ -224,6 +219,11 @@
                     <i class="fas fa-calendar-alt"></i> Tahun {{ $currentYear }}
                 </div>
             </div>
+
+            {{-- BACK BUTTON --}}
+            <a href="{{ route('guru.tugas-tambahan') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Kembali ke Tugas Tambahan
+            </a>
 
             {{-- STATS --}}
             @php
