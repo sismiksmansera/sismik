@@ -61,6 +61,10 @@
             <i class="fas fa-futbol"></i>
             <span>Ekstrakurikuler</span>
         </a>
+        <a href="{{ route('admin.manajemen-talenta.index') }}" class="menu-item {{ request()->routeIs('admin.manajemen-talenta.*') ? 'active' : '' }}">
+            <i class="fas fa-star"></i>
+            <span>Manajemen Talenta</span>
+        </a>
         <a href="{{ route('admin.tugas-tambahan.index') }}" class="menu-item {{ request()->routeIs('admin.tugas-tambahan.*') ? 'active' : '' }}">
             <i class="fas fa-tasks"></i>
             <span>Tugas Tambahan Lainnya</span>

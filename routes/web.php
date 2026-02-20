@@ -261,6 +261,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/ekstrakurikuler/{id}/anggota/hapus', [\App\Http\Controllers\Admin\AnggotaEkstrakurikulerController::class, 'hapusAnggota'])->name('ekstrakurikuler.anggota.hapus');
     Route::post('/ekstrakurikuler/{id}/anggota/update-nilai', [\App\Http\Controllers\Admin\AnggotaEkstrakurikulerController::class, 'updateNilai'])->name('ekstrakurikuler.anggota.update-nilai');
 
+    // Manajemen Talenta
+    Route::get('/manajemen-talenta', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'index'])->name('manajemen-talenta.index');
+    Route::post('/manajemen-talenta/remove-osn', [\App\Http\Controllers\Admin\ManajemenTalentaController::class, 'removeOsn'])->name('manajemen-talenta.remove-osn');
+
     // Tugas Tambahan Lainnya
     Route::get('/tugas-tambahan', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'index'])->name('tugas-tambahan.index');
     Route::post('/tugas-tambahan/jenis/store', [\App\Http\Controllers\Admin\TugasTambahanController::class, 'storeJenis'])->name('tugas-tambahan.jenis.store');
