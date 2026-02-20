@@ -8,6 +8,8 @@ use App\Models\Siswa;
 use App\Models\DataPeriodik;
 use App\Models\AjangTalenta;
 use App\Models\JenisAjangTalenta;
+use App\Models\Guru;
+use App\Models\GuruBK;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -109,6 +111,10 @@ class ManajemenTalentaController extends Controller
         // Get jenis ajang talenta list
         $jenisAjangList = JenisAjangTalenta::orderBy('nama_jenis', 'ASC')->get();
 
+        // Get guru + guru BK lists for pembina dropdown
+        $guruList = Guru::orderBy('nama', 'ASC')->pluck('nama')->toArray();
+        $guruBkList = GuruBK::orderBy('nama', 'ASC')->pluck('nama')->toArray();
+
         return view('admin.manajemen-talenta.index', compact(
             'admin',
             'siswaList',
@@ -120,7 +126,9 @@ class ManajemenTalentaController extends Controller
             'tahunAktif',
             'semesterAktif',
             'ajangList',
-            'jenisAjangList'
+            'jenisAjangList',
+            'guruList',
+            'guruBkList'
         ));
     }
 
@@ -152,15 +160,18 @@ class ManajemenTalentaController extends Controller
     public function storeAjang(Request $request)
     {
         $request->validate([
+            'jenis_ajang' => 'required|string|max:200',
             'nama_ajang' => 'required|string|max:200',
             'tahun' => 'nullable|string|max:10',
             'penyelenggara' => 'nullable|string|max:200',
             'pembina' => 'nullable|string|max:200',
         ], [
+            'jenis_ajang.required' => 'Jenis ajang talenta wajib dipilih.',
             'nama_ajang.required' => 'Nama ajang talenta wajib diisi.',
         ]);
 
         $ajang = AjangTalenta::create([
+            'jenis_ajang' => $request->jenis_ajang,
             'nama_ajang' => $request->nama_ajang,
             'tahun' => $request->tahun,
             'penyelenggara' => $request->penyelenggara,

@@ -63,6 +63,9 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
+                    @if($ajang->jenis_ajang)
+                    <div class="ajang-jenis-badge">{{ $ajang->jenis_ajang }}</div>
+                    @endif
                     <h3 class="ajang-name">{{ $ajang->nama_ajang }}</h3>
                     <div class="ajang-details">
                         @if($ajang->tahun)
@@ -108,8 +111,17 @@
         <form id="ajangForm" onsubmit="submitAjang(event)">
             <div class="mt-modal-body">
                 <div class="mt-form-group">
+                    <label>Jenis Ajang Talenta <span class="required">*</span></label>
+                    <select id="jenisAjangSelect" name="jenis_ajang" required>
+                        <option value="">-- Pilih Jenis Ajang --</option>
+                        @foreach($jenisAjangList as $jenis)
+                            <option value="{{ $jenis->nama_jenis }}">{{ $jenis->nama_jenis }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mt-form-group">
                     <label>Nama Ajang Talenta <span class="required">*</span></label>
-                    <input type="text" id="namaAjang" name="nama_ajang" placeholder="Contoh: Olimpiade Sains Nasional" required>
+                    <input type="text" id="namaAjang" name="nama_ajang" placeholder="Contoh: Olimpiade Sains Nasional 2026" required>
                 </div>
                 <div class="mt-form-group">
                     <label>Tahun</label>
@@ -121,7 +133,19 @@
                 </div>
                 <div class="mt-form-group">
                     <label>Pembina</label>
-                    <input type="text" id="pembinaAjang" name="pembina" placeholder="Nama pembina/pelatih">
+                    <select id="pembinaAjang" name="pembina">
+                        <option value="">-- Pilih Pembina --</option>
+                        <optgroup label="Guru">
+                            @foreach($guruList as $nama)
+                                <option value="{{ $nama }}">{{ $nama }}</option>
+                            @endforeach
+                        </optgroup>
+                        <optgroup label="Guru BK">
+                            @foreach($guruBkList as $nama)
+                                <option value="{{ $nama }}">{{ $nama }}</option>
+                            @endforeach
+                        </optgroup>
+                    </select>
                 </div>
             </div>
             <div class="mt-modal-footer">
@@ -289,6 +313,14 @@
         font-size: 15px; font-weight: 700; color: #1e293b;
         margin-bottom: 12px; line-height: 1.3;
     }
+    .ajang-jenis-badge {
+        display: inline-block;
+        padding: 3px 10px; border-radius: 6px;
+        background: #eff6ff; color: #2563eb;
+        font-size: 11px; font-weight: 600;
+        margin-bottom: 8px;
+        border: 1px solid #bfdbfe;
+    }
     .ajang-details { display: flex; flex-direction: column; gap: 6px; }
     .ajang-detail-item {
         display: flex; align-items: center; gap: 8px;
@@ -368,7 +400,8 @@
         letter-spacing: 0.5px; margin-bottom: 8px;
     }
     .mt-form-group label .required { color: #ef4444; }
-    .mt-form-group input {
+    .mt-form-group input,
+    .mt-form-group select {
         width: 100%; padding: 12px 15px;
         background: #f8fafc;
         border: 1px solid #e2e8f0;
@@ -376,8 +409,20 @@
         font-size: 14px; font-family: 'Poppins', sans-serif;
         transition: all 0.2s;
     }
+    .mt-form-group select {
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 36px;
+    }
+    .mt-form-group select optgroup { font-weight: 700; color: #3b82f6; }
+    .mt-form-group select option { font-weight: 400; color: #1e293b; }
     .mt-form-group input::placeholder { color: #94a3b8; }
-    .mt-form-group input:focus {
+    .mt-form-group input:focus,
+    .mt-form-group select:focus {
         outline: none;
         border-color: #93c5fd;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -510,6 +555,7 @@ function submitAjang(e) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
     const formData = {
+        jenis_ajang: document.getElementById('jenisAjangSelect').value,
         nama_ajang: document.getElementById('namaAjang').value,
         tahun: document.getElementById('tahunAjang').value,
         penyelenggara: document.getElementById('penyelenggaraAjang').value,

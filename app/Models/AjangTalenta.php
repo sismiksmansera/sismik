@@ -12,6 +12,7 @@ class AjangTalenta extends Model
     protected $table = 'ajang_talenta';
 
     protected $fillable = [
+        'jenis_ajang',
         'nama_ajang',
         'tahun',
         'penyelenggara',
