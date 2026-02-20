@@ -145,10 +145,57 @@
 .osn-empty p { font-size: 13px; color: #6b7280; }
 
 @media (max-width: 768px) {
-    .osn-header-section { padding: 20px 15px; }
-    .osn-header-section h1 { font-size: 1.3rem; }
-    .osn-grid { grid-template-columns: 1fr; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .main-content > div { padding: 12px !important; }
+
+    /* Header */
+    .osn-header-section { padding: 18px 14px; margin-bottom: 16px; border-radius: 12px; }
+    .osn-header-section::before { width: 200px; height: 200px; }
+    .header-icon-large { width: 54px; height: 54px; border-radius: 14px; font-size: 24px; margin-bottom: 10px; }
+    .osn-header-section h1 { font-size: 1.15rem; margin-bottom: 4px; }
+    .osn-header-section p { font-size: 0.8rem; margin-bottom: 8px; }
+    .header-year-badge { padding: 6px 14px; font-size: 11px; }
+
+    /* Back button */
+    .btn-back { padding: 8px 14px; font-size: 12px; margin-bottom: 14px; border-radius: 8px; }
+
+    /* Stats */
+    .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+    .osn-stat-card { padding: 14px 10px; border-radius: 10px; }
+    .osn-stat-value { font-size: 22px; }
+    .osn-stat-label { font-size: 10px; }
+
+    /* Card grid */
+    .osn-grid { grid-template-columns: 1fr; gap: 12px; }
+
+    /* Card */
+    .osn-card { border-radius: 12px; }
+    .osn-card-header { padding: 14px; gap: 10px; }
+    .osn-card-icon { width: 38px; height: 38px; border-radius: 10px; font-size: 16px; }
+    .osn-card-title { font-size: 13px; }
+    .osn-card-badge { font-size: 9px; padding: 2px 8px; }
+    .osn-card-body { padding: 14px; }
+    .osn-detail-list { gap: 6px; margin-bottom: 12px; }
+    .osn-detail-item { font-size: 12px; gap: 8px; }
+
+    /* Info grid */
+    .osn-info-grid { gap: 8px; padding-top: 10px; }
+    .osn-info-item { padding: 8px; border-radius: 8px; gap: 8px; }
+    .osn-info-icon { width: 30px; height: 30px; font-size: 12px; border-radius: 7px; }
+    .osn-info-value { font-size: 16px; }
+    .osn-info-label { font-size: 10px; }
+
+    /* Empty */
+    .osn-empty { padding: 40px 20px; border-radius: 12px; }
+    .osn-empty i { font-size: 36px; }
+    .osn-empty h3 { font-size: 15px; }
+    .osn-empty p { font-size: 12px; }
+}
+
+@media (max-width: 400px) {
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .osn-stat-value { font-size: 20px; }
+    .osn-info-grid { grid-template-columns: 1fr; }
+    .osn-header-section h1 { font-size: 1.05rem; }
 }
 </style>
 @endpush

@@ -464,9 +464,96 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .peserta-ajang-page { padding: 15px; }
-    .stats-grid { grid-template-columns: 1fr; }
-    .members-cards-grid { grid-template-columns: 1fr; }
+    .peserta-ajang-page { padding: 12px; }
+
+    /* Header */
+    .page-header-center { margin-bottom: 16px; }
+    .header-icon-large {
+        width: 60px; height: 60px; border-radius: 16px;
+        font-size: 28px; margin-bottom: 14px;
+    }
+    .page-header-center h1 { font-size: 18px; }
+    .page-header-center p { font-size: 13px; margin-bottom: 6px; }
+    .header-badge { font-size: 11px; padding: 3px 12px; }
+
+    /* Action buttons */
+    .action-buttons-center { margin-bottom: 16px; }
+    .btn-back { padding: 10px 16px; font-size: 13px; border-radius: 8px; }
+
+    /* Stats */
+    .stats-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 16px; }
+    .stat-card { padding: 14px; gap: 12px; border-radius: 10px; }
+    .stat-icon { width: 42px; height: 42px; border-radius: 8px; font-size: 16px; }
+    .stat-info h3 { font-size: 17px; }
+    .stat-info p { font-size: 11px; }
+
+    /* Members container */
+    .members-container { border-radius: 12px; }
+    .members-header { padding: 14px 16px; }
+    .members-title h2 { font-size: 0.95rem; }
+    .members-count { padding: 4px 12px; font-size: 0.75rem; }
+
+    /* Cards grid */
+    .members-cards-grid { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
+
+    /* Card header */
+    .member-card { border-radius: 10px; }
+    .member-card-header { padding: 12px; }
+    .member-avatar { width: 40px; height: 40px; }
+    .member-avatar .avatar-initial { font-size: 14px; }
+    .member-name-info h4 { font-size: 14px; }
+    .member-name-info .member-rombel { font-size: 11px; }
+
+    /* Card body */
+    .member-card.expanded .member-card-body { padding: 12px; }
+    .detail-section-title { font-size: 10px; margin: 8px 0 6px; }
+    .detail-label { font-size: 10px; }
+    .detail-value { font-size: 12px; max-width: 55%; }
+    .detail-item { padding: 5px 0; }
+    .badge-jk { font-size: 10px; padding: 2px 6px; }
+
+    /* Actions */
+    .member-actions-row { padding-top: 12px; }
+    .btn-download-berkas { padding: 8px 12px; font-size: 12px; }
+
+    /* Photo Modal */
+    .photo-modal-content { padding: 18px; border-radius: 14px; max-width: 340px; }
+    .photo-modal-img { width: 160px; height: 160px; border-radius: 12px; margin-bottom: 12px; }
+    .photo-modal-placeholder { width: 160px; height: 160px; border-radius: 12px; font-size: 52px; margin-bottom: 12px; }
+    .photo-modal-info h4 { font-size: 14px; margin-bottom: 12px; }
+    .photo-modal-actions { flex-direction: column; gap: 8px; }
+    .btn-photo-download, .btn-photo-close { width: 100%; justify-content: center; padding: 10px; font-size: 12px; }
+
+    /* Berkas Modal */
+    .berkas-modal-content { max-width: 340px; padding: 18px; }
+    .berkas-icon { width: 48px; height: 48px; border-radius: 12px; font-size: 20px; }
+    .berkas-header h3 { font-size: 15px; }
+    .berkas-header p { font-size: 11px; }
+    .berkas-item { padding: 10px; gap: 10px; }
+    .berkas-item-icon { width: 36px; height: 36px; border-radius: 8px; font-size: 14px; }
+    .berkas-item-info h4 { font-size: 12px; }
+    .berkas-item-info p { font-size: 10px; }
+
+    /* Empty state */
+    .empty-state { padding: 40px 20px; }
+    .empty-icon { width: 60px; height: 60px; }
+    .empty-icon i { font-size: 24px; }
+    .empty-state h3 { font-size: 15px; }
+    .empty-state p { font-size: 12px; }
+}
+
+@media (max-width: 400px) {
+    .peserta-ajang-page { padding: 8px; }
+    .header-icon-large { width: 50px; height: 50px; font-size: 24px; }
+    .page-header-center h1 { font-size: 16px; }
+    .stat-card { padding: 12px; }
+    .stat-info h3 { font-size: 15px; }
+    .members-cards-grid { padding: 8px; }
+    .member-card-header { padding: 10px; }
+    .member-avatar { width: 36px; height: 36px; }
+    .member-name-info h4 { font-size: 13px; }
+    .photo-modal-content, .berkas-modal-content { max-width: 300px; padding: 14px; }
+    .photo-modal-img, .photo-modal-placeholder { width: 140px; height: 140px; }
 }
 </style>
 
