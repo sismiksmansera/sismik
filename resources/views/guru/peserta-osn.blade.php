@@ -187,7 +187,7 @@
                     </div>
 
                     <div class="member-actions-row">
-                        <button class="btn-download-berkas" onclick="event.stopPropagation(); openBerkasModal('{{ addslashes($peserta->nama) }}', '{{ $peserta->mapel_osn_2026 ?? $ajang->nama_ajang }}')">
+                        <button class="btn-download-berkas" onclick="event.stopPropagation(); openBerkasModal('{{ addslashes($peserta->nama) }}', '{{ $peserta->mapel_osn_2026 ?? $ajang->nama_ajang }}', '{{ $peserta->siswa_id }}')">
                             <i class="fas fa-file-download"></i> Download Berkas
                         </button>
                     </div>
@@ -242,7 +242,7 @@
                 </div>
                 <i class="fas fa-download berkas-dl-icon"></i>
             </div>
-            <div class="berkas-item" onclick="alert('Format Surat Keterangan belum disusun.')">
+            <div class="berkas-item" onclick="openSuratKeteranganModal()">
                 <div class="berkas-item-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
                     <i class="fas fa-file-contract"></i>
                 </div>
@@ -256,6 +256,38 @@
         <button class="btn-photo-close" onclick="closeBerkasModal()" style="width:100%;margin-top:15px;">
             <i class="fas fa-times"></i> Tutup
         </button>
+    </div>
+</div>
+
+{{-- SURAT KETERANGAN FORM MODAL --}}
+<div id="suratKeteranganModal" class="photo-modal" onclick="if(event.target===this)closeSuratKeteranganModal()">
+    <div class="photo-modal-content berkas-modal-content">
+        <button class="photo-modal-close" onclick="closeSuratKeteranganModal()">&times;</button>
+        <div class="berkas-header">
+            <div class="berkas-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <i class="fas fa-file-contract"></i>
+            </div>
+            <h3>Surat Keterangan Kepala Sekolah</h3>
+            <p id="suratNama"></p>
+        </div>
+        <div class="sk-form">
+            <div class="sk-form-group">
+                <label for="skNomorSurat"><i class="fas fa-hashtag"></i> Nomor Surat</label>
+                <input type="text" id="skNomorSurat" placeholder="Contoh: 421/123/SK/2026" class="sk-input">
+            </div>
+            <div class="sk-form-group">
+                <label for="skTanggalSurat"><i class="fas fa-calendar-alt"></i> Tanggal Surat</label>
+                <input type="date" id="skTanggalSurat" class="sk-input">
+            </div>
+        </div>
+        <div class="sk-form-actions">
+            <button class="btn-photo-download" onclick="downloadSuratKeterangan()">
+                <i class="fas fa-download"></i> Download / Cetak
+            </button>
+            <button class="btn-photo-close" onclick="closeSuratKeteranganModal()">
+                <i class="fas fa-times"></i> Batal
+            </button>
+        </div>
     </div>
 </div>
 
@@ -462,6 +494,22 @@
 .berkas-item-info p { font-size: 11px; color: #6b7280; margin: 0; }
 .berkas-dl-icon { color: #7c3aed; font-size: 16px; }
 
+/* Surat Keterangan Form */
+.sk-form { display: flex; flex-direction: column; gap: 15px; margin-bottom: 18px; }
+.sk-form-group { display: flex; flex-direction: column; gap: 6px; }
+.sk-form-group label { font-size: 13px; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 6px; }
+.sk-form-group label i { color: #6b7280; font-size: 12px; }
+.sk-input {
+    width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2937; transition: all 0.2s;
+    outline: none; background: #f9fafb;
+}
+.sk-input:focus { border-color: #10b981; background: white; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+.sk-input::placeholder { color: #9ca3af; }
+.sk-form-actions { display: flex; gap: 10px; }
+.sk-form-actions .btn-photo-download,
+.sk-form-actions .btn-photo-close { flex: 1; }
+
 /* Responsive */
 @media (max-width: 768px) {
     .peserta-ajang-page { padding: 12px; }
@@ -610,8 +658,13 @@ function downloadPhoto() {
 }
 
 // Berkas Modal
-function openBerkasModal(nama, mapel) {
+let currentBerkasSiswaId = '';
+let currentBerkasMapel = '';
+
+function openBerkasModal(nama, mapel, siswaId) {
     document.getElementById('berkasNama').textContent = mapel + ' - ' + nama;
+    currentBerkasSiswaId = siswaId;
+    currentBerkasMapel = mapel;
     document.getElementById('berkasModal').classList.add('active');
 }
 
@@ -619,10 +672,40 @@ function closeBerkasModal() {
     document.getElementById('berkasModal').classList.remove('active');
 }
 
+// Surat Keterangan Modal
+function openSuratKeteranganModal() {
+    document.getElementById('suratNama').textContent = document.getElementById('berkasNama').textContent;
+    document.getElementById('skNomorSurat').value = '';
+    document.getElementById('skTanggalSurat').value = new Date().toISOString().split('T')[0];
+    document.getElementById('suratKeteranganModal').classList.add('active');
+}
+
+function closeSuratKeteranganModal() {
+    document.getElementById('suratKeteranganModal').classList.remove('active');
+}
+
+function downloadSuratKeterangan() {
+    const nomorSurat = document.getElementById('skNomorSurat').value.trim();
+    const tanggalSurat = document.getElementById('skTanggalSurat').value;
+
+    if (!nomorSurat) { alert('Mohon isi Nomor Surat terlebih dahulu.'); return; }
+    if (!tanggalSurat) { alert('Mohon isi Tanggal Surat terlebih dahulu.'); return; }
+
+    const baseUrl = '{{ url("guru/koordinator-osn/surat-keterangan") }}';
+    const url = baseUrl + '/' + currentBerkasSiswaId +
+        '?nomor_surat=' + encodeURIComponent(nomorSurat) +
+        '&tanggal_surat=' + encodeURIComponent(tanggalSurat) +
+        '&mapel=' + encodeURIComponent(currentBerkasMapel);
+    window.open(url, '_blank');
+    closeSuratKeteranganModal();
+    closeBerkasModal();
+}
+
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
         closePhotoModal();
         closeBerkasModal();
+        closeSuratKeteranganModal();
     }
 });
 </script>

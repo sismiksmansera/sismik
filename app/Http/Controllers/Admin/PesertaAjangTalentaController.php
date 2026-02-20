@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\AjangTalenta;
 use App\Models\Siswa;
 use App\Models\DataPeriodik;
+use Carbon\Carbon;
 
 class PesertaAjangTalentaController extends Controller
 {
@@ -154,5 +155,37 @@ class PesertaAjangTalentaController extends Controller
 
         DB::table('peserta_ajang_talenta')->where('id', $peserta_id)->delete();
         return back()->with('success', 'Peserta berhasil dihapus!');
+    }
+
+    /**
+     * Cetak Surat Keterangan Kepala Sekolah
+     */
+    public function cetakSuratKeterangan(Request $request, $ajangId, $siswaId)
+    {
+        $siswa = Siswa::findOrFail($siswaId);
+
+        $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodeAktif->tahun_pelajaran ?? '';
+        $semesterAktif = $periodeAktif->semester ?? '';
+
+        // Rombel aktif
+        $semesterNumber = $this->calculateActiveSemester($siswa->angkatan_masuk, $tahunAktif, $semesterAktif);
+        $rombelField = "rombel_semester_{$semesterNumber}";
+        $rombelAktif = $siswa->$rombelField ?? $siswa->nama_rombel ?? '-';
+
+        // Kepala Sekolah
+        $kepalaSekolah = $periodeAktif->nama_kepala ?? '-';
+        $nipKepala = $periodeAktif->nip_kepala ?? '-';
+
+        // From request
+        $nomorSurat = $request->query('nomor_surat', '-');
+        $tanggalSuratRaw = $request->query('tanggal_surat', now()->format('Y-m-d'));
+        $tanggalSurat = Carbon::parse($tanggalSuratRaw)->translatedFormat('d F Y');
+        $mapelOsn = $request->query('mapel', $siswa->mapel_osn_2026 ?? '-');
+
+        return view('cetak.surat-keterangan-osn', compact(
+            'siswa', 'rombelAktif', 'kepalaSekolah', 'nipKepala',
+            'nomorSurat', 'tanggalSurat', 'mapelOsn'
+        ));
     }
 }
