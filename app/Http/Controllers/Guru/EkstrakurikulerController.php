@@ -151,18 +151,37 @@ class EkstrakurikulerController extends Controller
             $anggota = DB::table('anggota_ekstrakurikuler as ae')
                 ->join('siswa as s', 'ae.siswa_id', '=', 's.id')
                 ->where('ae.ekstrakurikuler_id', $ekstra->id)
-                ->select('s.nis', 's.nama', 's.nama_rombel', 'ae.tanggal_bergabung', 'ae.status', 'ae.nilai', 'ae.siswa_id')
+                ->select('s.nis', 's.nama', 's.angkatan_masuk',
+                    's.rombel_semester_1', 's.rombel_semester_2',
+                    's.rombel_semester_3', 's.rombel_semester_4',
+                    's.rombel_semester_5', 's.rombel_semester_6',
+                    'ae.tanggal_bergabung', 'ae.status', 'ae.nilai', 'ae.siswa_id')
                 ->orderBy('s.nama')
                 ->get();
+
+            // Calculate semester column for rombel
+            $tahunAjaran = explode('/', $filterTahun);
+            $tahunAwal = intval($tahunAjaran[0]);
 
             $row++;
             $no = 1;
             foreach ($anggota as $a) {
                 $predikat = $this->getNilaiPredikat($a->nilai);
+
+                // Determine active rombel based on angkatan and period
+                $tingkat = $tahunAwal - intval($a->angkatan_masuk) + 1;
+                if (strtolower($filterSemester) == 'ganjil') {
+                    $semCol = ($tingkat * 2) - 1;
+                } else {
+                    $semCol = $tingkat * 2;
+                }
+                $rombelCol = 'rombel_semester_' . $semCol;
+                $rombel = ($semCol >= 1 && $semCol <= 6 && isset($a->$rombelCol)) ? $a->$rombelCol : '-';
+
                 $sheet->setCellValue('A' . $row, $no++);
                 $sheet->setCellValueExplicit('B' . $row, $a->nis, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet->setCellValue('C' . $row, $a->nama);
-                $sheet->setCellValue('D' . $row, $a->nama_rombel ?? '-');
+                $sheet->setCellValue('D' . $row, $rombel ?: '-');
                 $sheet->setCellValue('E' . $row, $a->tanggal_bergabung ? date('d/m/Y', strtotime($a->tanggal_bergabung)) : '-');
                 $sheet->setCellValue('F' . $row, $a->status ?? 'Aktif');
                 $sheet->setCellValue('G' . $row, $a->nilai ?? '-');
