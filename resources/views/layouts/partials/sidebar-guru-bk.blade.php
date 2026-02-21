@@ -42,13 +42,13 @@
             <i class="fas fa-book-open"></i>
             <span>Jurnal Harian</span>
         </a>
+        <a href="{{ route('guru_bk.riwayat-akademik') }}" class="menu-item {{ request()->routeIs('guru_bk.riwayat-akademik*') ? 'active' : '' }}">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Riwayat Akademik Siswa</span>
+        </a>
         <a href="{{ route('guru_bk.tugas-tambahan') }}" class="menu-item {{ request()->routeIs('guru_bk.tugas-tambahan') ? 'active' : '' }}">
             <i class="fas fa-tasks"></i>
             <span>Tugas Tambahan</span>
-        </a>
-        <a href="{{ route('guru_bk.riwayat-akademik') }}" class="menu-item {{ request()->routeIs('guru_bk.riwayat-akademik*') ? 'active' : '' }}">
-            <i class="fas fa-graduation-cap"></i>
-            <span>Riwayat Akademik</span>
         </a>
 
         <div class="menu-label">Presensi Siswa</div>
