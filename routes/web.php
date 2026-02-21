@@ -139,6 +139,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/prestasi/lihat', [PrestasiController::class, 'lihat'])->name('prestasi.lihat');
     Route::get('/prestasi/input', [PrestasiController::class, 'create'])->name('prestasi.input');
     Route::post('/prestasi/store', [PrestasiController::class, 'store'])->name('prestasi.store');
+    Route::post('/prestasi/hapus', [PrestasiController::class, 'hapus'])->name('prestasi.hapus');
+    Route::post('/prestasi/update', [PrestasiController::class, 'update'])->name('prestasi.update');
     
     // Siswa Management
     Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
@@ -431,6 +433,7 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     // Lihat Prestasi routes
     Route::get('/lihat-prestasi', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'index'])->name('lihat-prestasi');
     Route::post('/lihat-prestasi/hapus', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'hapus'])->name('lihat-prestasi.hapus');
+    Route::post('/lihat-prestasi/update', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'update'])->name('lihat-prestasi.update');
     Route::get('/input-prestasi', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'create'])->name('input-prestasi');
     Route::post('/input-prestasi/store', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'store'])->name('input-prestasi.store');
     

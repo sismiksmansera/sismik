@@ -303,4 +303,89 @@ class PrestasiController extends Controller
         ];
         return $colors[$jenjang] ?? '#6b7280';
     }
+
+    public function hapus(Request $request)
+    {
+        $type = $request->type;
+        $sourceId = intval($request->source_id);
+        $namaKompetisi = $request->nama_kompetisi;
+        $juara = $request->juara;
+        $jenjang = $request->jenjang;
+        $tanggalPelaksanaan = $request->tanggal_pelaksanaan;
+
+        if ($type == 'ekstra') {
+            $sumberPrestasi = 'ekstrakurikuler';
+        } elseif ($type == 'ajang_talenta') {
+            $sumberPrestasi = 'ajang_talenta';
+        } else {
+            $sumberPrestasi = 'rombel';
+        }
+
+        $deleted = DB::table('prestasi_siswa')
+            ->where('sumber_prestasi', $sumberPrestasi)
+            ->where('sumber_id', $sourceId)
+            ->where('nama_kompetisi', $namaKompetisi)
+            ->where('juara', $juara)
+            ->where('jenjang', $jenjang)
+            ->where('tanggal_pelaksanaan', $tanggalPelaksanaan)
+            ->delete();
+
+        if ($deleted) {
+            return response()->json(['success' => true, 'message' => 'Prestasi berhasil dihapus!']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Gagal menghapus prestasi!']);
+    }
+
+    public function update(Request $request)
+    {
+        $type = $request->type;
+        $sourceId = intval($request->source_id);
+
+        $origNamaKompetisi = $request->orig_nama_kompetisi;
+        $origJuara = $request->orig_juara;
+        $origJenjang = $request->orig_jenjang;
+        $origTanggal = $request->orig_tanggal;
+
+        $namaKompetisi = trim($request->nama_kompetisi ?? '');
+        $juara = trim($request->juara ?? '');
+        $jenjang = $request->jenjang ?? '';
+        $penyelenggara = trim($request->penyelenggara ?? '');
+        $tanggalPelaksanaan = $request->tanggal_pelaksanaan ?? '';
+        $tipePeserta = $request->tipe_peserta ?? 'Single';
+
+        if (empty($namaKompetisi) || empty($juara) || empty($jenjang) || empty($penyelenggara) || empty($tanggalPelaksanaan)) {
+            return response()->json(['success' => false, 'message' => 'Semua field wajib diisi']);
+        }
+
+        if ($type == 'ekstra') {
+            $sumberPrestasi = 'ekstrakurikuler';
+        } elseif ($type == 'ajang_talenta') {
+            $sumberPrestasi = 'ajang_talenta';
+        } else {
+            $sumberPrestasi = 'rombel';
+        }
+
+        $updated = DB::table('prestasi_siswa')
+            ->where('sumber_prestasi', $sumberPrestasi)
+            ->where('sumber_id', $sourceId)
+            ->where('nama_kompetisi', $origNamaKompetisi)
+            ->where('juara', $origJuara)
+            ->where('jenjang', $origJenjang)
+            ->where('tanggal_pelaksanaan', $origTanggal)
+            ->update([
+                'nama_kompetisi' => $namaKompetisi,
+                'juara' => $juara,
+                'jenjang' => $jenjang,
+                'penyelenggara' => $penyelenggara,
+                'tanggal_pelaksanaan' => $tanggalPelaksanaan,
+                'tipe_peserta' => $tipePeserta,
+            ]);
+
+        if ($updated !== false) {
+            return response()->json(['success' => true, 'message' => 'Prestasi berhasil diperbarui!']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Gagal memperbarui prestasi!']);
+    }
 }

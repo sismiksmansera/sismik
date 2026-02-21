@@ -118,12 +118,99 @@
                                     {{ $prestasi['siswa_array'][$i] }}{{ $i < count($prestasi['siswa_array']) - 1 ? ', ' : '' }}
                                 @endfor
                             </p>
+                            <div class="prestasi-actions">
+                                <button type="button" class="btn-edit"
+                                        onclick="openEditModal('{{ addslashes($prestasi['nama_kompetisi']) }}', '{{ $prestasi['juara'] }}', '{{ $prestasi['jenjang'] }}', '{{ $prestasi['penyelenggara'] ?? '' }}', '{{ $prestasi['tanggal_pelaksanaan'] }}', '{{ $prestasi['tipe_peserta'] ?? 'Single' }}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button type="button" class="btn-hapus"
+                                        onclick="hapusPrestasi('{{ addslashes($prestasi['nama_kompetisi']) }}', '{{ $prestasi['juara'] }}', '{{ $prestasi['jenjang'] }}', '{{ $prestasi['tanggal_pelaksanaan'] }}')">
+                                    <i class="fas fa-trash-alt"></i> Hapus
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
                 @endforeach
             </div>
             @endif
+        </div>
+    </div>
+</div>
+
+{{-- Edit Modal --}}
+<div class="modal-overlay" id="editModal" style="display:none;">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-edit"></i> Edit Prestasi</h3>
+            <button type="button" class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Nama Kompetisi</label>
+                <input type="text" id="edit_nama_kompetisi" class="form-input" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Juara</label>
+                    <select id="edit_juara" class="form-input">
+                        <option value="Juara 1">Juara 1</option>
+                        <option value="Juara 2">Juara 2</option>
+                        <option value="Juara 3">Juara 3</option>
+                        <option value="Harapan 1">Harapan 1</option>
+                        <option value="Harapan 2">Harapan 2</option>
+                        <option value="Harapan 3">Harapan 3</option>
+                        <option value="Finalis">Finalis</option>
+                        <option value="Semifinalis">Semifinalis</option>
+                        <option value="Medali Emas">Medali Emas</option>
+                        <option value="Medali Perak">Medali Perak</option>
+                        <option value="Medali Perunggu">Medali Perunggu</option>
+                        <option value="Best Speaker">Best Speaker</option>
+                        <option value="Best Delegate">Best Delegate</option>
+                        <option value="Honorable Mention">Honorable Mention</option>
+                        <option value="Peserta">Peserta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Jenjang</label>
+                    <select id="edit_jenjang" class="form-input">
+                        <option value="Kelas">Kelas</option>
+                        <option value="Sekolah">Sekolah</option>
+                        <option value="Kecamatan">Kecamatan</option>
+                        <option value="Kabupaten">Kabupaten</option>
+                        <option value="Provinsi">Provinsi</option>
+                        <option value="Nasional">Nasional</option>
+                        <option value="Internasional">Internasional</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Penyelenggara</label>
+                    <input type="text" id="edit_penyelenggara" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" id="edit_tanggal" class="form-input" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Tipe Peserta</label>
+                <select id="edit_tipe_peserta" class="form-input">
+                    <option value="Single">Individu</option>
+                    <option value="Tim">Tim</option>
+                </select>
+            </div>
+            <input type="hidden" id="edit_orig_nama">
+            <input type="hidden" id="edit_orig_juara">
+            <input type="hidden" id="edit_orig_jenjang">
+            <input type="hidden" id="edit_orig_tanggal">
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeEditModal()">Batal</button>
+            <button type="button" class="btn-save" onclick="simpanEdit()">
+                <i class="fas fa-save"></i> Simpan
+            </button>
         </div>
     </div>
 </div>
@@ -167,6 +254,7 @@
     margin: 0;
 }
 
+/* Action Buttons */
 .action-buttons-center {
     display: flex;
     justify-content: center;
@@ -427,7 +515,7 @@
 }
 
 .prestasi-peserta {
-    margin: 0;
+    margin: 0 0 10px 0;
     font-size: 12px;
     color: #374151;
 }
@@ -437,10 +525,262 @@
     color: #9ca3af;
 }
 
+/* Action Buttons on Cards */
+.prestasi-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-edit {
+    padding: 5px 12px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.btn-edit:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-hapus {
+    padding: 5px 12px;
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.btn-hapus:hover {
+    background: #dc2626;
+    color: white;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9990;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal-container {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 550px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 { margin: 0; font-size: 18px; color: #1f2937; }
+.modal-header h3 i { color: #3b82f6; margin-right: 8px; }
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.modal-body .form-group {
+    margin-bottom: 15px;
+}
+
+.modal-body label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.modal-body .form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.modal-body .form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 25px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.btn-save {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-save:hover {
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+}
+
 @media (max-width: 768px) {
     .prestasi-page { padding: 20px; }
     .stats-grid { grid-template-columns: 1fr; }
     .prestasi-cards-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
 }
 </style>
+
+<script>
+function openEditModal(nama, juara, jenjang, penyelenggara, tanggal, tipePeserta) {
+    document.getElementById('edit_nama_kompetisi').value = nama;
+    document.getElementById('edit_juara').value = juara;
+    document.getElementById('edit_jenjang').value = jenjang;
+    document.getElementById('edit_penyelenggara').value = penyelenggara;
+    document.getElementById('edit_tanggal').value = tanggal;
+    document.getElementById('edit_tipe_peserta').value = tipePeserta;
+
+    document.getElementById('edit_orig_nama').value = nama;
+    document.getElementById('edit_orig_juara').value = juara;
+    document.getElementById('edit_orig_jenjang').value = jenjang;
+    document.getElementById('edit_orig_tanggal').value = tanggal;
+
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+function simpanEdit() {
+    const data = {
+        type: '{{ $type }}',
+        source_id: {{ $id }},
+        orig_nama_kompetisi: document.getElementById('edit_orig_nama').value,
+        orig_juara: document.getElementById('edit_orig_juara').value,
+        orig_jenjang: document.getElementById('edit_orig_jenjang').value,
+        orig_tanggal: document.getElementById('edit_orig_tanggal').value,
+        nama_kompetisi: document.getElementById('edit_nama_kompetisi').value,
+        juara: document.getElementById('edit_juara').value,
+        jenjang: document.getElementById('edit_jenjang').value,
+        penyelenggara: document.getElementById('edit_penyelenggara').value,
+        tanggal_pelaksanaan: document.getElementById('edit_tanggal').value,
+        tipe_peserta: document.getElementById('edit_tipe_peserta').value,
+    };
+
+    fetch('{{ route("admin.prestasi.update") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            showToast(res.message, 'success');
+            closeEditModal();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(res.message, 'error');
+        }
+    });
+}
+
+function hapusPrestasi(nama, juara, jenjang, tanggal) {
+    if (!confirm('Hapus prestasi "' + nama + ' - ' + juara + '"? Tindakan ini akan menghapus semua siswa terkait.')) return;
+
+    fetch('{{ route("admin.prestasi.hapus") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+        body: JSON.stringify({
+            type: '{{ $type }}',
+            source_id: {{ $id }},
+            nama_kompetisi: nama,
+            juara: juara,
+            jenjang: jenjang,
+            tanggal_pelaksanaan: tanggal
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.message, 'error');
+        }
+    });
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `position: fixed; top: 20px; right: 20px; background: ${type === 'success' ? '#10b981' : '#ef4444'}; color: white; padding: 15px 25px; border-radius: 10px; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2);`;
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+</script>
 @endsection
