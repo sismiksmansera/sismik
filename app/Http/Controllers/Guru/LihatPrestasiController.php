@@ -63,17 +63,39 @@ class LihatPrestasiController extends Controller
             } else {
                 return redirect()->route('guru.tugas-tambahan');
             }
+        } elseif ($type == 'ajang_talenta') {
+            $sumberPrestasi = 'ajang_talenta';
+
+            $ajang = DB::table('ajang_talenta')
+                ->where('id', $sourceId)
+                ->first();
+
+            if ($ajang) {
+                $sourceNama = $ajang->nama_ajang;
+                $tahunPelajaran = $ajang->tahun ?? $tahunPelajaran;
+                $defaultKompetisi = $ajang->nama_ajang . ' ' . ($ajang->tahun ?? '');
+                $defaultPenyelenggara = $ajang->penyelenggara ?? '';
+            } else {
+                return redirect()->route('guru.tugas-tambahan');
+            }
         } else {
             return redirect()->route('guru.tugas-tambahan');
         }
 
         // Get prestasi grouped by category
-        $prestasiGrouped = DB::table('prestasi_siswa as ps')
+        $query = DB::table('prestasi_siswa as ps')
             ->join('siswa as s', 'ps.siswa_id', '=', 's.id')
             ->where('ps.sumber_prestasi', $sumberPrestasi)
-            ->where('ps.sumber_id', $sourceId)
-            ->where('ps.tahun_pelajaran', $tahunPelajaran)
-            ->where('ps.semester', $semesterAktif)
+            ->where('ps.sumber_id', $sourceId);
+
+        // For ajang_talenta, don't filter by tahun_pelajaran/semester
+        // since data is already scoped by sumber_id
+        if ($type != 'ajang_talenta') {
+            $query->where('ps.tahun_pelajaran', $tahunPelajaran)
+                  ->where('ps.semester', $semesterAktif);
+        }
+
+        $prestasiGrouped = $query
             ->select(
                 'ps.nama_kompetisi', 'ps.juara', 'ps.jenjang', 'ps.penyelenggara', 'ps.tanggal_pelaksanaan',
                 DB::raw('MAX(ps.tipe_peserta) as tipe_peserta'),
@@ -91,9 +113,13 @@ class LihatPrestasiController extends Controller
             $prestasi->nis_array = explode('||', $prestasi->nis_list);
         }
 
+        $defaultKompetisi = $defaultKompetisi ?? '';
+        $defaultPenyelenggara = $defaultPenyelenggara ?? '';
+
         return view('guru.lihat-prestasi', compact(
             'guru', 'type', 'sourceId', 'sourceNama', 'sumberPrestasi',
-            'tahunPelajaran', 'semesterAktif', 'prestasiGrouped'
+            'tahunPelajaran', 'semesterAktif', 'prestasiGrouped',
+            'defaultKompetisi', 'defaultPenyelenggara'
         ));
     }
 
@@ -167,11 +193,34 @@ class LihatPrestasiController extends Controller
                 ->select('id as siswa_id', 'nama', 'nis', 'nisn')
                 ->orderBy('nama')
                 ->get();
+        } elseif ($type == 'ajang_talenta') {
+            $ajang = DB::table('ajang_talenta')
+                ->where('id', $sourceId)
+                ->first();
+
+            if (!$ajang) return redirect()->route('guru.tugas-tambahan');
+            $sourceNama = $ajang->nama_ajang;
+
+            // Get peserta from peserta_ajang_talenta table
+            $siswaList = DB::table('peserta_ajang_talenta as pat')
+                ->join('siswa as s', 'pat.siswa_id', '=', 's.id')
+                ->where('pat.ajang_talenta_id', $sourceId)
+                ->select('s.id as siswa_id', 's.nama', 's.nis', 's.nisn')
+                ->orderBy('s.nama')
+                ->get();
+
+            $defaultKompetisi = $ajang->nama_ajang . ' ' . ($ajang->tahun ?? '');
+            $defaultPenyelenggara = $ajang->penyelenggara ?? '';
         } else {
             return redirect()->route('guru.tugas-tambahan');
         }
 
-        return view('guru.input-prestasi', compact('guru', 'type', 'sourceId', 'sourceNama', 'siswaList'));
+        $defaultKompetisi = $defaultKompetisi ?? '';
+        $defaultPenyelenggara = $defaultPenyelenggara ?? '';
+        $defaultKompetisi = $request->get('default_kompetisi', '') ?: $defaultKompetisi;
+        $defaultPenyelenggara = $request->get('default_penyelenggara', '') ?: $defaultPenyelenggara;
+
+        return view('guru.input-prestasi', compact('guru', 'type', 'sourceId', 'sourceNama', 'siswaList', 'defaultKompetisi', 'defaultPenyelenggara'));
     }
 
     public function store(Request $request)
@@ -195,7 +244,13 @@ class LihatPrestasiController extends Controller
             return response()->json(['success' => false, 'message' => 'Semua field wajib diisi']);
         }
 
-        $sumberPrestasi = ($type == 'ekstra') ? 'ekstrakurikuler' : 'rombel';
+        if ($type == 'ekstra') {
+            $sumberPrestasi = 'ekstrakurikuler';
+        } elseif ($type == 'ajang_talenta') {
+            $sumberPrestasi = 'ajang_talenta';
+        } else {
+            $sumberPrestasi = 'rombel';
+        }
 
         $periodik = DataPeriodik::aktif()->first();
         $tahunPelajaran = $periodik->tahun_pelajaran ?? '2024/2025';

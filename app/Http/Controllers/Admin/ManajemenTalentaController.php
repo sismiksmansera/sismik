@@ -108,12 +108,16 @@ class ManajemenTalentaController extends Controller
         // Get ajang talenta list
         $ajangList = AjangTalenta::orderBy('created_at', 'DESC')->get();
 
-        // Load peserta count for each ajang
-        foreach ($ajangList as $ajang) {
-            $ajang->jumlah_peserta = DB::table('peserta_ajang_talenta')
-                ->where('ajang_talenta_id', $ajang->id)->count();
-        }
+        // Load peserta count and prestasi count for each ajang
+    foreach ($ajangList as $ajang) {
+        $ajang->jumlah_peserta = DB::table('peserta_ajang_talenta')
+            ->where('ajang_talenta_id', $ajang->id)->count();
 
+        $ajang->jumlah_prestasi = DB::table('prestasi_siswa')
+            ->where('sumber_prestasi', 'ajang_talenta')
+            ->where('sumber_id', $ajang->id)
+            ->count();
+    }
         // Get jenis ajang talenta list
         $jenisAjangList = JenisAjangTalenta::orderBy('nama_jenis', 'ASC')->get();
 

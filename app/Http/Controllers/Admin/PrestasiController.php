@@ -71,10 +71,35 @@ class PrestasiController extends Controller
             
             // Query prestasi grouped by competition
             $prestasiList = $this->getPrestasiList('rombel', $id, $rombel->tahun_pelajaran, $rombel->semester);
+        } elseif ($type == 'ajang_talenta') {
+            // Get ajang talenta data
+            $ajang = DB::table('ajang_talenta')->where('id', $id)->first();
+            if (!$ajang) {
+                return redirect()->route('admin.manajemen-talenta.index')
+                    ->with('error', 'Data tidak ditemukan!');
+            }
+
+            $sumberInfo = [
+                'title' => $ajang->nama_ajang,
+                'tahun_pelajaran' => $ajang->tahun ?? '-',
+                'semester' => '-',
+                'icon' => 'fa-trophy',
+                'color' => '#7c3aed',
+            ];
+            $backUrl = route('admin.manajemen-talenta.index');
+            $defaultKompetisi = $ajang->nama_ajang . ' ' . ($ajang->tahun ?? '');
+            $defaultPenyelenggara = $ajang->penyelenggara ?? '';
+
+            // Query prestasi grouped by competition
+            $prestasiList = $this->getPrestasiList('ajang_talenta', $id, $ajang->tahun ?? '', '');
         }
+
+        $defaultKompetisi = $defaultKompetisi ?? '';
+        $defaultPenyelenggara = $defaultPenyelenggara ?? '';
         
         return view('admin.prestasi.lihat', compact(
-            'admin', 'type', 'sumberInfo', 'prestasiList', 'backUrl', 'id'
+            'admin', 'type', 'sumberInfo', 'prestasiList', 'backUrl', 'id',
+            'defaultKompetisi', 'defaultPenyelenggara'
         ));
     }
 
@@ -135,13 +160,30 @@ class PrestasiController extends Controller
                 ->select('id as siswa_id', 'nama', 'nis', 'nisn')
                 ->orderBy('nama')
                 ->get();
-        } else {
-            return redirect()->route('admin.rombel.index');
-        }
+        } elseif ($type == 'ajang_talenta') {
+        $ajang = DB::table('ajang_talenta')->where('id', $id)->first();
+        if (!$ajang) return redirect()->route('admin.manajemen-talenta.index');
+        $sourceNama = $ajang->nama_ajang;
+        $backUrl = route('admin.prestasi.lihat', ['type' => 'ajang_talenta', 'id' => $id]);
 
-        return view('admin.prestasi.input', compact('admin', 'type', 'id', 'sourceNama', 'siswaList', 'backUrl'));
+        $siswaList = DB::table('peserta_ajang_talenta as pat')
+            ->join('siswa as s', 'pat.siswa_id', '=', 's.id')
+            ->where('pat.ajang_talenta_id', $id)
+            ->select('s.id as siswa_id', 's.nama', 's.nis', 's.nisn')
+            ->orderBy('s.nama')
+            ->get();
+
+        $defaultKompetisi = $ajang->nama_ajang . ' ' . ($ajang->tahun ?? '');
+        $defaultPenyelenggara = $ajang->penyelenggara ?? '';
+    } else {
+        return redirect()->route('admin.rombel.index');
     }
 
+    $defaultKompetisi = $defaultKompetisi ?? '';
+    $defaultPenyelenggara = $defaultPenyelenggara ?? '';
+
+    return view('admin.prestasi.input', compact('admin', 'type', 'id', 'sourceNama', 'siswaList', 'backUrl', 'defaultKompetisi', 'defaultPenyelenggara'));
+}
     public function store(Request $request)
     {
         $admin = Auth::guard('admin')->user();
@@ -160,7 +202,13 @@ class PrestasiController extends Controller
             return response()->json(['success' => false, 'message' => 'Semua field wajib diisi']);
         }
 
-        $sumberPrestasi = ($type == 'ekstra') ? 'ekstrakurikuler' : 'rombel';
+        if ($type == 'ekstra') {
+        $sumberPrestasi = 'ekstrakurikuler';
+    } elseif ($type == 'ajang_talenta') {
+        $sumberPrestasi = 'ajang_talenta';
+    } else {
+        $sumberPrestasi = 'rombel';
+    }
         $periodik = DataPeriodik::aktif()->first();
         $tahunPelajaran = $periodik->tahun_pelajaran ?? '2024/2025';
         $semesterAktif = $periodik->semester ?? 'Ganjil';
@@ -198,7 +246,7 @@ class PrestasiController extends Controller
      */
     private function getPrestasiList($sumberPrestasi, $sumberId, $tahunPelajaran, $semester)
     {
-        $results = DB::table('prestasi_siswa as ps')
+        $query = DB::table('prestasi_siswa as ps')
             ->join('siswa as s', 'ps.siswa_id', '=', 's.id')
             ->select(
                 'ps.nama_kompetisi',
@@ -212,9 +260,16 @@ class PrestasiController extends Controller
                 DB::raw('COUNT(*) as jumlah_siswa')
             )
             ->where('ps.sumber_prestasi', $sumberPrestasi)
-            ->where('ps.sumber_id', $sumberId)
-            ->where('ps.tahun_pelajaran', $tahunPelajaran)
-            ->where('ps.semester', $semester)
+            ->where('ps.sumber_id', $sumberId);
+
+        // For ajang_talenta, don't filter by tahun_pelajaran/semester
+        // since data is already scoped by sumber_id
+        if ($sumberPrestasi != 'ajang_talenta') {
+            $query->where('ps.tahun_pelajaran', $tahunPelajaran)
+                  ->where('ps.semester', $semester);
+        }
+
+        $results = $query
             ->groupBy('ps.nama_kompetisi', 'ps.juara', 'ps.jenjang', 'ps.tanggal_pelaksanaan', 'ps.penyelenggara')
             ->orderBy('ps.tanggal_pelaksanaan', 'desc')
             ->get();

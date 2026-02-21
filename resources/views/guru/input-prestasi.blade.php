@@ -142,7 +142,7 @@
                     </a>
                     <div>
                         <h1><i class="fas fa-trophy"></i> Input Prestasi Siswa</h1>
-                        <p>{{ $type == 'ekstra' ? 'Ekstrakurikuler' : 'Wali Kelas' }}: <strong>{{ $sourceNama }}</strong></p>
+                        <p>{{ $type == 'ekstra' ? 'Ekstrakurikuler' : ($type == 'ajang_talenta' ? 'Ajang Talenta' : 'Wali Kelas') }}: <strong>{{ $sourceNama }}</strong></p>
                     </div>
                 </div>
             </div>
@@ -214,14 +214,14 @@
                     <!-- Nama Kompetisi -->
                     <div class="form-group">
                         <label><i class="fas fa-trophy"></i> Nama Kompetisi/Perlombaan <span class="required">*</span></label>
-                        <input type="text" name="nama_kompetisi" class="form-input" required placeholder="Contoh: Olimpiade Matematika SMA 2026">
+                        <input type="text" name="nama_kompetisi" class="form-input" required placeholder="Contoh: Olimpiade Matematika SMA 2026" value="{{ $defaultKompetisi ?? '' }}">
                     </div>
 
                     <div class="form-grid">
                         <!-- Penyelenggara -->
                         <div class="form-group">
                             <label><i class="fas fa-building"></i> Penyelenggara <span class="required">*</span></label>
-                            <input type="text" name="penyelenggara" class="form-input" required placeholder="Contoh: Dinas Pendidikan Provinsi">
+                            <input type="text" name="penyelenggara" class="form-input" required placeholder="Contoh: Dinas Pendidikan Provinsi" value="{{ $defaultPenyelenggara ?? '' }}">
                         </div>
                         <!-- Tanggal -->
                         <div class="form-group">

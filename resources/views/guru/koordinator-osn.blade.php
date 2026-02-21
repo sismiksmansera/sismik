@@ -298,15 +298,15 @@
                                     <div class="osn-info-label">Peserta</div>
                                 </div>
                             </a>
-                            <div class="osn-info-item">
+                            <a href="{{ route('guru.lihat-prestasi', ['type' => 'ajang_talenta', 'id' => $osn->id]) }}" class="osn-info-item clickable">
                                 <div class="osn-info-icon amber">
                                     <i class="fas fa-medal"></i>
                                 </div>
                                 <div>
-                                    <div class="osn-info-value">0</div>
+                                    <div class="osn-info-value">{{ $osn->jumlah_prestasi ?? 0 }}</div>
                                     <div class="osn-info-label">Prestasi</div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     </div>
                 </div>

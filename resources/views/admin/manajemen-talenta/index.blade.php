@@ -98,15 +98,15 @@
                                 <div class="ajang-info-label">Peserta</div>
                             </div>
                         </a>
-                        <div class="ajang-info-item">
+                        <a href="{{ route('admin.prestasi.lihat', ['type' => 'ajang_talenta', 'id' => $ajang->id]) }}" class="ajang-info-item clickable">
                             <div class="ajang-info-icon amber">
                                 <i class="fas fa-trophy"></i>
                             </div>
                             <div>
-                                <div class="ajang-info-value">0</div>
+                                <div class="ajang-info-value">{{ $ajang->jumlah_prestasi ?? 0 }}</div>
                                 <div class="ajang-info-label">Prestasi</div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
                 @endforeach

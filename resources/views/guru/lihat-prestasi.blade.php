@@ -17,7 +17,7 @@
                 <i class="fas fa-trophy"></i>
             </div>
             <h1>Prestasi {{ $sourceNama }}</h1>
-            <p>Daftar Prestasi {{ $type == 'ekstra' ? 'Ekstrakurikuler' : 'Wali Kelas' }} · {{ $tahunPelajaran }} - {{ ucfirst($semesterAktif) }}</p>
+            <p>Daftar Prestasi {{ $type == 'ekstra' ? 'Ekstrakurikuler' : ($type == 'ajang_talenta' ? 'Ajang Talenta' : 'Wali Kelas') }} · {{ $tahunPelajaran }} - {{ ucfirst($semesterAktif) }}</p>
         </div>
 
         {{-- Action Buttons --}}
@@ -25,7 +25,7 @@
             <a href="{{ route('guru.tugas-tambahan') }}" class="btn-back">
                 <i class="fas fa-arrow-left"></i> Kembali
             </a>
-            <a href="{{ url('guru/input-prestasi?type=' . $type . '&id=' . $sourceId) }}" class="btn-add">
+            <a href="{{ url('guru/input-prestasi?type=' . $type . '&id=' . $sourceId . ($defaultKompetisi ? '&default_kompetisi=' . urlencode($defaultKompetisi) : '') . ($defaultPenyelenggara ? '&default_penyelenggara=' . urlencode($defaultPenyelenggara) : '')) }}" class="btn-add">
                 <i class="fas fa-plus"></i> Tambah Prestasi
             </a>
         </div>

@@ -38,10 +38,15 @@ class KoordinatorOsnController extends Controller
             ->orderBy('nama_ajang', 'ASC')
             ->get();
 
-        // Load peserta count for each
+        // Load peserta count and prestasi count for each
         foreach ($osnList as $osn) {
             $osn->jumlah_peserta = DB::table('peserta_ajang_talenta')
                 ->where('ajang_talenta_id', $osn->id)
+                ->count();
+
+            $osn->jumlah_prestasi = DB::table('prestasi_siswa')
+                ->where('sumber_prestasi', 'ajang_talenta')
+                ->where('sumber_id', $osn->id)
                 ->count();
         }
 

@@ -748,10 +748,10 @@
                                             <div class="task-stat-value" style="color: #7c3aed;">{{ $ajang['jumlah_peserta'] }}</div>
                                             <div class="task-stat-label">Peserta</div>
                                         </a>
-                                        <div class="task-stat-item">
+                                        <a href="{{ route('guru.lihat-prestasi', ['type' => 'ajang_talenta', 'id' => $ajang['id']]) }}" class="task-stat-item clickable">
                                             <div class="task-stat-value yellow"><i class="fas fa-trophy"></i> {{ $ajang['jumlah_prestasi'] }}</div>
                                             <div class="task-stat-label">Prestasi</div>
-                                        </div>
+                                        </a>
                                         <div class="task-stat-item">
                                             <div class="task-stat-value dark">{{ $ajang['tahun'] }}</div>
                                             <div class="task-stat-label">Tahun</div>
