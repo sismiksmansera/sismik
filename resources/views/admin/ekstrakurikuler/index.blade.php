@@ -390,7 +390,7 @@
                                             <div class="info-label">Anggota</div>
                                         </div>
                                     </a>
-                                    <a href="{{ url('admin/lihat_prestasi_admin.php?type=ekstra&id=' . $ekstra->id) }}" class="info-item">
+                                    <a href="{{ url('admin/prestasi/lihat?type=ekstra&id=' . $ekstra->id) }}" class="info-item">
                                         <div class="info-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
                                             <i class="fas fa-trophy"></i>
                                         </div>

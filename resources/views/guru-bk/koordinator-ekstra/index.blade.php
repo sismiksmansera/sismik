@@ -92,7 +92,7 @@
                                             <div class="info-label">Anggota</div>
                                         </div>
                                     </a>
-                                    <a href="{{ route('guru_bk.tugas-tambahan') }}" class="info-item">
+                                    <a href="{{ route('guru_bk.prestasi', ['type' => 'ekstra', 'id' => $ekstra->id]) }}" class="info-item">
                                         <div class="info-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
                                             <i class="fas fa-trophy"></i>
                                         </div>

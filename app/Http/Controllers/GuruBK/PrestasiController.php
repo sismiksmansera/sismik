@@ -203,15 +203,6 @@ class PrestasiController extends Controller
             return ['error' => 'Data ekstrakurikuler tidak ditemukan!'];
         }
 
-        // Verify access
-        $is_pembina = ($ekstra->pembina_1 == $guru_nama || 
-                       $ekstra->pembina_2 == $guru_nama || 
-                       $ekstra->pembina_3 == $guru_nama);
-        
-        if (!$is_pembina) {
-            return ['error' => 'Anda tidak memiliki akses ke ekstrakurikuler ini!'];
-        }
-
         $sumber_info = (object) [
             'id' => $ekstra->id,
             'title' => $ekstra->nama_ekstrakurikuler,
