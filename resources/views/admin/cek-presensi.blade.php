@@ -5,30 +5,20 @@
 @push('styles')
 <style>
 /* HEADER */
-.cek-presensi-header {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
-    border-radius: 16px;
-    padding: 25px;
-    margin-bottom: 20px;
-    text-align: center;
-    color: white;
-    box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
-}
-.cek-presensi-header .header-icon-large {
-    width: 80px; height: 80px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 20px;
+.page-header-center { text-align: center; margin-bottom: 25px; }
+.page-header-center .header-icon-large {
+    width: 70px; height: 70px; border-radius: 18px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 36px; color: white;
-    margin: 0 auto 20px;
+    font-size: 32px; color: white; margin: 0 auto 16px;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 8px 25px rgba(139,92,246,0.4);
 }
-.cek-presensi-header .page-title {
-    font-size: 28px; font-weight: 700; margin: 0 0 8px 0;
-    text-transform: uppercase; letter-spacing: 1px;
-}
-.cek-presensi-header .page-subtitle {
-    font-size: 14px; font-weight: 500; margin: 0;
-    color: rgba(255,255,255,0.9);
+.page-header-center h1 { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; color: #1f2937; }
+.header-periode-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(139,92,246,0.1); color: #7c3aed;
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(139,92,246,0.2);
 }
 
 /* SELECTOR CARDS */
@@ -611,9 +601,8 @@
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
-    .cek-presensi-header { padding: 20px 15px; }
-    .cek-presensi-header .header-icon-large { width: 60px; height: 60px; font-size: 28px; }
-    .cek-presensi-header .page-title { font-size: 20px; }
+    .page-header-center .header-icon-large { width: 56px; height: 56px; font-size: 26px; border-radius: 14px; margin-bottom: 12px; }
+    .page-header-center h1 { font-size: 20px; }
     .selector-row { grid-template-columns: 1fr; }
     .date-table { font-size: 12px; }
     .date-table thead th, .date-table tbody td { padding: 10px 12px; }
@@ -631,12 +620,12 @@
     <div class="main-content">
         <div class="cek-presensi-page">
             <!-- HEADER -->
-            <div class="cek-presensi-header">
+            <div class="page-header-center">
                 <div class="header-icon-large">
                     <i class="fas fa-clipboard-check"></i>
                 </div>
-                <h1 class="page-title">Cek Presensi Siswa</h1>
-                <p class="page-subtitle">{{ $tahunPelajaran }} - Semester {{ ucfirst($semesterAktif) }}</p>
+                <h1>Cek Presensi Siswa</h1>
+                <div class="header-periode-badge"><i class="fas fa-calendar-alt"></i> {{ $tahunPelajaran }} - Semester {{ ucfirst($semesterAktif) }}</div>
             </div>
 
             <!-- METHOD SELECTION -->

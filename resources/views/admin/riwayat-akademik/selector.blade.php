@@ -5,25 +5,16 @@
 @push('styles')
 <style>
 /* Header */
-.ra-header {
-    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-    border-radius: 16px;
-    padding: 25px 30px;
-    margin-bottom: 25px;
-    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-.ra-header-icon {
-    width: 70px; height: 70px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 16px;
+.page-header-center { text-align: center; margin-bottom: 25px; }
+.header-icon-large {
+    width: 70px; height: 70px; border-radius: 18px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 28px; color: white; flex-shrink: 0;
+    font-size: 32px; color: white; margin: 0 auto 16px;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 8px 25px rgba(139,92,246,0.4);
 }
-.ra-header-info h1 { font-size: 24px; font-weight: 700; color: white; margin: 0; }
-.ra-header-info p { font-size: 14px; color: rgba(255,255,255,0.8); margin: 4px 0 0; }
+.page-header-center h1 { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; color: #1f2937; }
+.page-header-center p.header-subtitle { font-size: 14px; color: #6b7280; margin: 0; }
 
 /* Filter Card */
 .filter-card {
@@ -187,9 +178,8 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .ra-header { padding: 20px; }
-    .ra-header-icon { width: 50px; height: 50px; font-size: 22px; }
-    .ra-header-info h1 { font-size: 18px; }
+    .header-icon-large { width: 56px; height: 56px; font-size: 26px; border-radius: 14px; margin-bottom: 12px; }
+    .page-header-center h1 { font-size: 20px; }
     .option-buttons { flex-direction: column; }
     .option-btn { min-width: unset; }
     .filter-card, .search-section { padding: 20px; }
@@ -209,14 +199,12 @@
 
     <div class="main-content">
         <!-- Header -->
-        <div class="ra-header">
-            <div class="ra-header-icon">
+        <div class="page-header-center">
+            <div class="header-icon-large">
                 <i class="fas fa-graduation-cap"></i>
             </div>
-            <div class="ra-header-info">
-                <h1>Riwayat Akademik</h1>
-                <p>Lihat riwayat akademik siswa secara lengkap</p>
-            </div>
+            <h1>Riwayat Akademik Siswa</h1>
+            <p class="header-subtitle">Lihat riwayat akademik siswa secara lengkap</p>
         </div>
 
         <!-- Filter Options -->

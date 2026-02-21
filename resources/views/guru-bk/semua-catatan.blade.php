@@ -2,32 +2,20 @@
 
 @section('content')
 <div class="main-content">
-    <!-- HEADER SECTION - Dashboard Style -->
-    <div class="bk-page-header">
-        <div class="header-content-wrapper">
-            <div class="header-icon-box">
-                <i class="fas fa-clipboard-list"></i>
-            </div>
-            <div class="header-info">
-                <div class="header-greeting">
-                    <span class="greeting-text">Manajemen</span>
-                    <h1>Semua Catatan Bimbingan</h1>
-                </div>
-                <div class="header-details">
-                    <span class="detail-badge"><i class="fas fa-file-alt"></i> {{ $total_catatan }} catatan</span>
-                    @if(!empty($tahun_pelajaran_aktif))
-                    <span class="detail-badge"><i class="fas fa-calendar-alt"></i> {{ $tahun_pelajaran_aktif }} - {{ $semester_aktif }}</span>
-                    @endif
-                </div>
-            </div>
+    <!-- HEADER SECTION -->
+    <div class="page-header-center">
+        <div class="header-icon-large">
+            <i class="fas fa-clipboard-list"></i>
         </div>
-        <div class="header-actions-box">
-            <button type="button" onclick="openSearchModal()" class="btn-action-header btn-primary-header">
-                <i class="fas fa-user-plus"></i> <span class="btn-text">Input Catatan Baru</span>
-            </button>
-            <a href="{{ route('guru_bk.dashboard') }}" class="btn-action-header btn-secondary-header">
-                <i class="fas fa-arrow-left"></i> <span class="btn-text">Kembali</span>
-            </a>
+        <h1>Semua Catatan Bimbingan</h1>
+        <div class="header-badges">
+            <span class="header-periode-badge"><i class="fas fa-file-alt"></i> {{ $total_catatan }} catatan</span>
+            @if(!empty($tahun_pelajaran_aktif))
+            <span class="header-periode-badge"><i class="fas fa-calendar-alt"></i> {{ $tahun_pelajaran_aktif }} - {{ $semester_aktif }}</span>
+            @endif
+        </div>
+        <div style="margin-top: 14px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button type="button" onclick="openSearchModal()" class="btn-add"><i class="fas fa-user-plus"></i> Input Catatan Baru</button>
         </div>
     </div>
 
@@ -332,120 +320,32 @@
 }
 
 /* ============================================
-   DASHBOARD-STYLE HEADER
+   HEADER
    ============================================ */
-.bk-page-header {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
-    border-radius: 16px;
-    padding: 25px 30px;
-    margin-bottom: 25px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
+.page-header-center { text-align: center; margin-bottom: 25px; }
+.header-icon-large {
+    width: 70px; height: 70px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: white; margin: 0 auto 16px;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 8px 25px rgba(139,92,246,0.4);
 }
-
-.header-content-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+.page-header-center h1 { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; color: #1f2937; }
+.header-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.header-periode-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(139,92,246,0.1); color: #7c3aed;
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(139,92,246,0.2);
 }
-
-.header-icon-box {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+.btn-add {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
+    background: linear-gradient(135deg, #10b981, #059669); color: white;
+    border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.3); transition: all 0.3s; font-size: 13px;
+    font-family: inherit;
 }
-
-.header-icon-box i {
-    font-size: 28px;
-    color: white;
-}
-
-.header-info .header-greeting .greeting-text {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 14px;
-    display: block;
-    margin-bottom: 4px;
-}
-
-.header-info .header-greeting h1 {
-    color: white;
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0;
-}
-
-.header-details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 12px;
-}
-
-.detail-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(5px);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.header-actions-box {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-action-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 14px;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.btn-primary-header {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-}
-
-.btn-primary-header:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-}
-
-.btn-secondary-header {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    backdrop-filter: blur(5px);
-}
-
-.btn-secondary-header:hover {
-    background: rgba(255, 255, 255, 0.3);
-    color: white;
-}
+.btn-add:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16,185,129,0.4); }
 
 /* ============================================
    DASHBOARD-STYLE STATS (CHART CARD)

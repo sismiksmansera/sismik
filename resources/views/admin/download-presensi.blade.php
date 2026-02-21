@@ -5,30 +5,20 @@
 @push('styles')
 <style>
 /* HEADER */
-.dl-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-    border-radius: 16px;
-    padding: 25px;
-    margin-bottom: 20px;
-    text-align: center;
-    color: white;
-    box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
-}
-.dl-header .header-icon-large {
-    width: 80px; height: 80px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 20px;
+.page-header-center { text-align: center; margin-bottom: 25px; }
+.page-header-center .header-icon-large {
+    width: 70px; height: 70px; border-radius: 18px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 36px; color: white;
-    margin: 0 auto 20px;
+    font-size: 32px; color: white; margin: 0 auto 16px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 8px 25px rgba(16,185,129,0.4);
 }
-.dl-header .page-title {
-    font-size: 28px; font-weight: 700; margin: 0 0 8px 0;
-    text-transform: uppercase; letter-spacing: 1px;
-}
-.dl-header .page-subtitle {
-    font-size: 14px; font-weight: 500; margin: 0;
-    opacity: 0.9;
+.page-header-center h1 { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; color: #1f2937; }
+.header-periode-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(16,185,129,0.1); color: #059669;
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(16,185,129,0.2);
 }
 
 /* METHOD SECTION */
@@ -257,8 +247,8 @@
 .dl-toast.error { background: #ef4444; }
 
 @media (max-width: 768px) {
-    .dl-header .page-title { font-size: 20px !important; }
-    .dl-header .header-icon-large { width: 60px; height: 60px; font-size: 28px; }
+    .page-header-center .header-icon-large { width: 56px; height: 56px; font-size: 26px; border-radius: 14px; margin-bottom: 12px; }
+    .page-header-center h1 { font-size: 20px; }
     .dl-modal-option-grid { grid-template-columns: 1fr; }
 }
 </style>
@@ -275,10 +265,10 @@
 
     <div class="main-content">
 <!-- Header -->
-<div class="dl-header">
+<div class="page-header-center">
     <div class="header-icon-large"><i class="fas fa-download"></i></div>
-    <h1 class="page-title">Download Presensi</h1>
-    <p class="page-subtitle">{{ $tahunPelajaran }} — Semester {{ $semesterAktif }}</p>
+    <h1>Download Presensi</h1>
+    <div class="header-periode-badge"><i class="fas fa-calendar-alt"></i> {{ $tahunPelajaran }} — Semester {{ $semesterAktif }}</div>
 </div>
 
 <!-- METHOD SELECTION (clickable card that opens modal) -->

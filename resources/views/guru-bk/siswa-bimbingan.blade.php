@@ -2,22 +2,15 @@
 
 @section('content')
 <div class="main-content siswa-bimbingan-bk">
-    {{-- HEADER SECTION - Dashboard Style --}}
-    <div class="bk-page-header">
-        <div class="header-content-wrapper">
-            <div class="header-icon-box">
-                <i class="fas fa-user-graduate"></i>
-            </div>
-            <div class="header-info">
-                <div class="header-greeting">
-                    <span class="greeting-text">Manajemen</span>
-                    <h1>Siswa Bimbingan</h1>
-                </div>
-                <div class="header-details">
-                    <span class="detail-badge"><i class="fas fa-user-tie"></i> {{ $nama_guru_bk }}</span>
-                    <span class="detail-badge"><i class="fas fa-calendar-alt"></i> {{ $selected_tahun }} - {{ ucfirst($selected_semester) }}</span>
-                </div>
-            </div>
+    {{-- HEADER SECTION --}}
+    <div class="page-header-center">
+        <div class="header-icon-large">
+            <i class="fas fa-user-graduate"></i>
+        </div>
+        <h1>Siswa Bimbingan</h1>
+        <div class="header-badges">
+            <span class="header-periode-badge"><i class="fas fa-user-tie"></i> {{ $nama_guru_bk }}</span>
+            <span class="header-periode-badge"><i class="fas fa-calendar-alt"></i> {{ $selected_tahun }} - {{ ucfirst($selected_semester) }}</span>
         </div>
     </div>
 
@@ -314,70 +307,22 @@
     min-height: calc(100vh - 60px);
 }
 
-/* ============== HEADER STYLES - Dashboard Style ============== */
-.siswa-bimbingan-bk .bk-page-header {
-    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-    border-radius: 16px;
-    padding: 25px 30px;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2);
+/* ============== HEADER ============== */
+.siswa-bimbingan-bk .page-header-center { text-align: center; margin-bottom: 25px; }
+.siswa-bimbingan-bk .header-icon-large {
+    width: 70px; height: 70px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: white; margin: 0 auto 16px;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 8px 25px rgba(139,92,246,0.4);
 }
-
-.siswa-bimbingan-bk .header-content-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.siswa-bimbingan-bk .header-icon-box {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    color: white;
-    flex-shrink: 0;
-}
-
-.siswa-bimbingan-bk .header-info {
-    flex: 1;
-}
-
-.siswa-bimbingan-bk .header-greeting .greeting-text {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 500;
-    display: block;
-    margin-bottom: 4px;
-}
-
-.siswa-bimbingan-bk .header-greeting h1 {
-    font-size: 24px;
-    font-weight: 700;
-    color: white;
-    margin: 0;
-}
-
-.siswa-bimbingan-bk .header-details {
-    display: flex;
-    gap: 15px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-}
-
-.siswa-bimbingan-bk .detail-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
+.siswa-bimbingan-bk .page-header-center h1 { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; color: #1f2937; }
+.header-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.header-periode-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(139,92,246,0.1); color: #7c3aed;
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(139,92,246,0.2);
 }
 
 /* ============== STATS CHART CARD ============== */
