@@ -71,7 +71,7 @@
         .presensi-item .label { font-size: 7pt; }
         
         .signature { margin-top: 30px; display: flex; justify-content: space-between; }
-        .signature div { text-align: center; width: 200px; }
+        .signature div { text-align: center; width: 280px; }
         .signature .line { margin: 70px 0 5px 0; border-bottom: 1px solid #333; }
     </style>
 </head>
@@ -212,28 +212,29 @@
         <div class="section">
             <div class="section-title">📅 Rekap Presensi</div>
             <div class="presensi-grid">
+                @php $pTotal = $presensiTotal->total ?? 0; @endphp
                 <div class="presensi-item" style="background: #dcfce7;">
-                    <div class="count" style="color: #15803d;">{{ $presensiTotal->hadir ?? 0 }}</div>
+                    <div class="count" style="color: #15803d;">{{ $pTotal > 0 ? round((($presensiTotal->hadir ?? 0) / $pTotal) * 100, 1) : 0 }}%</div>
                     <div class="label" style="color: #166534;">Hadir</div>
                 </div>
                 <div class="presensi-item" style="background: #dbeafe;">
-                    <div class="count" style="color: #1d4ed8;">{{ $presensiTotal->dispen ?? 0 }}</div>
+                    <div class="count" style="color: #1d4ed8;">{{ $pTotal > 0 ? round((($presensiTotal->dispen ?? 0) / $pTotal) * 100, 1) : 0 }}%</div>
                     <div class="label" style="color: #1e40af;">Dispen</div>
                 </div>
                 <div class="presensi-item" style="background: #ede9fe;">
-                    <div class="count" style="color: #5b21b6;">{{ $presensiTotal->izin ?? 0 }}</div>
+                    <div class="count" style="color: #5b21b6;">{{ $pTotal > 0 ? round((($presensiTotal->izin ?? 0) / $pTotal) * 100, 1) : 0 }}%</div>
                     <div class="label" style="color: #6d28d9;">Izin</div>
                 </div>
                 <div class="presensi-item" style="background: #fef3c7;">
-                    <div class="count" style="color: #92400e;">{{ $presensiTotal->sakit ?? 0 }}</div>
+                    <div class="count" style="color: #92400e;">{{ $pTotal > 0 ? round((($presensiTotal->sakit ?? 0) / $pTotal) * 100, 1) : 0 }}%</div>
                     <div class="label" style="color: #a16207;">Sakit</div>
                 </div>
                 <div class="presensi-item" style="background: #fee2e2;">
-                    <div class="count" style="color: #dc2626;">{{ $presensiTotal->alfa ?? 0 }}</div>
+                    <div class="count" style="color: #dc2626;">{{ $pTotal > 0 ? round((($presensiTotal->alfa ?? 0) / $pTotal) * 100, 1) : 0 }}%</div>
                     <div class="label" style="color: #991b1b;">Alfa</div>
                 </div>
                 <div class="presensi-item" style="background: #f3f4f6;">
-                    <div class="count" style="color: #4b5563;">{{ $presensiTotal->bolos ?? 0 }}</div>
+                    <div class="count" style="color: #4b5563;">{{ $pTotal > 0 ? round((($presensiTotal->bolos ?? 0) / $pTotal) * 100, 1) : 0 }}%</div>
                     <div class="label" style="color: #6b7280;">Bolos</div>
                 </div>
             </div>
