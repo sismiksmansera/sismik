@@ -31,7 +31,10 @@
                     <i class="fas fa-list"></i>
                     <h2>Daftar Ekstrakurikuler</h2>
                 </div>
-                <span class="badge-count">{{ count($ekstrakurikulerList) }} Data</span>
+                <div class="section-header-right">
+                    <a href="{{ route('guru_bk.koordinator-ekstra.export-excel', ['tahun' => $filterTahun, 'semester' => $filterSemester]) }}" class="btn-export-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
+                    <span class="badge-count">{{ count($ekstrakurikulerList) }} Data</span>
+                </div>
             </div>
 
             @if(count($ekstrakurikulerList) > 0)
@@ -191,6 +194,14 @@
     transition: all 0.3s; box-shadow: 0 4px 12px rgba(16,185,129,0.3);
 }
 .btn-tambah-baru:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16,185,129,0.4); color: white; }
+.btn-export-excel {
+    display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px;
+    background: linear-gradient(135deg, #059669, #047857); color: white;
+    border-radius: 8px; font-weight: 600; font-size: 12px; text-decoration: none;
+    transition: all 0.3s; box-shadow: 0 2px 8px rgba(5,150,105,0.3);
+}
+.btn-export-excel:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5,150,105,0.4); color: white; }
+.section-header-right { display: flex; align-items: center; gap: 10px; }
 .header-actions-row {
     display: flex; justify-content: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;
 }

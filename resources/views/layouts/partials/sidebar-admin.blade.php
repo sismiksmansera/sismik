@@ -73,6 +73,10 @@
             <i class="fas fa-file-upload"></i>
             <span>Migrasi Nilai Manual</span>
         </a>
+        <a href="{{ route('admin.prestasi.index') }}" class="menu-item {{ request()->routeIs('admin.prestasi.*') ? 'active' : '' }}">
+            <i class="fas fa-trophy"></i>
+            <span>Prestasi</span>
+        </a>
 
         <div class="menu-label">Presensi Siswa</div>
         <a href="{{ route('admin.cek-presensi.index') }}" class="menu-item {{ request()->routeIs('admin.cek-presensi.*') ? 'active' : '' }}">

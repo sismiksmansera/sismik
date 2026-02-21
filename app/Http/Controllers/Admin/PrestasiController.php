@@ -14,6 +14,166 @@ use App\Models\DataPeriodik;
 class PrestasiController extends Controller
 {
     /**
+     * Display all school prestasi overview
+     */
+    public function index(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+        $filterTahun = $request->get('tahun', '');
+        $filterJenjang = $request->get('jenjang', '');
+
+        // Get all available years
+        $tahunList = DB::table('prestasi_siswa')
+            ->select('tahun_pelajaran')
+            ->distinct()
+            ->orderBy('tahun_pelajaran', 'desc')
+            ->pluck('tahun_pelajaran');
+
+        // Get statistics by jenjang
+        $jenjangStats = DB::table('prestasi_siswa')
+            ->select('jenjang', DB::raw('COUNT(DISTINCT nama_kompetisi, juara, jenjang, tanggal_pelaksanaan) as total'))
+            ->groupBy('jenjang')
+            ->orderByRaw("FIELD(jenjang, 'Internasional','Nasional','Provinsi','Kabupaten','Kecamatan','Sekolah','Kelas') ASC")
+            ->get();
+
+        // Query prestasi list
+        $query = DB::table('prestasi_siswa as ps')
+            ->join('siswa as s', 'ps.siswa_id', '=', 's.id')
+            ->select(
+                'ps.nama_kompetisi', 'ps.juara', 'ps.jenjang', 'ps.penyelenggara',
+                'ps.tanggal_pelaksanaan', 'ps.tahun_pelajaran', 'ps.semester',
+                'ps.sumber_prestasi', 'ps.sumber_id',
+                DB::raw('MAX(ps.tipe_peserta) as tipe_peserta'),
+                DB::raw("GROUP_CONCAT(DISTINCT s.nama ORDER BY s.nama SEPARATOR '||') as siswa_list"),
+                DB::raw("GROUP_CONCAT(DISTINCT s.nis ORDER BY s.nama SEPARATOR '||') as nis_list"),
+                DB::raw('COUNT(DISTINCT ps.siswa_id) as jumlah_siswa')
+            );
+
+        if (!empty($filterTahun)) {
+            $query->where('ps.tahun_pelajaran', $filterTahun);
+        }
+
+        if (!empty($filterJenjang)) {
+            $query->where('ps.jenjang', $filterJenjang);
+        }
+
+        $prestasiList = $query
+            ->groupBy('ps.nama_kompetisi', 'ps.juara', 'ps.jenjang', 'ps.penyelenggara',
+                       'ps.tanggal_pelaksanaan', 'ps.tahun_pelajaran', 'ps.semester',
+                       'ps.sumber_prestasi', 'ps.sumber_id')
+            ->orderBy('ps.tanggal_pelaksanaan', 'desc')
+            ->get();
+
+        // Process results
+        foreach ($prestasiList as $prestasi) {
+            $prestasi->siswa_array = explode('||', $prestasi->siswa_list ?? '');
+            $prestasi->nis_array = explode('||', $prestasi->nis_list ?? '');
+        }
+
+        // Group by tahun_pelajaran
+        $groupedByTahun = $prestasiList->groupBy('tahun_pelajaran');
+
+        // Total stats
+        $totalPrestasi = $prestasiList->count();
+        $totalSiswa = DB::table('prestasi_siswa')->distinct()->count('siswa_id');
+
+        return view('admin.prestasi.index', compact(
+            'admin', 'groupedByTahun', 'tahunList', 'jenjangStats',
+            'filterTahun', 'filterJenjang', 'totalPrestasi', 'totalSiswa'
+        ));
+    }
+
+    /**
+     * Export prestasi data to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $filterTahun = $request->get('tahun', '');
+        $filterJenjang = $request->get('jenjang', '');
+
+        $query = DB::table('prestasi_siswa as ps')
+            ->join('siswa as s', 'ps.siswa_id', '=', 's.id')
+            ->select(
+                'ps.nama_kompetisi', 'ps.juara', 'ps.jenjang', 'ps.penyelenggara',
+                'ps.tanggal_pelaksanaan', 'ps.tahun_pelajaran', 'ps.semester',
+                'ps.sumber_prestasi', 'ps.tipe_peserta',
+                's.nama as nama_siswa', 's.nis'
+            );
+
+        if (!empty($filterTahun)) {
+            $query->where('ps.tahun_pelajaran', $filterTahun);
+        }
+        if (!empty($filterJenjang)) {
+            $query->where('ps.jenjang', $filterJenjang);
+        }
+
+        $data = $query->orderBy('ps.tahun_pelajaran', 'desc')
+            ->orderByRaw("FIELD(ps.jenjang, 'Internasional','Nasional','Provinsi','Kabupaten','Kecamatan','Sekolah','Kelas') ASC")
+            ->orderBy('ps.tanggal_pelaksanaan', 'desc')
+            ->orderBy('ps.nama_kompetisi')
+            ->orderBy('s.nama')
+            ->get();
+
+        $filename = 'Rekap_Prestasi_Sekolah';
+        if ($filterTahun) $filename .= '_' . str_replace('/', '-', $filterTahun);
+        if ($filterJenjang) $filename .= '_' . $filterJenjang;
+        $filename .= '_' . date('Ymd') . '.xls';
+
+        $html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">';
+        $html .= '<head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>';
+        $html .= '<x:Name>Prestasi</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>';
+        $html .= '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>';
+
+        $html .= '<table border="1">';
+        $html .= '<tr><td colspan="10" style="font-size:16pt;font-weight:bold;text-align:center;">REKAP PRESTASI SEKOLAH</td></tr>';
+
+        $filterLabel = '';
+        if ($filterTahun) $filterLabel .= 'Tahun: ' . $filterTahun . '  ';
+        if ($filterJenjang) $filterLabel .= 'Tingkat: ' . $filterJenjang;
+        if ($filterLabel) {
+            $html .= '<tr><td colspan="10" style="text-align:center;">' . $filterLabel . '</td></tr>';
+        }
+        $html .= '<tr><td colspan="10"></td></tr>';
+
+        // Header row
+        $html .= '<tr style="background-color:#f59e0b;color:white;font-weight:bold;">';
+        $html .= '<td style="width:30px;">No</td>';
+        $html .= '<td>Tahun Pelajaran</td>';
+        $html .= '<td>Semester</td>';
+        $html .= '<td>Tingkat</td>';
+        $html .= '<td>Nama Kompetisi</td>';
+        $html .= '<td>Juara</td>';
+        $html .= '<td>Penyelenggara</td>';
+        $html .= '<td>Tanggal</td>';
+        $html .= '<td>Tipe</td>';
+        $html .= '<td>Nama Siswa (NIS)</td>';
+        $html .= '</tr>';
+
+        $no = 1;
+        foreach ($data as $row) {
+            $html .= '<tr>';
+            $html .= '<td>' . $no++ . '</td>';
+            $html .= '<td>' . $row->tahun_pelajaran . '</td>';
+            $html .= '<td>' . $row->semester . '</td>';
+            $html .= '<td>' . $row->jenjang . '</td>';
+            $html .= '<td>' . htmlspecialchars($row->nama_kompetisi) . '</td>';
+            $html .= '<td>' . $row->juara . '</td>';
+            $html .= '<td>' . htmlspecialchars($row->penyelenggara ?? '') . '</td>';
+            $html .= '<td>' . date('d/m/Y', strtotime($row->tanggal_pelaksanaan)) . '</td>';
+            $html .= '<td>' . ($row->tipe_peserta == 'Single' ? 'Individu' : ($row->tipe_peserta ?? '-')) . '</td>';
+            $html .= '<td>' . htmlspecialchars($row->nama_siswa) . ' (' . $row->nis . ')</td>';
+            $html .= '</tr>';
+        }
+
+        $html .= '</table></body></html>';
+
+        return response($html)
+            ->header('Content-Type', 'application/vnd.ms-excel')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->header('Cache-Control', 'max-age=0');
+    }
+
+    /**
      * Display prestasi list for a rombel or ekstrakurikuler
      */
     public function lihat(Request $request)

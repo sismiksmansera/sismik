@@ -136,6 +136,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/jadwal-pelajaran', [JadwalPelajaranController::class, 'index'])->name('jadwal-pelajaran.index');
     
     // Prestasi Management
+    Route::get('/prestasi', [PrestasiController::class, 'index'])->name('prestasi.index');
+    Route::get('/prestasi/export-excel', [PrestasiController::class, 'exportExcel'])->name('prestasi.export-excel');
     Route::get('/prestasi/lihat', [PrestasiController::class, 'lihat'])->name('prestasi.lihat');
     Route::get('/prestasi/input', [PrestasiController::class, 'create'])->name('prestasi.input');
     Route::post('/prestasi/store', [PrestasiController::class, 'store'])->name('prestasi.store');
@@ -423,6 +425,7 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::delete('/koordinator-ekstra/{id}', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'destroy'])->name('koordinator-ekstra.destroy');
     Route::post('/koordinator-ekstra/get-siswa', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'getSiswa'])->name('koordinator-ekstra.get-siswa');
     Route::get('/koordinator-ekstra/get-siswa-by-ids', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'getSiswaByIds'])->name('koordinator-ekstra.get-siswa-by-ids');
+    Route::get('/koordinator-ekstra/export-excel', [\App\Http\Controllers\Guru\EkstrakurikulerController::class, 'exportExcel'])->name('koordinator-ekstra.export-excel');
     
     // Koordinator OSN routes
     Route::get('/koordinator-osn', [\App\Http\Controllers\Guru\KoordinatorOsnController::class, 'index'])->name('koordinator-osn.index');
@@ -536,6 +539,7 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     Route::delete('/koordinator-ekstra/{id}', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'destroy'])->name('koordinator-ekstra.destroy');
     Route::post('/koordinator-ekstra/get-siswa', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'getSiswa'])->name('koordinator-ekstra.get-siswa');
     Route::get('/koordinator-ekstra/get-siswa-by-ids', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'getSiswaByIds'])->name('koordinator-ekstra.get-siswa-by-ids');
+    Route::get('/koordinator-ekstra/export-excel', [\App\Http\Controllers\GuruBK\EkstrakurikulerController::class, 'exportExcel'])->name('koordinator-ekstra.export-excel');
     
     // Siswa Wali (guru wali) route
     Route::get('/siswa-wali', [\App\Http\Controllers\GuruBK\SiswaWaliController::class, 'index'])->name('siswa-wali');

@@ -82,7 +82,186 @@ class EkstrakurikulerController extends Controller
             'tahunAktif', 'semesterAktif', 'allYears', 'totalAktif'
         ));
     }
-    
+
+    /**
+     * Export ekstrakurikuler data to Excel (multi-sheet)
+     */
+    public function exportExcel(Request $request)
+    {
+        $periodeAktif = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodeAktif->tahun_pelajaran ?? date('Y') . '/' . (date('Y') + 1);
+        $semesterAktif = $periodeAktif->semester ?? 'Ganjil';
+
+        $filterTahun = $request->get('tahun', $tahunAktif);
+        $filterSemester = $request->get('semester', $semesterAktif);
+
+        // Get all ekstrakurikuler for this period
+        $ekstraList = DB::table('ekstrakurikuler')
+            ->where('tahun_pelajaran', $filterTahun)
+            ->where('semester', $filterSemester)
+            ->orderBy('nama_ekstrakurikuler')
+            ->get();
+
+        if ($ekstraList->isEmpty()) {
+            return back()->with('error', 'Tidak ada data ekstrakurikuler untuk diekspor.');
+        }
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
+
+        foreach ($ekstraList as $idx => $ekstra) {
+            $sheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($spreadsheet, mb_substr($ekstra->nama_ekstrakurikuler, 0, 31));
+            $spreadsheet->addSheet($sheet, $idx);
+
+            // -- Header --
+            $sheet->setCellValue('A1', $ekstra->nama_ekstrakurikuler);
+            $sheet->mergeCells('A1:H1');
+            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+
+            $pembinaList = array_filter([$ekstra->pembina_1, $ekstra->pembina_2, $ekstra->pembina_3]);
+            $sheet->setCellValue('A2', 'Pembina: ' . implode(', ', $pembinaList));
+            $sheet->mergeCells('A2:H2');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+
+            $sheet->setCellValue('A3', 'Tahun: ' . $filterTahun . ' | Semester: ' . $filterSemester);
+            $sheet->mergeCells('A3:H3');
+            $sheet->getStyle('A3')->getAlignment()->setHorizontal('center');
+
+            // -- Anggota & Nilai Section --
+            $row = 5;
+            $sheet->setCellValue('A' . $row, 'DAFTAR ANGGOTA & NILAI');
+            $sheet->mergeCells('A' . $row . ':H' . $row);
+            $sheet->getStyle('A' . $row)->getFont()->setBold(true)->setSize(12);
+            $sheet->getStyle('A' . $row)->getFill()->setFillType('solid')->getStartColor()->setRGB('F59E0B');
+            $sheet->getStyle('A' . $row)->getFont()->getColor()->setRGB('FFFFFF');
+
+            $row++;
+            $headers = ['No', 'NIS', 'Nama Siswa', 'Rombel', 'Tgl Bergabung', 'Status', 'Nilai', 'Predikat'];
+            foreach ($headers as $col => $header) {
+                $cell = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1) . $row;
+                $sheet->setCellValue($cell, $header);
+            }
+            $headerRange = 'A' . $row . ':H' . $row;
+            $sheet->getStyle($headerRange)->getFont()->setBold(true);
+            $sheet->getStyle($headerRange)->getFill()->setFillType('solid')->getStartColor()->setRGB('FEF3C7');
+            $sheet->getStyle($headerRange)->getBorders()->getAllBorders()->setBorderStyle('thin');
+
+            // Get anggota data
+            $anggota = DB::table('anggota_ekstrakurikuler as ae')
+                ->join('siswa as s', 'ae.siswa_id', '=', 's.id')
+                ->where('ae.ekstrakurikuler_id', $ekstra->id)
+                ->select('s.nis', 's.nama', 's.nama_rombel', 'ae.tanggal_bergabung', 'ae.status', 'ae.nilai', 'ae.siswa_id')
+                ->orderBy('s.nama')
+                ->get();
+
+            $row++;
+            $no = 1;
+            foreach ($anggota as $a) {
+                $predikat = $this->getNilaiPredikat($a->nilai);
+                $sheet->setCellValue('A' . $row, $no++);
+                $sheet->setCellValueExplicit('B' . $row, $a->nis, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet->setCellValue('C' . $row, $a->nama);
+                $sheet->setCellValue('D' . $row, $a->nama_rombel ?? '-');
+                $sheet->setCellValue('E' . $row, $a->tanggal_bergabung ? date('d/m/Y', strtotime($a->tanggal_bergabung)) : '-');
+                $sheet->setCellValue('F' . $row, $a->status ?? 'Aktif');
+                $sheet->setCellValue('G' . $row, $a->nilai ?? '-');
+                $sheet->setCellValue('H' . $row, $predikat);
+                $sheet->getStyle('A' . $row . ':H' . $row)->getBorders()->getAllBorders()->setBorderStyle('thin');
+                $row++;
+            }
+
+            if ($anggota->isEmpty()) {
+                $sheet->setCellValue('A' . $row, 'Belum ada anggota terdaftar');
+                $sheet->mergeCells('A' . $row . ':H' . $row);
+                $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A' . $row)->getFont()->setItalic(true);
+                $row++;
+            }
+
+            // -- Prestasi Section --
+            $row += 2;
+            $sheet->setCellValue('A' . $row, 'PRESTASI');
+            $sheet->mergeCells('A' . $row . ':H' . $row);
+            $sheet->getStyle('A' . $row)->getFont()->setBold(true)->setSize(12);
+            $sheet->getStyle('A' . $row)->getFill()->setFillType('solid')->getStartColor()->setRGB('10B981');
+            $sheet->getStyle('A' . $row)->getFont()->getColor()->setRGB('FFFFFF');
+
+            $row++;
+            $prestasiHeaders = ['No', 'Nama Kompetisi', 'Juara', 'Tingkat', 'Penyelenggara', 'Tanggal', 'Tipe', 'Nama Siswa'];
+            foreach ($prestasiHeaders as $col => $header) {
+                $cell = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1) . $row;
+                $sheet->setCellValue($cell, $header);
+            }
+            $sheet->getStyle('A' . $row . ':H' . $row)->getFont()->setBold(true);
+            $sheet->getStyle('A' . $row . ':H' . $row)->getFill()->setFillType('solid')->getStartColor()->setRGB('D1FAE5');
+            $sheet->getStyle('A' . $row . ':H' . $row)->getBorders()->getAllBorders()->setBorderStyle('thin');
+
+            // Get prestasi data
+            $prestasi = DB::table('prestasi_siswa as ps')
+                ->join('siswa as s', 'ps.siswa_id', '=', 's.id')
+                ->where('ps.sumber_prestasi', 'ekstrakurikuler')
+                ->where('ps.sumber_id', $ekstra->id)
+                ->select('ps.nama_kompetisi', 'ps.juara', 'ps.jenjang', 'ps.penyelenggara',
+                         'ps.tanggal_pelaksanaan', 'ps.tipe_peserta', 's.nama as nama_siswa')
+                ->orderBy('ps.tanggal_pelaksanaan', 'desc')
+                ->get();
+
+            $row++;
+            $no = 1;
+            foreach ($prestasi as $p) {
+                $sheet->setCellValue('A' . $row, $no++);
+                $sheet->setCellValue('B' . $row, $p->nama_kompetisi);
+                $sheet->setCellValue('C' . $row, $p->juara);
+                $sheet->setCellValue('D' . $row, $p->jenjang);
+                $sheet->setCellValue('E' . $row, $p->penyelenggara ?? '-');
+                $sheet->setCellValue('F' . $row, date('d/m/Y', strtotime($p->tanggal_pelaksanaan)));
+                $sheet->setCellValue('G' . $row, $p->tipe_peserta == 'Single' ? 'Individu' : ($p->tipe_peserta ?? '-'));
+                $sheet->setCellValue('H' . $row, $p->nama_siswa);
+                $sheet->getStyle('A' . $row . ':H' . $row)->getBorders()->getAllBorders()->setBorderStyle('thin');
+                $row++;
+            }
+
+            if ($prestasi->isEmpty()) {
+                $sheet->setCellValue('A' . $row, 'Belum ada prestasi');
+                $sheet->mergeCells('A' . $row . ':H' . $row);
+                $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A' . $row)->getFont()->setItalic(true);
+            }
+
+            // Auto-size columns
+            foreach (range('A', 'H') as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $filename = 'Rekap_Ekstrakurikuler_' . str_replace('/', '-', $filterTahun) . '_' . $filterSemester . '_' . date('Ymd') . '.xlsx';
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+        $temp = tempnam(sys_get_temp_dir(), 'ekstra');
+        $writer->save($temp);
+
+        return response()->download($temp, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Get predikat from nilai
+     */
+    private function getNilaiPredikat($nilai)
+    {
+        if ($nilai === null || $nilai === '' || $nilai === '-') return '-';
+        $n = intval($nilai);
+        if ($n >= 90) return 'Sangat Baik';
+        if ($n >= 80) return 'Baik';
+        if ($n >= 70) return 'Cukup';
+        return 'Kurang';
+    }
+
     /**
      * Delete ekstrakurikuler
      */
