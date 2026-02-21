@@ -46,6 +46,10 @@
             <i class="fas fa-tasks"></i>
             <span>Tugas Tambahan</span>
         </a>
+        <a href="{{ route('guru_bk.riwayat-akademik') }}" class="menu-item {{ request()->routeIs('guru_bk.riwayat-akademik*') ? 'active' : '' }}">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Riwayat Akademik</span>
+        </a>
 
         <div class="menu-label">Presensi Siswa</div>
         <a href="{{ route('guru_bk.cek-presensi.index') }}" class="menu-item {{ request()->routeIs('guru_bk.cek-presensi*') ? 'active' : '' }}">

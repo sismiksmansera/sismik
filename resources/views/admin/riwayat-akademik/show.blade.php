@@ -516,7 +516,9 @@
 
 @section('content')
 <div class="layout">
-    @if(request()->routeIs('guru.*'))
+    @if(request()->routeIs('guru_bk.*'))
+        @include('layouts.partials.sidebar-guru-bk')
+    @elseif(request()->routeIs('guru.*'))
         @include('layouts.partials.sidebar-guru')
     @else
         @include('layouts.partials.sidebar-admin')
@@ -1088,7 +1090,7 @@ function showDetailNilai(nisn, mapel) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6b7280;"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
     modal.classList.add('active');
     
-    const prefix = window.location.pathname.includes('/guru/') ? '/guru' : '/admin';
+    const prefix = window.location.pathname.includes('/guru-bk/') ? '/guru-bk' : (window.location.pathname.includes('/guru/') ? '/guru' : '/admin');
     const url = prefix + '/riwayat-akademik/detail-nilai?nisn=' + encodeURIComponent(nisn) + '&mapel=' + encodeURIComponent(mapel);
     
     fetch(url)
@@ -1152,7 +1154,7 @@ function showDetailPresensi(nisn, mapel, status, tahun, semester) {
     body.innerHTML = '<div style="text-align:center;padding:30px;color:#6b7280;"><i class="fas fa-spinner fa-spin"></i> Memuat data...</div>';
     modal.classList.add('active');
     
-    const prefix = window.location.pathname.includes('/guru/') ? '/guru' : '/admin';
+    const prefix = window.location.pathname.includes('/guru-bk/') ? '/guru-bk' : (window.location.pathname.includes('/guru/') ? '/guru' : '/admin');
     const url = `${prefix}/riwayat-akademik/detail-presensi?nisn=${encodeURIComponent(nisn)}&mapel=${encodeURIComponent(mapel)}&status=${status}&tahun=${encodeURIComponent(tahun)}&semester=${encodeURIComponent(semester)}`;
     
     fetch(url)

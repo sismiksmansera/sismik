@@ -601,6 +601,13 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     Route::get('/download-presensi', [\App\Http\Controllers\GuruBK\DownloadPresensiController::class, 'index'])->name('download-presensi.index');
     Route::get('/download-presensi/blangko', [\App\Http\Controllers\GuruBK\DownloadPresensiController::class, 'downloadBlangko'])->name('download-presensi.blangko');
     Route::get('/download-presensi/rincian-rombel', [\App\Http\Controllers\GuruBK\DownloadPresensiController::class, 'downloadRincianRombel'])->name('download-presensi.rincian-rombel');
+    
+    // Riwayat Akademik routes
+    Route::get('/riwayat-akademik', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'show'])->name('riwayat-akademik');
+    Route::get('/riwayat-akademik/print', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'print'])->name('riwayat-akademik.print');
+    Route::get('/riwayat-akademik/print-all', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'printAll'])->name('riwayat-akademik.print-all');
+    Route::get('/riwayat-akademik/detail-nilai', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'detailNilai'])->name('riwayat-akademik.detail-nilai');
+    Route::get('/riwayat-akademik/detail-presensi', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'detailPresensi'])->name('riwayat-akademik.detail-presensi');
 });
 
 // Siswa Routes

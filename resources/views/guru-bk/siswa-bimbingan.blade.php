@@ -271,7 +271,7 @@
                                        class="btn-action btn-warning">
                                         <i class="fas fa-phone"></i> Panggilan Ortu
                                     </a>
-                                    <a href="{{ url('guru_bk/riwayat_akademik.php?nisn=' . urlencode($siswa->nisn)) }}" 
+                                    <a href="{{ route('guru_bk.riwayat-akademik', ['nisn' => $siswa->nisn]) }}" 
                                        class="btn-action btn-success">
                                         <i class="fas fa-chart-line"></i> Riwayat Akademik
                                     </a>
