@@ -21,9 +21,9 @@
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
         {{-- TODO: Link to input prestasi page when migrated --}}
-        {{-- <a href="{{ route('guru_bk.input-prestasi', ['type' => $type, 'id' => $id]) }}" class="btn-add">
+        <a href="{{ url('guru-bk/prestasi/input?type=' . $type . '&id=' . $id) }}" class="btn-add">
             <i class="fas fa-plus"></i> Tambah Prestasi
-        </a> --}}
+        </a>
     </div>
 
     {{-- Stats --}}

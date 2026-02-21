@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Rombel;
 use App\Models\Ekstrakurikuler;
 use App\Models\PrestasiSiswa;
+use App\Models\DataPeriodik;
 
 class PrestasiController extends Controller
 {
@@ -75,6 +76,121 @@ class PrestasiController extends Controller
         return view('admin.prestasi.lihat', compact(
             'admin', 'type', 'sumberInfo', 'prestasiList', 'backUrl', 'id'
         ));
+    }
+
+    public function create(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+
+        $type = $request->get('type', '');
+        $id = intval($request->get('id', 0));
+
+        if (empty($type) || $id <= 0) {
+            return redirect()->route('admin.rombel.index');
+        }
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '2024/2025';
+        $semesterAktif = $periodik->semester ?? 'Ganjil';
+
+        $sourceNama = '';
+        $siswaList = collect();
+        $backUrl = '';
+
+        if ($type == 'ekstra') {
+            $ekstra = Ekstrakurikuler::find($id);
+            if (!$ekstra) return redirect()->route('admin.ekstrakurikuler.index');
+            $sourceNama = $ekstra->nama_ekstrakurikuler;
+            $backUrl = route('admin.prestasi.lihat', ['type' => 'ekstra', 'id' => $id]);
+
+            $siswaList = DB::table('anggota_ekstrakurikuler as ae')
+                ->join('siswa as s', 'ae.siswa_id', '=', 's.id')
+                ->where('ae.ekstrakurikuler_id', $id)
+                ->where('ae.tahun_pelajaran', $tahunPelajaran)
+                ->where('ae.semester', $semesterAktif)
+                ->select('s.id as siswa_id', 's.nama', 's.nis', 's.nisn')
+                ->orderBy('s.nama')
+                ->get();
+
+        } elseif ($type == 'rombel') {
+            $rombel = Rombel::find($id);
+            if (!$rombel) return redirect()->route('admin.rombel.index');
+            $sourceNama = $rombel->nama_rombel;
+            $backUrl = route('admin.prestasi.lihat', ['type' => 'rombel', 'id' => $id]);
+
+            $tahunAjaran = explode('/', $tahunPelajaran);
+            $tahunAwal = intval($tahunAjaran[0]);
+
+            $siswaList = DB::table('siswa')
+                ->where(function($q) use ($tahunAwal, $sourceNama, $semesterAktif) {
+                    for ($offset = 0; $offset <= 2; $offset++) {
+                        $angkatan = $tahunAwal - $offset;
+                        $semNum = ($offset * 2) + ($semesterAktif == 'Ganjil' ? 1 : 2);
+                        $col = 'rombel_semester_' . $semNum;
+                        $q->orWhere(function($sub) use ($angkatan, $col, $sourceNama) {
+                            $sub->where('angkatan_masuk', $angkatan)->where($col, $sourceNama);
+                        });
+                    }
+                })
+                ->select('id as siswa_id', 'nama', 'nis', 'nisn')
+                ->orderBy('nama')
+                ->get();
+        } else {
+            return redirect()->route('admin.rombel.index');
+        }
+
+        return view('admin.prestasi.input', compact('admin', 'type', 'id', 'sourceNama', 'siswaList', 'backUrl'));
+    }
+
+    public function store(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+
+        $type = $request->type;
+        $sourceId = intval($request->source_id);
+        $siswaIds = array_filter(array_map('intval', explode(',', $request->siswa_ids ?? '')));
+        $juara = trim($request->juara ?? '');
+        $jenjang = $request->jenjang ?? '';
+        $namaKompetisi = trim($request->nama_kompetisi ?? '');
+        $penyelenggara = trim($request->penyelenggara ?? '');
+        $tanggalPelaksanaan = $request->tanggal_pelaksanaan ?? '';
+        $tipePeserta = $request->tipe_peserta ?? 'Single';
+
+        if (empty($siswaIds) || empty($juara) || empty($jenjang) || empty($namaKompetisi) || empty($penyelenggara) || empty($tanggalPelaksanaan)) {
+            return response()->json(['success' => false, 'message' => 'Semua field wajib diisi']);
+        }
+
+        $sumberPrestasi = ($type == 'ekstra') ? 'ekstrakurikuler' : 'rombel';
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '2024/2025';
+        $semesterAktif = $periodik->semester ?? 'Ganjil';
+
+        DB::beginTransaction();
+        try {
+            $successCount = 0;
+            foreach ($siswaIds as $siswaId) {
+                DB::table('prestasi_siswa')->insert([
+                    'siswa_id' => $siswaId,
+                    'guru_id' => $admin->id,
+                    'sumber_prestasi' => $sumberPrestasi,
+                    'sumber_id' => $sourceId,
+                    'juara' => $juara,
+                    'jenjang' => $jenjang,
+                    'tipe_peserta' => $tipePeserta,
+                    'nama_kompetisi' => $namaKompetisi,
+                    'penyelenggara' => $penyelenggara,
+                    'tanggal_pelaksanaan' => $tanggalPelaksanaan,
+                    'tahun_pelajaran' => $tahunPelajaran,
+                    'semester' => $semesterAktif,
+                ]);
+                $successCount++;
+            }
+            DB::commit();
+            return response()->json(['success' => true, 'message' => "Prestasi berhasil disimpan untuk $successCount siswa!"]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
     }
     
     /**

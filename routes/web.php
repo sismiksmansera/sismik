@@ -137,6 +137,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     
     // Prestasi Management
     Route::get('/prestasi/lihat', [PrestasiController::class, 'lihat'])->name('prestasi.lihat');
+    Route::get('/prestasi/input', [PrestasiController::class, 'create'])->name('prestasi.input');
+    Route::post('/prestasi/store', [PrestasiController::class, 'store'])->name('prestasi.store');
     
     // Siswa Management
     Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
@@ -429,6 +431,8 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     // Lihat Prestasi routes
     Route::get('/lihat-prestasi', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'index'])->name('lihat-prestasi');
     Route::post('/lihat-prestasi/hapus', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'hapus'])->name('lihat-prestasi.hapus');
+    Route::get('/input-prestasi', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'create'])->name('input-prestasi');
+    Route::post('/input-prestasi/store', [\App\Http\Controllers\Guru\LihatPrestasiController::class, 'store'])->name('input-prestasi.store');
     
     // Anggota Rombel route
     Route::get('/anggota-rombel', [\App\Http\Controllers\Guru\AnggotaRombelController::class, 'index'])->name('anggota-rombel');
@@ -549,6 +553,8 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     
     // Prestasi routes
     Route::get('/prestasi', [\App\Http\Controllers\GuruBK\PrestasiController::class, 'index'])->name('prestasi');
+    Route::get('/prestasi/input', [\App\Http\Controllers\GuruBK\PrestasiController::class, 'create'])->name('prestasi.input');
+    Route::post('/prestasi/store', [\App\Http\Controllers\GuruBK\PrestasiController::class, 'store'])->name('prestasi.store');
     
     // Pengaduan routes
     Route::get('/pengaduan', [\App\Http\Controllers\GuruBK\PengaduanController::class, 'index'])->name('pengaduan');

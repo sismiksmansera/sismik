@@ -296,6 +296,9 @@
                     </div>
                 </div>
                 <div class="header-stats">
+                    <a href="{{ url('admin/prestasi/input?type=' . $type . '&id=' . $id) }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; text-decoration: none; font-weight: 600; transition: all 0.2s;">
+                        <i class="fas fa-plus"></i> Tambah Prestasi
+                    </a>
                     <div class="stat-box">
                         <div class="value">{{ count($prestasiList) }}</div>
                         <div class="label">Total Prestasi</div>

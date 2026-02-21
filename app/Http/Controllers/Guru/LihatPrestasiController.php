@@ -78,7 +78,7 @@ class LihatPrestasiController extends Controller
                 'ps.nama_kompetisi', 'ps.juara', 'ps.jenjang', 'ps.penyelenggara', 'ps.tanggal_pelaksanaan',
                 DB::raw('MAX(ps.tipe_peserta) as tipe_peserta'),
                 DB::raw("GROUP_CONCAT(s.nama ORDER BY s.nama SEPARATOR '||') as siswa_list"),
-                DB::raw("GROUP_CONCAT(s.nis ORDER BY s.nama SEPARATOR '||') as nis_list"),
+                DB::raw("GROUP_CONCAT(IFNULL(s.nis, '-') ORDER BY s.nama SEPARATOR '||') as nis_list"),
                 DB::raw('COUNT(*) as jumlah_siswa')
             )
             ->groupBy('ps.nama_kompetisi', 'ps.juara', 'ps.jenjang', 'ps.penyelenggara', 'ps.tanggal_pelaksanaan')
@@ -95,6 +95,138 @@ class LihatPrestasiController extends Controller
             'guru', 'type', 'sourceId', 'sourceNama', 'sumberPrestasi',
             'tahunPelajaran', 'semesterAktif', 'prestasiGrouped'
         ));
+    }
+
+    public function create(Request $request)
+    {
+        $guru = Auth::guard('guru')->user();
+        if (!$guru) {
+            return redirect()->route('login')->with('error', 'Data guru tidak ditemukan!');
+        }
+        $guruNama = $guru->nama;
+
+        $type = $request->get('type');
+        $sourceId = intval($request->get('id', 0));
+
+        if (empty($type) || $sourceId <= 0) {
+            return redirect()->route('guru.tugas-tambahan');
+        }
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '2024/2025';
+        $semesterAktif = $periodik->semester ?? 'Ganjil';
+
+        $sourceNama = '';
+        $siswaList = collect();
+
+        if ($type == 'ekstra') {
+            $ekstra = DB::table('ekstrakurikuler')
+                ->where('id', $sourceId)
+                ->where(function($q) use ($guruNama) {
+                    $q->where('pembina_1', $guruNama)
+                      ->orWhere('pembina_2', $guruNama)
+                      ->orWhere('pembina_3', $guruNama);
+                })
+                ->first();
+
+            if (!$ekstra) return redirect()->route('guru.tugas-tambahan');
+            $sourceNama = $ekstra->nama_ekstrakurikuler;
+
+            $siswaList = DB::table('anggota_ekstrakurikuler as ae')
+                ->join('siswa as s', 'ae.siswa_id', '=', 's.id')
+                ->where('ae.ekstrakurikuler_id', $sourceId)
+                ->where('ae.tahun_pelajaran', $tahunPelajaran)
+                ->where('ae.semester', $semesterAktif)
+                ->select('s.id as siswa_id', 's.nama', 's.nis', 's.nisn')
+                ->orderBy('s.nama')
+                ->get();
+
+        } elseif ($type == 'rombel') {
+            $rombel = DB::table('rombel')
+                ->where('id', $sourceId)
+                ->where('wali_kelas', $guruNama)
+                ->first();
+
+            if (!$rombel) return redirect()->route('guru.tugas-tambahan');
+            $sourceNama = $rombel->nama_rombel;
+
+            $tahunAjaran = explode('/', $tahunPelajaran);
+            $tahunAwal = intval($tahunAjaran[0]);
+
+            $siswaList = DB::table('siswa')
+                ->where(function($q) use ($tahunAwal, $sourceNama, $semesterAktif) {
+                    for ($offset = 0; $offset <= 2; $offset++) {
+                        $angkatan = $tahunAwal - $offset;
+                        $semNum = ($offset * 2) + ($semesterAktif == 'Ganjil' ? 1 : 2);
+                        $col = 'rombel_semester_' . $semNum;
+                        $q->orWhere(function($sub) use ($angkatan, $col, $sourceNama) {
+                            $sub->where('angkatan_masuk', $angkatan)->where($col, $sourceNama);
+                        });
+                    }
+                })
+                ->select('id as siswa_id', 'nama', 'nis', 'nisn')
+                ->orderBy('nama')
+                ->get();
+        } else {
+            return redirect()->route('guru.tugas-tambahan');
+        }
+
+        return view('guru.input-prestasi', compact('guru', 'type', 'sourceId', 'sourceNama', 'siswaList'));
+    }
+
+    public function store(Request $request)
+    {
+        $guru = Auth::guard('guru')->user();
+        if (!$guru) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $type = $request->type;
+        $sourceId = intval($request->source_id);
+        $siswaIds = array_filter(array_map('intval', explode(',', $request->siswa_ids ?? '')));
+        $juara = trim($request->juara ?? '');
+        $jenjang = $request->jenjang ?? '';
+        $namaKompetisi = trim($request->nama_kompetisi ?? '');
+        $penyelenggara = trim($request->penyelenggara ?? '');
+        $tanggalPelaksanaan = $request->tanggal_pelaksanaan ?? '';
+        $tipePeserta = $request->tipe_peserta ?? 'Single';
+
+        if (empty($siswaIds) || empty($juara) || empty($jenjang) || empty($namaKompetisi) || empty($penyelenggara) || empty($tanggalPelaksanaan)) {
+            return response()->json(['success' => false, 'message' => 'Semua field wajib diisi']);
+        }
+
+        $sumberPrestasi = ($type == 'ekstra') ? 'ekstrakurikuler' : 'rombel';
+
+        $periodik = DataPeriodik::aktif()->first();
+        $tahunPelajaran = $periodik->tahun_pelajaran ?? '2024/2025';
+        $semesterAktif = $periodik->semester ?? 'Ganjil';
+
+        DB::beginTransaction();
+        try {
+            $successCount = 0;
+            foreach ($siswaIds as $siswaId) {
+                DB::table('prestasi_siswa')->insert([
+                    'siswa_id' => $siswaId,
+                    'guru_id' => $guru->id,
+                    'sumber_prestasi' => $sumberPrestasi,
+                    'sumber_id' => $sourceId,
+                    'juara' => $juara,
+                    'jenjang' => $jenjang,
+                    'tipe_peserta' => $tipePeserta,
+                    'nama_kompetisi' => $namaKompetisi,
+                    'penyelenggara' => $penyelenggara,
+                    'tanggal_pelaksanaan' => $tanggalPelaksanaan,
+                    'tahun_pelajaran' => $tahunPelajaran,
+                    'semester' => $semesterAktif,
+                ]);
+                $successCount++;
+            }
+            DB::commit();
+            return response()->json(['success' => true, 'message' => "Prestasi berhasil disimpan untuk $successCount siswa!"]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
     }
 
     public function hapus(Request $request)
