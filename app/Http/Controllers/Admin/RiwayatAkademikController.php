@@ -27,6 +27,10 @@ class RiwayatAkademikController extends Controller
         $nisn = $request->query('nisn');
         
         if (empty($nisn)) {
+            // If accessed from guru-bk without NISN, show selector page
+            if (request()->routeIs('guru_bk.*')) {
+                return view('admin.riwayat-akademik.selector');
+            }
             return response('<div class="alert alert-danger">NISN tidak ditemukan.</div>');
         }
         
@@ -778,5 +782,39 @@ class RiwayatAkademikController extends Controller
             case 'D': return ['bg' => '#fee2e2', 'text' => '#dc2626', 'label' => 'Kurang'];
             default: return ['bg' => '#f3f4f6', 'text' => '#6b7280', 'label' => 'Belum Dinilai'];
         }
+    }
+
+    /**
+     * AJAX: Search students by name/nisn/nis
+     */
+    public function searchSiswa(Request $request)
+    {
+        $query = $request->input('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $siswa = Siswa::where(function($q) use ($query) {
+                $q->where('nama', 'like', "%{$query}%")
+                  ->orWhere('nisn', 'like', "%{$query}%")
+                  ->orWhere('nis', 'like', "%{$query}%");
+            })
+            ->select('id', 'nama', 'nisn', 'nis', 'jk', 'nama_rombel')
+            ->orderBy('nama')
+            ->limit(50)
+            ->get()
+            ->map(function($s) {
+                return [
+                    'id' => $s->id,
+                    'nama' => $s->nama,
+                    'nisn' => $s->nisn,
+                    'nis' => $s->nis,
+                    'jk' => $s->jk,
+                    'rombel' => $s->nama_rombel ?: '-',
+                ];
+            });
+
+        return response()->json($siswa);
     }
 }

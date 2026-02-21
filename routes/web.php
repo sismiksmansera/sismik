@@ -608,6 +608,7 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
     Route::get('/riwayat-akademik/print-all', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'printAll'])->name('riwayat-akademik.print-all');
     Route::get('/riwayat-akademik/detail-nilai', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'detailNilai'])->name('riwayat-akademik.detail-nilai');
     Route::get('/riwayat-akademik/detail-presensi', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'detailPresensi'])->name('riwayat-akademik.detail-presensi');
+    Route::get('/riwayat-akademik/search-siswa', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'searchSiswa'])->name('riwayat-akademik.search-siswa');
 });
 
 // Siswa Routes
