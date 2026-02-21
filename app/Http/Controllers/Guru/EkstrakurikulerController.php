@@ -274,11 +274,20 @@ class EkstrakurikulerController extends Controller
     private function getNilaiPredikat($nilai)
     {
         if ($nilai === null || $nilai === '' || $nilai === '-') return '-';
-        $n = intval($nilai);
-        if ($n >= 90) return 'Sangat Baik';
-        if ($n >= 80) return 'Baik';
-        if ($n >= 70) return 'Cukup';
-        return 'Kurang';
+        $v = strtoupper(trim($nilai));
+        if ($v === 'A') return 'Sangat Baik';
+        if ($v === 'B') return 'Baik';
+        if ($v === 'C') return 'Cukup';
+        if ($v === 'D') return 'Kurang';
+        // Fallback for numeric values
+        if (is_numeric($v)) {
+            $n = intval($v);
+            if ($n >= 90) return 'Sangat Baik';
+            if ($n >= 80) return 'Baik';
+            if ($n >= 70) return 'Cukup';
+            return 'Kurang';
+        }
+        return $v;
     }
 
     /**
