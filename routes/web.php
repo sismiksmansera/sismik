@@ -306,6 +306,8 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/riwayat-akademik', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'show'])->name('riwayat-akademik');
     Route::get('/riwayat-akademik/print', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'print'])->name('riwayat-akademik.print');
     Route::get('/riwayat-akademik/print-all', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'printAll'])->name('riwayat-akademik.print-all');
+    Route::get('/riwayat-akademik/detail-nilai', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'detailNilai'])->name('riwayat-akademik.detail-nilai');
+    Route::get('/riwayat-akademik/detail-presensi', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'detailPresensi'])->name('riwayat-akademik.detail-presensi');
     
     // Leger (Cetak Leger Nilai & Katrol)
     Route::get('/leger', [\App\Http\Controllers\Admin\LegerController::class, 'index'])->name('leger.index');
@@ -456,6 +458,8 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::get('/riwayat-akademik', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'show'])->name('riwayat-akademik');
     Route::get('/riwayat-akademik/print', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'print'])->name('riwayat-akademik.print');
     Route::get('/riwayat-akademik/print-all', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'printAll'])->name('riwayat-akademik.print-all');
+    Route::get('/riwayat-akademik/detail-nilai', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'detailNilai'])->name('riwayat-akademik.detail-nilai');
+    Route::get('/riwayat-akademik/detail-presensi', [\App\Http\Controllers\Admin\RiwayatAkademikController::class, 'detailPresensi'])->name('riwayat-akademik.detail-presensi');
     
     // Leger routes
     Route::get('/leger/print-nilai', [\App\Http\Controllers\Admin\LegerController::class, 'printNilai'])->name('leger.print-nilai');

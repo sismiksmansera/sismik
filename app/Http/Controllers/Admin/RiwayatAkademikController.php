@@ -12,6 +12,8 @@ use App\Models\AnggotaEkstrakurikuler;
 use App\Models\CatatanBimbingan;
 use App\Models\PrestasiSiswa;
 use App\Models\RaportSettings;
+use App\Models\Pelanggaran;
+use App\Models\PanggilanOrtu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -171,6 +173,26 @@ class RiwayatAkademikController extends Controller
             ->where('semester', $periodeAktif->semester)
             ->count();
         
+        // Get pelanggaran (via pivot table pelanggaran_siswa)
+        $pelanggaranList = Pelanggaran::whereHas('siswa', function($q) use ($siswa) {
+                $q->where('siswa.id', $siswa->id);
+            })
+            ->orderBy('tanggal', 'desc')
+            ->take(5)
+            ->get();
+        
+        $totalPelanggaran = Pelanggaran::whereHas('siswa', function($q) use ($siswa) {
+                $q->where('siswa.id', $siswa->id);
+            })->count();
+        
+        // Get panggilan ortu
+        $panggilanOrtuList = PanggilanOrtu::where('nisn', $nisn)
+            ->orderBy('tanggal_panggilan', 'desc')
+            ->take(5)
+            ->get();
+        
+        $totalPanggilanOrtu = PanggilanOrtu::where('nisn', $nisn)->count();
+        
         return view('admin.riwayat-akademik.show', compact(
             'siswa',
             'namaRombel',
@@ -183,7 +205,11 @@ class RiwayatAkademikController extends Controller
             'catatanBkList',
             'totalCatatanBk',
             'prestasiList',
-            'totalPrestasi'
+            'totalPrestasi',
+            'pelanggaranList',
+            'totalPelanggaran',
+            'panggilanOrtuList',
+            'totalPanggilanOrtu'
         ));
     }
     
@@ -634,6 +660,99 @@ class RiwayatAkademikController extends Controller
             'bolos' => $result->bolos ?? 0,
             'persentase' => $total > 0 ? round(($hadir / $total) * 100, 1) : 0
         ];
+    }
+    
+    /**
+     * Get detail nilai for a student per mapel (AJAX)
+     */
+    public function detailNilai(Request $request)
+    {
+        $nisn = $request->query('nisn');
+        $mapel = $request->query('mapel');
+        
+        if (empty($nisn) || empty($mapel)) {
+            return response()->json(['error' => 'Parameter tidak lengkap'], 400);
+        }
+        
+        $nilaiList = Penilaian::where('nisn', $nisn)
+            ->where('mapel', $mapel)
+            ->orderBy('tanggal_penilaian', 'desc')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'tanggal' => $item->tanggal_penilaian ? $item->tanggal_penilaian->format('d/m/Y') : '-',
+                    'jam_ke' => $item->jam_ke ?? '-',
+                    'materi' => $item->materi ?? '-',
+                    'nilai' => $item->nilai,
+                    'keterangan' => $item->keterangan ?? '-',
+                    'guru' => $item->guru ?? '-',
+                ];
+            });
+        
+        $nilaiArr = $nilaiList->pluck('nilai')->filter()->toArray();
+        $stats = [
+            'total' => count($nilaiArr),
+            'rata_rata' => count($nilaiArr) > 0 ? round(array_sum($nilaiArr) / count($nilaiArr), 2) : 0,
+            'tertinggi' => count($nilaiArr) > 0 ? max($nilaiArr) : 0,
+            'terendah' => count($nilaiArr) > 0 ? min($nilaiArr) : 0,
+        ];
+        
+        return response()->json([
+            'mapel' => $mapel,
+            'nilai' => $nilaiList,
+            'stats' => $stats,
+        ]);
+    }
+    
+    /**
+     * Get detail presensi for a student per mapel and status (AJAX)
+     */
+    public function detailPresensi(Request $request)
+    {
+        $nisn = $request->query('nisn');
+        $mapel = $request->query('mapel');
+        $status = $request->query('status'); // H, D, I, S, A, B
+        $tahun = $request->query('tahun');
+        $semester = $request->query('semester');
+        
+        if (empty($nisn) || empty($mapel) || empty($status)) {
+            return response()->json(['error' => 'Parameter tidak lengkap'], 400);
+        }
+        
+        // If no tahun/semester provided, use active period
+        if (empty($tahun) || empty($semester)) {
+            $periodeAktif = DataPeriodik::where('aktif', 'Ya')->first();
+            $tahun = $periodeAktif->tahun_pelajaran ?? date('Y') . '/' . (date('Y') + 1);
+            $semester = $periodeAktif->semester ?? 'Ganjil';
+        }
+        
+        $statusLabels = [
+            'H' => 'Hadir', 'D' => 'Dispen', 'I' => 'Izin',
+            'S' => 'Sakit', 'A' => 'Alfa', 'B' => 'Bolos'
+        ];
+        
+        $records = PresensiSiswa::where('nisn', $nisn)
+            ->where('mata_pelajaran', $mapel)
+            ->where('presensi', $status)
+            ->where('tahun_pelajaran', $tahun)
+            ->where('semester', $semester)
+            ->orderBy('tanggal_presensi', 'desc')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'tanggal' => $item->tanggal_presensi ? date('d/m/Y', strtotime($item->tanggal_presensi)) : '-',
+                    'hari' => $item->tanggal_presensi ? \Carbon\Carbon::parse($item->tanggal_presensi)->locale('id')->isoFormat('dddd') : '-',
+                    'guru' => $item->guru_pengajar ?? '-',
+                ];
+            });
+        
+        return response()->json([
+            'mapel' => $mapel,
+            'status' => $status,
+            'status_label' => $statusLabels[$status] ?? $status,
+            'total' => count($records),
+            'records' => $records,
+        ]);
     }
     
     /**

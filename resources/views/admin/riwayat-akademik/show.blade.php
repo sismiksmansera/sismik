@@ -265,6 +265,24 @@
     margin-bottom: 12px;
 }
 
+/* PELANGGARAN CARD */
+.pelanggaran-card {
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border-left: 4px solid #ef4444;
+    margin-bottom: 12px;
+}
+
+/* PANGGILAN ORTU CARD */
+.panggilan-card {
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border-left: 4px solid #6366f1;
+    margin-bottom: 12px;
+}
+
 /* LEGEND */
 .legend {
     padding: 15px 25px;
@@ -289,6 +307,199 @@
     border-radius: 3px;
 }
 
+/* MODAL DETAIL NILAI */
+.nilai-clickable {
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 8px;
+    padding: 4px 8px;
+}
+.nilai-clickable:hover {
+    background: #667eea22;
+    transform: scale(1.1);
+}
+.modal-nilai-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+.modal-nilai-overlay.active {
+    display: flex;
+}
+.modal-nilai-box {
+    background: white;
+    border-radius: 20px;
+    width: 95%;
+    max-width: 750px;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+@keyframes modalSlideIn {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.modal-nilai-header {
+    padding: 20px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-nilai-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+.modal-nilai-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.modal-nilai-close:hover {
+    background: rgba(255,255,255,0.4);
+}
+.modal-nilai-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 15px 25px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+}
+.stat-box {
+    text-align: center;
+    padding: 10px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.stat-box .stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+.stat-box .stat-label {
+    font-size: 0.7rem;
+    color: #6b7280;
+    font-weight: 600;
+}
+.modal-nilai-body {
+    padding: 20px 25px;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+.detail-nilai-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.detail-nilai-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    border-bottom: 2px solid #e5e7eb;
+    text-transform: uppercase;
+}
+.detail-nilai-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.85rem;
+    color: #374151;
+}
+.detail-nilai-table tbody tr:hover {
+    background: #f8fafc;
+}
+.detail-nilai-table .nilai-cell {
+    font-weight: 700;
+    text-align: center;
+}
+.presensi-clickable {
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 6px;
+    padding: 2px 6px;
+    display: inline-block;
+}
+.presensi-clickable:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.modal-presensi-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+.modal-presensi-overlay.active {
+    display: flex;
+}
+.modal-presensi-box {
+    background: white;
+    border-radius: 20px;
+    width: 95%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+.modal-presensi-header {
+    padding: 20px 25px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-presensi-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+.modal-presensi-body {
+    padding: 20px 25px;
+    max-height: 55vh;
+    overflow-y: auto;
+}
+.presensi-date-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border-left: 3px solid;
+}
+.presensi-date-item .date-info {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.9rem;
+}
+.presensi-date-item .day-info {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+.presensi-date-item .guru-info {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
     .content-header { padding: 20px 15px; }
@@ -298,6 +509,7 @@
     .header-actions { width: 100%; }
     .btn-header { flex: 1; justify-content: center; }
     .presensi-grid { grid-template-columns: repeat(3, 1fr); }
+    .modal-nilai-stats { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 @endpush
@@ -453,9 +665,16 @@
                                         <div style="font-size: 0.75rem; color: #6b7280;">{{ $nilai['nama_guru'] }}</div>
                                     </td>
                                     <td style="text-align: center;">
-                                        <span style="font-weight: 700; color: {{ $predikat['color'] }}; font-size: 1rem;">
-                                            {{ $nilai['total_nilai'] > 0 ? number_format($nilai['rata_rata'], 1) : '-' }}
+                                        @if($nilai['total_nilai'] > 0)
+                                        <span class="nilai-clickable" onclick="showDetailNilai('{{ $siswa->nisn }}', '{{ addslashes($nilai['nama_mapel']) }}')" title="Klik untuk lihat detail nilai">
+                                            <span style="font-weight: 700; color: {{ $predikat['color'] }}; font-size: 1rem;">
+                                                {{ number_format($nilai['rata_rata'], 1) }}
+                                            </span>
+                                            <i class="fas fa-search-plus" style="font-size: 0.6rem; color: #9ca3af; margin-left: 3px;"></i>
                                         </span>
+                                        @else
+                                        <span style="font-weight: 700; color: #9ca3af; font-size: 1rem;">-</span>
+                                        @endif
                                     </td>
                                     <td style="text-align: center;">
                                         @if($nilai['total_nilai'] > 0)
@@ -467,12 +686,36 @@
                                         @endif
                                     </td>
                                     <td style="text-align: center; color: #6b7280; font-size: 0.85rem;">{{ $nilai['total_nilai'] }}</td>
-                                    <td style="text-align: center; font-weight: 600; color: #15803d; font-size: 0.85rem;">{{ $pres['hadir'] }}</td>
-                                    <td style="text-align: center; font-weight: 600; color: #1d4ed8; font-size: 0.85rem;">{{ $pres['dispen'] }}</td>
-                                    <td style="text-align: center; font-weight: 600; color: #5b21b6; font-size: 0.85rem;">{{ $pres['izin'] }}</td>
-                                    <td style="text-align: center; font-weight: 600; color: #92400e; font-size: 0.85rem;">{{ $pres['sakit'] }}</td>
-                                    <td style="text-align: center; font-weight: 600; color: #dc2626; font-size: 0.85rem;">{{ $pres['alfa'] }}</td>
-                                    <td style="text-align: center; font-weight: 600; color: #4b5563; font-size: 0.85rem;">{{ $pres['bolos'] }}</td>
+                                    <td style="text-align: center; font-weight: 600; color: #15803d; font-size: 0.85rem;">
+                                        @if($pres['hadir'] > 0)
+                                        <span class="presensi-clickable" style="background: #dcfce722;" onclick="showDetailPresensi('{{ $siswa->nisn }}', '{{ addslashes($nilai['nama_mapel']) }}', 'H', '{{ $periodeAktif->tahun_pelajaran }}', '{{ $periodeAktif->semester }}')">{{ $pres['hadir'] }}</span>
+                                        @else 0 @endif
+                                    </td>
+                                    <td style="text-align: center; font-weight: 600; color: #1d4ed8; font-size: 0.85rem;">
+                                        @if($pres['dispen'] > 0)
+                                        <span class="presensi-clickable" style="background: #dbeafe22;" onclick="showDetailPresensi('{{ $siswa->nisn }}', '{{ addslashes($nilai['nama_mapel']) }}', 'D', '{{ $periodeAktif->tahun_pelajaran }}', '{{ $periodeAktif->semester }}')">{{ $pres['dispen'] }}</span>
+                                        @else 0 @endif
+                                    </td>
+                                    <td style="text-align: center; font-weight: 600; color: #5b21b6; font-size: 0.85rem;">
+                                        @if($pres['izin'] > 0)
+                                        <span class="presensi-clickable" style="background: #ede9fe22;" onclick="showDetailPresensi('{{ $siswa->nisn }}', '{{ addslashes($nilai['nama_mapel']) }}', 'I', '{{ $periodeAktif->tahun_pelajaran }}', '{{ $periodeAktif->semester }}')">{{ $pres['izin'] }}</span>
+                                        @else 0 @endif
+                                    </td>
+                                    <td style="text-align: center; font-weight: 600; color: #92400e; font-size: 0.85rem;">
+                                        @if($pres['sakit'] > 0)
+                                        <span class="presensi-clickable" style="background: #fef3c722;" onclick="showDetailPresensi('{{ $siswa->nisn }}', '{{ addslashes($nilai['nama_mapel']) }}', 'S', '{{ $periodeAktif->tahun_pelajaran }}', '{{ $periodeAktif->semester }}')">{{ $pres['sakit'] }}</span>
+                                        @else 0 @endif
+                                    </td>
+                                    <td style="text-align: center; font-weight: 600; color: #dc2626; font-size: 0.85rem;">
+                                        @if($pres['alfa'] > 0)
+                                        <span class="presensi-clickable" style="background: #fee2e222;" onclick="showDetailPresensi('{{ $siswa->nisn }}', '{{ addslashes($nilai['nama_mapel']) }}', 'A', '{{ $periodeAktif->tahun_pelajaran }}', '{{ $periodeAktif->semester }}')">{{ $pres['alfa'] }}</span>
+                                        @else 0 @endif
+                                    </td>
+                                    <td style="text-align: center; font-weight: 600; color: #4b5563; font-size: 0.85rem;">
+                                        @if($pres['bolos'] > 0)
+                                        <span class="presensi-clickable" style="background: #f3f4f622;" onclick="showDetailPresensi('{{ $siswa->nisn }}', '{{ addslashes($nilai['nama_mapel']) }}', 'B', '{{ $periodeAktif->tahun_pelajaran }}', '{{ $periodeAktif->semester }}')">{{ $pres['bolos'] }}</span>
+                                        @else 0 @endif
+                                    </td>
                                     <td style="text-align: center;">
                                         <span style="font-weight: 700; color: {{ $persenColor }}; font-size: 0.9rem;">
                                             {{ $pres['total'] > 0 ? $pres['persentase'] . '%' : '-' }}
@@ -672,7 +915,279 @@
                 </div>
             </div>
             
+            <!-- TWO COLUMN GRID: PELANGGARAN & PANGGILAN ORTU -->
+            <div class="two-column-grid">
+                <!-- RIWAYAT PELANGGARAN -->
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                            Riwayat Pelanggaran
+                        </h2>
+                        @if($totalPelanggaran > 5)
+                            <span style="font-size: 0.8rem; color: #6b7280;">Menampilkan 5 dari {{ $totalPelanggaran }}</span>
+                        @elseif($totalPelanggaran > 0)
+                            <span class="section-badge" style="background: linear-gradient(135deg, #ef4444, #dc2626);">{{ $totalPelanggaran }} Pelanggaran</span>
+                        @endif
+                    </div>
+                    <div style="padding: 20px;">
+                        @if(count($pelanggaranList) > 0)
+                            @foreach($pelanggaranList as $pelanggaran)
+                                <div class="pelanggaran-card">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                        <span style="font-weight: 600; color: #1f2937;">{{ $pelanggaran->jenis_pelanggaran == 'Lainnya' ? ($pelanggaran->jenis_lainnya ?: 'Lainnya') : $pelanggaran->jenis_pelanggaran }}</span>
+                                        <span style="font-size: 0.75rem; color: #6b7280;">{{ \Carbon\Carbon::parse($pelanggaran->tanggal)->format('d M Y') }}</span>
+                                    </div>
+                                    @if($pelanggaran->deskripsi)
+                                        <p style="font-size: 0.85rem; color: #4b5563; margin: 0 0 8px 0;">{{ Str::limit($pelanggaran->deskripsi, 100) }}</p>
+                                    @endif
+                                    @if($pelanggaran->sanksi)
+                                        <span style="display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; background: #fef3c7; color: #92400e;">
+                                            <i class="fas fa-gavel"></i> {{ Str::limit($pelanggaran->sanksi, 50) }}
+                                        </span>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @else
+                            <div style="text-align: center; color: #6b7280; padding: 30px;">
+                                <i class="fas fa-check-circle" style="font-size: 30px; margin-bottom: 10px; color: #10b981;"></i>
+                                <p>Tidak ada riwayat pelanggaran. 👍</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                
+                <!-- RIWAYAT PANGGILAN ORANG TUA -->
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-phone-alt" style="color: #6366f1;"></i>
+                            Panggilan Orang Tua
+                        </h2>
+                        @if($totalPanggilanOrtu > 5)
+                            <span style="font-size: 0.8rem; color: #6b7280;">Menampilkan 5 dari {{ $totalPanggilanOrtu }}</span>
+                        @elseif($totalPanggilanOrtu > 0)
+                            <span class="section-badge" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">{{ $totalPanggilanOrtu }} Panggilan</span>
+                        @endif
+                    </div>
+                    <div style="padding: 20px;">
+                        @if(count($panggilanOrtuList) > 0)
+                            @foreach($panggilanOrtuList as $panggilan)
+                                <div class="panggilan-card">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                        <span style="font-weight: 600; color: #1f2937;">{{ $panggilan->perihal }}</span>
+                                        <span style="display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;
+                                            {{ $panggilan->status == 'Hadir' ? 'background: #dcfce7; color: #15803d;' : ($panggilan->status == 'Tidak Hadir' ? 'background: #fee2e2; color: #dc2626;' : 'background: #fef3c7; color: #a16207;') }}">
+                                            {{ $panggilan->status ?? 'Menunggu' }}
+                                        </span>
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #6b7280; margin-bottom: 6px;">
+                                        <span><i class="fas fa-calendar"></i> {{ $panggilan->tanggal_panggilan ? \Carbon\Carbon::parse($panggilan->tanggal_panggilan)->format('d M Y') : '-' }}</span>
+                                        @if($panggilan->jam_panggilan)
+                                            <span style="margin-left: 10px;"><i class="fas fa-clock"></i> {{ $panggilan->jam_panggilan }}</span>
+                                        @endif
+                                    </div>
+                                    @if($panggilan->alasan)
+                                        <p style="font-size: 0.8rem; color: #4b5563; margin: 0;">{{ Str::limit($panggilan->alasan, 100) }}</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @else
+                            <div style="text-align: center; color: #6b7280; padding: 30px;">
+                                <i class="fas fa-phone-slash" style="font-size: 30px; margin-bottom: 10px; color: #d1d5db;"></i>
+                                <p>Tidak ada riwayat panggilan orang tua.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
         </div>
     </div>
 </div>
+
+<!-- Modal Detail Nilai -->
+<div class="modal-nilai-overlay" id="modalDetailNilai">
+    <div class="modal-nilai-box">
+        <div class="modal-nilai-header">
+            <h3><i class="fas fa-chart-bar"></i> Detail Nilai: <span id="modalMapelName">-</span></h3>
+            <button class="modal-nilai-close" onclick="closeDetailNilai()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-nilai-stats" id="modalNilaiStats">
+            <div class="stat-box">
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total Penilaian</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="statRata" style="color: #667eea;">0</div>
+                <div class="stat-label">Rata-rata</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="statTertinggi" style="color: #10b981;">0</div>
+                <div class="stat-label">Tertinggi</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="statTerendah" style="color: #ef4444;">0</div>
+                <div class="stat-label">Terendah</div>
+            </div>
+        </div>
+        <div class="modal-nilai-body">
+            <table class="detail-nilai-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Tanggal</th>
+                        <th>Jam Ke</th>
+                        <th>Materi</th>
+                        <th style="text-align: center;">Nilai</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody id="modalNilaiBody">
+                    <tr><td colspan="6" style="text-align: center; padding: 30px; color: #6b7280;">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Presensi -->
+<div class="modal-presensi-overlay" id="modalDetailPresensi">
+    <div class="modal-presensi-box">
+        <div class="modal-presensi-header" id="modalPresensiHeader">
+            <div>
+                <h3><i class="fas fa-calendar-check"></i> <span id="modalPresensiStatus">-</span></h3>
+                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 4px;">
+                    <span id="modalPresensiMapel">-</span> · <span id="modalPresensiCount">0 kali</span>
+                </div>
+            </div>
+            <button class="modal-nilai-close" onclick="closeDetailPresensi()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-presensi-body" id="modalPresensiBody">
+            <div style="text-align: center; padding: 30px; color: #6b7280;">Memuat data...</div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+const presensiColors = {
+    'H': { bg: 'linear-gradient(135deg, #10b981, #059669)', border: '#10b981' },
+    'D': { bg: 'linear-gradient(135deg, #3b82f6, #2563eb)', border: '#3b82f6' },
+    'I': { bg: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', border: '#8b5cf6' },
+    'S': { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', border: '#f59e0b' },
+    'A': { bg: 'linear-gradient(135deg, #ef4444, #dc2626)', border: '#ef4444' },
+    'B': { bg: 'linear-gradient(135deg, #6b7280, #4b5563)', border: '#6b7280' }
+};
+
+function showDetailNilai(nisn, mapel) {
+    const modal = document.getElementById('modalDetailNilai');
+    const tbody = document.getElementById('modalNilaiBody');
+    document.getElementById('modalMapelName').textContent = mapel;
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6b7280;"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
+    modal.classList.add('active');
+    
+    const prefix = window.location.pathname.includes('/guru/') ? '/guru' : '/admin';
+    const url = prefix + '/riwayat-akademik/detail-nilai?nisn=' + encodeURIComponent(nisn) + '&mapel=' + encodeURIComponent(mapel);
+    
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('statTotal').textContent = data.stats.total;
+            document.getElementById('statRata').textContent = data.stats.rata_rata;
+            document.getElementById('statTertinggi').textContent = data.stats.tertinggi;
+            document.getElementById('statTerendah').textContent = data.stats.terendah;
+            
+            if (data.nilai.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6b7280;"><i class="fas fa-inbox"></i> Belum ada data nilai.</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            data.nilai.forEach((n, i) => {
+                const nilaiColor = n.nilai >= 85 ? '#10b981' : (n.nilai >= 75 ? '#3b82f6' : (n.nilai >= 65 ? '#f59e0b' : '#ef4444'));
+                html += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${n.tanggal}</td>
+                    <td>${n.jam_ke}</td>
+                    <td>${n.materi}</td>
+                    <td class="nilai-cell" style="color: ${nilaiColor};">${n.nilai}</td>
+                    <td>${n.keterangan}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        })
+        .catch(err => {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #ef4444;"><i class="fas fa-exclamation-circle"></i> Gagal memuat data.</td></tr>';
+        });
+}
+
+function closeDetailNilai() {
+    document.getElementById('modalDetailNilai').classList.remove('active');
+}
+
+document.getElementById('modalDetailNilai').addEventListener('click', function(e) {
+    if (e.target === this) closeDetailNilai();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDetailNilai();
+        closeDetailPresensi();
+    }
+});
+
+function showDetailPresensi(nisn, mapel, status, tahun, semester) {
+    const modal = document.getElementById('modalDetailPresensi');
+    const body = document.getElementById('modalPresensiBody');
+    const header = document.getElementById('modalPresensiHeader');
+    const colors = presensiColors[status] || presensiColors['H'];
+    
+    header.style.background = colors.bg;
+    document.getElementById('modalPresensiMapel').textContent = mapel;
+    document.getElementById('modalPresensiStatus').textContent = 
+        {H:'Hadir',D:'Dispen',I:'Izin',S:'Sakit',A:'Alfa',B:'Bolos'}[status] || status;
+    
+    body.innerHTML = '<div style="text-align:center;padding:30px;color:#6b7280;"><i class="fas fa-spinner fa-spin"></i> Memuat data...</div>';
+    modal.classList.add('active');
+    
+    const prefix = window.location.pathname.includes('/guru/') ? '/guru' : '/admin';
+    const url = `${prefix}/riwayat-akademik/detail-presensi?nisn=${encodeURIComponent(nisn)}&mapel=${encodeURIComponent(mapel)}&status=${status}&tahun=${encodeURIComponent(tahun)}&semester=${encodeURIComponent(semester)}`;
+    
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            if (data.records.length === 0) {
+                body.innerHTML = '<div style="text-align:center;padding:30px;color:#6b7280;"><i class="fas fa-inbox"></i> Tidak ada data.</div>';
+                return;
+            }
+            
+            document.getElementById('modalPresensiCount').textContent = data.total + ' kali';
+            
+            let html = '';
+            data.records.forEach((r, i) => {
+                html += `<div class="presensi-date-item" style="border-color: ${colors.border};">
+                    <div>
+                        <div class="date-info">${r.hari}, ${r.tanggal}</div>
+                        <div class="guru-info"><i class="fas fa-user-tie"></i> ${r.guru}</div>
+                    </div>
+                    <span style="font-size:0.75rem;font-weight:600;padding:3px 10px;border-radius:15px;background:${colors.border}22;color:${colors.border};">#${i+1}</span>
+                </div>`;
+            });
+            body.innerHTML = html;
+        })
+        .catch(err => {
+            body.innerHTML = '<div style="text-align:center;padding:30px;color:#ef4444;"><i class="fas fa-exclamation-circle"></i> Gagal memuat data.</div>';
+        });
+}
+
+function closeDetailPresensi() {
+    document.getElementById('modalDetailPresensi').classList.remove('active');
+}
+
+document.getElementById('modalDetailPresensi').addEventListener('click', function(e) {
+    if (e.target === this) closeDetailPresensi();
+});
+</script>
+@endpush
 @endsection
