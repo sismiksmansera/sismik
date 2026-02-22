@@ -127,6 +127,11 @@ class AnggotaEkstrakurikulerController extends Controller
 
     public function tambahAnggota(Request $request)
     {
+        $guru = Auth::guard('guru')->user();
+        if (!$guru) {
+            return redirect()->route('login')->with('error', 'Data guru tidak ditemukan!');
+        }
+
         $ekstraId = $request->id;
         $siswaIds = $request->siswa_ids ?? [];
 
@@ -139,42 +144,64 @@ class AnggotaEkstrakurikulerController extends Controller
             return back()->with('error', 'Ekstrakurikuler tidak ditemukan.');
         }
 
+        // Verify guru is pembina OR Koordinator Ekstrakurikuler
+        $guruNama = $guru->nama;
+        $isPembina = ($ekstra->pembina_1 == $guruNama || $ekstra->pembina_2 == $guruNama || $ekstra->pembina_3 == $guruNama);
+        $isKoordinator = DB::table('tugas_tambahan_guru as t')
+            ->join('jenis_tugas_tambahan_lain as j', 't.jenis_tugas_id', '=', 'j.id')
+            ->where('t.tipe_guru', 'guru')
+            ->where('t.guru_id', $guru->id)
+            ->where('j.nama_tugas', 'like', '%ekstrakurikuler%')
+            ->exists();
+
+        if (!$isPembina && !$isKoordinator) {
+            return back()->with('error', 'Anda tidak memiliki akses untuk menambah anggota ke ekstrakurikuler ini.');
+        }
+
         $successCount = 0;
         $errorCount = 0;
         $tanggalBergabung = now();
 
-        foreach ($siswaIds as $siswaId) {
-            $siswaId = intval($siswaId);
-            
-            // Check if already exists
-            $exists = DB::table('anggota_ekstrakurikuler')
-                ->where('ekstrakurikuler_id', $ekstraId)
-                ->where('siswa_id', $siswaId)
-                ->where('tahun_pelajaran', $ekstra->tahun_pelajaran)
-                ->where('semester', $ekstra->semester)
-                ->exists();
+        DB::beginTransaction();
+        try {
+            foreach ($siswaIds as $siswaId) {
+                $siswaId = intval($siswaId);
+                
+                // Check if already exists
+                $exists = DB::table('anggota_ekstrakurikuler')
+                    ->where('ekstrakurikuler_id', $ekstraId)
+                    ->where('siswa_id', $siswaId)
+                    ->where('tahun_pelajaran', $ekstra->tahun_pelajaran)
+                    ->where('semester', $ekstra->semester)
+                    ->exists();
 
-            if (!$exists) {
-                DB::table('anggota_ekstrakurikuler')->insert([
-                    'ekstrakurikuler_id' => $ekstraId,
-                    'siswa_id' => $siswaId,
-                    'tahun_pelajaran' => $ekstra->tahun_pelajaran,
-                    'semester' => $ekstra->semester,
-                    'tanggal_bergabung' => $tanggalBergabung,
-                    'status' => 'Aktif'
-                ]);
-                $successCount++;
-            } else {
-                $errorCount++;
+                if (!$exists) {
+                    DB::table('anggota_ekstrakurikuler')->insert([
+                        'ekstrakurikuler_id' => $ekstraId,
+                        'siswa_id' => $siswaId,
+                        'tahun_pelajaran' => $ekstra->tahun_pelajaran,
+                        'semester' => $ekstra->semester,
+                        'tanggal_bergabung' => $tanggalBergabung,
+                        'status' => 'Aktif'
+                    ]);
+                    $successCount++;
+                } else {
+                    $errorCount++;
+                }
             }
-        }
 
-        $message = "Berhasil menambahkan $successCount anggota.";
-        if ($errorCount > 0) {
-            $message .= " $errorCount anggota gagal (sudah terdaftar).";
-        }
+            DB::commit();
 
-        return back()->with('success', $message);
+            $message = "Berhasil menambahkan $successCount anggota.";
+            if ($errorCount > 0) {
+                $message .= " $errorCount anggota gagal (sudah terdaftar).";
+            }
+
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menambahkan anggota: ' . $e->getMessage());
+        }
     }
 
     public function hapusAnggota(Request $request)

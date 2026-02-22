@@ -451,8 +451,23 @@ class EkstrakurikulerController extends Controller
             });
         }
         
-        if (!empty($rombel)) {
-            $query->where('rombel_aktif', $rombel);
+        // Filter by rombel: compute which rombel_semester_X to check
+        $periodeAktif = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodeAktif->tahun_pelajaran ?? date('Y') . '/' . (date('Y') + 1);
+        $semesterAktif = $periodeAktif->semester ?? 'Ganjil';
+        
+        if (!empty($rombel) && !empty($angkatan)) {
+            $rombelCol = $this->getRombelColumnForFilter($angkatan, $tahunAktif, $semesterAktif);
+            if ($rombelCol) {
+                $query->where($rombelCol, $rombel);
+            }
+        } elseif (!empty($rombel)) {
+            // Fallback: search across all rombel_semester columns
+            $query->where(function($q) use ($rombel) {
+                for ($i = 1; $i <= 6; $i++) {
+                    $q->orWhere("rombel_semester_$i", $rombel);
+                }
+            });
         }
         
         if (!empty($angkatan)) {
@@ -461,12 +476,12 @@ class EkstrakurikulerController extends Controller
         
         $siswa = $query->orderBy('nama', 'asc')->limit(100)->get();
         
-        $data = $siswa->map(function($s) {
+        $data = $siswa->map(function($s) use ($tahunAktif, $semesterAktif) {
             return [
                 'id' => $s->id,
                 'nama' => $s->nama,
                 'nis' => $s->nis,
-                'rombel_aktif' => $s->rombel_aktif,
+                'rombel_aktif' => $this->computeRombelAktif($s, $tahunAktif, $semesterAktif),
                 'angkatan' => $s->angkatan_masuk
             ];
         });
@@ -490,12 +505,16 @@ class EkstrakurikulerController extends Controller
         $idArray = explode(',', $ids);
         $siswa = \App\Models\Siswa::whereIn('id', $idArray)->get();
         
-        $data = $siswa->map(function($s) {
+        $periodeAktif = \App\Models\DataPeriodik::where('aktif', 'Ya')->first();
+        $tahunAktif = $periodeAktif->tahun_pelajaran ?? date('Y') . '/' . (date('Y') + 1);
+        $semesterAktif = $periodeAktif->semester ?? 'Ganjil';
+        
+        $data = $siswa->map(function($s) use ($tahunAktif, $semesterAktif) {
             return [
                 'id' => $s->id,
                 'nama' => $s->nama,
                 'nis' => $s->nis,
-                'rombel_aktif' => $s->rombel_aktif,
+                'rombel_aktif' => $this->computeRombelAktif($s, $tahunAktif, $semesterAktif),
                 'angkatan' => $s->angkatan_masuk
             ];
         });
@@ -504,6 +523,65 @@ class EkstrakurikulerController extends Controller
             'success' => true,
             'data' => $data
         ]);
+    }
+    
+    /**
+     * Compute rombel_aktif from angkatan_masuk and rombel_semester_* columns
+     */
+    private function computeRombelAktif($siswa, $tahunPelajaran, $semester)
+    {
+        $angkatan = $siswa->angkatan_masuk;
+        if (!empty($angkatan) && !empty($tahunPelajaran)) {
+            $tahunAjaran = explode('/', $tahunPelajaran);
+            $tahunAwal = intval($tahunAjaran[0] ?? 0);
+            if ($tahunAwal > 0) {
+                $tingkat = $tahunAwal - intval($angkatan) + 1;
+                if (strtolower($semester) == 'ganjil') {
+                    $semCol = ($tingkat * 2) - 1;
+                } else {
+                    $semCol = $tingkat * 2;
+                }
+                $rombelCol = 'rombel_semester_' . $semCol;
+                if ($semCol >= 1 && $semCol <= 6 && !empty($siswa->$rombelCol)) {
+                    return $siswa->$rombelCol;
+                }
+            }
+        }
+        
+        // Fallback: use latest available rombel
+        for ($i = 6; $i >= 1; $i--) {
+            $col = "rombel_semester_$i";
+            if (!empty($siswa->$col)) {
+                return $siswa->$col;
+            }
+        }
+        
+        return '-';
+    }
+    
+    /**
+     * Get the correct rombel_semester_X column name for DB filtering
+     */
+    private function getRombelColumnForFilter($angkatan, $tahunPelajaran, $semester)
+    {
+        if (empty($angkatan) || empty($tahunPelajaran)) return null;
+        
+        $tahunAjaran = explode('/', $tahunPelajaran);
+        $tahunAwal = intval($tahunAjaran[0] ?? 0);
+        if ($tahunAwal <= 0) return null;
+        
+        $tingkat = $tahunAwal - intval($angkatan) + 1;
+        if (strtolower($semester ?: '') == 'ganjil') {
+            $semCol = ($tingkat * 2) - 1;
+        } else {
+            $semCol = $tingkat * 2;
+        }
+        
+        if ($semCol >= 1 && $semCol <= 6) {
+            return 'rombel_semester_' . $semCol;
+        }
+        
+        return null;
     }
     
     /**

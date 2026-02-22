@@ -83,6 +83,20 @@ class AnggotaEkstrakurikulerController extends Controller
             return back()->with('error', 'Data ekstrakurikuler tidak ditemukan!');
         }
 
+        // Verify guru BK is pembina OR Koordinator Ekstrakurikuler
+        $guruBKNama = $guruBK->nama;
+        $isPembina = ($ekstra->pembina_1 == $guruBKNama || $ekstra->pembina_2 == $guruBKNama || $ekstra->pembina_3 == $guruBKNama);
+        $isKoordinator = DB::table('tugas_tambahan_guru as t')
+            ->join('jenis_tugas_tambahan_lain as j', 't.jenis_tugas_id', '=', 'j.id')
+            ->where('t.tipe_guru', 'guru_bk')
+            ->where('t.guru_id', $guruBK->id)
+            ->where('j.nama_tugas', 'like', '%ekstrakurikuler%')
+            ->exists();
+
+        if (!$isPembina && !$isKoordinator) {
+            return back()->with('error', 'Anda tidak memiliki akses untuk menambah anggota ke ekstrakurikuler ini.');
+        }
+
         $siswa_ids = $request->input('siswa_ids', []);
 
         if (empty($siswa_ids)) {
@@ -93,45 +107,53 @@ class AnggotaEkstrakurikulerController extends Controller
         $error_count = 0;
         $tanggal_bergabung = now();
 
-        foreach ($siswa_ids as $siswa_id) {
-            $siswa_id = intval($siswa_id);
+        DB::beginTransaction();
+        try {
+            foreach ($siswa_ids as $siswa_id) {
+                $siswa_id = intval($siswa_id);
 
-            // Check if already registered
-            $exists = DB::table('anggota_ekstrakurikuler')
-                ->where('ekstrakurikuler_id', $id)
-                ->where('siswa_id', $siswa_id)
-                ->where('tahun_pelajaran', $ekstra->tahun_pelajaran)
-                ->where('semester', $ekstra->semester)
-                ->exists();
+                // Check if already registered
+                $exists = DB::table('anggota_ekstrakurikuler')
+                    ->where('ekstrakurikuler_id', $id)
+                    ->where('siswa_id', $siswa_id)
+                    ->where('tahun_pelajaran', $ekstra->tahun_pelajaran)
+                    ->where('semester', $ekstra->semester)
+                    ->exists();
 
-            if (!$exists) {
-                $inserted = DB::table('anggota_ekstrakurikuler')->insert([
-                    'ekstrakurikuler_id' => $id,
-                    'siswa_id' => $siswa_id,
-                    'tahun_pelajaran' => $ekstra->tahun_pelajaran,
-                    'semester' => $ekstra->semester,
-                    'tanggal_bergabung' => $tanggal_bergabung,
-                    'status' => 'Aktif'
-                ]);
+                if (!$exists) {
+                    $inserted = DB::table('anggota_ekstrakurikuler')->insert([
+                        'ekstrakurikuler_id' => $id,
+                        'siswa_id' => $siswa_id,
+                        'tahun_pelajaran' => $ekstra->tahun_pelajaran,
+                        'semester' => $ekstra->semester,
+                        'tanggal_bergabung' => $tanggal_bergabung,
+                        'status' => 'Aktif'
+                    ]);
 
-                if ($inserted) {
-                    $success_count++;
+                    if ($inserted) {
+                        $success_count++;
+                    } else {
+                        $error_count++;
+                    }
                 } else {
                     $error_count++;
                 }
-            } else {
-                $error_count++;
             }
-        }
 
-        if ($success_count > 0) {
-            $message = "Berhasil menambahkan $success_count anggota.";
-            if ($error_count > 0) {
-                $message .= " $error_count anggota gagal (mungkin sudah terdaftar).";
+            DB::commit();
+
+            if ($success_count > 0) {
+                $message = "Berhasil menambahkan $success_count anggota.";
+                if ($error_count > 0) {
+                    $message .= " $error_count anggota gagal (mungkin sudah terdaftar).";
+                }
+                return back()->with('success', $message);
+            } else {
+                return back()->with('error', 'Gagal menambahkan anggota. Semua siswa sudah terdaftar.');
             }
-            return back()->with('success', $message);
-        } else {
-            return back()->with('error', 'Gagal menambahkan anggota. Semua siswa sudah terdaftar.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menambahkan anggota: ' . $e->getMessage());
         }
     }
 
