@@ -123,6 +123,9 @@
         align-items: center;
         cursor: pointer;
         transition: all 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        -webkit-user-select: none;
     }
     
     /* Status: Sudah Presensi (Green) */
@@ -164,13 +167,15 @@
     /* Card body collapsible */
     .schedule-card-body { 
         padding: 20px; 
-        transition: all 0.3s ease;
-        max-height: 500px;
+        transition: max-height 0.35s ease, padding 0.3s ease, opacity 0.25s ease;
+        max-height: 300px;
         overflow: hidden;
+        opacity: 1;
     }
     .schedule-card.collapsed .schedule-card-body {
         max-height: 0;
         padding: 0 20px;
+        opacity: 0;
     }
     
     /* Collapsed info shown in header */
@@ -537,8 +542,8 @@
                             $waktuText = ($waktuMulai !== '-' && $waktuSelesai !== '-') ? "($waktuMulai - $waktuSelesai)" : '';
                             $jamKeParam = implode(',', $jadwal['jam_list']);
                         @endphp
-                        <div class="schedule-card collapsed {{ $jadwal['sudah_izin'] ? 'status-izin' : ($jadwal['sudah_presensi'] ? 'status-done' : 'status-pending') }}" onclick="toggleScheduleCard(this)">
-                            <div class="schedule-card-header">
+                        <div class="schedule-card collapsed {{ $jadwal['sudah_izin'] ? 'status-izin' : ($jadwal['sudah_presensi'] ? 'status-done' : 'status-pending') }}">
+                            <div class="schedule-card-header" onclick="toggleScheduleCard(this.parentElement, event)">
                                 <div style="flex: 1;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <i class="fas fa-school"></i>
@@ -627,9 +632,9 @@
 
 @push('scripts')
 <script>
-    function toggleScheduleCard(card) {
-        // Don't toggle if clicking on a link/button inside the card
-        if (event.target.closest('.action-btn') || event.target.closest('a')) {
+    function toggleScheduleCard(card, e) {
+        // Prevent toggle if clicking on a link/button inside the header
+        if (e && e.target && (e.target.closest('.action-btn') || e.target.closest('a'))) {
             return;
         }
         card.classList.toggle('collapsed');
