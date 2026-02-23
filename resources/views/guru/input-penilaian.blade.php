@@ -831,7 +831,7 @@
 
     // Open Mapel Modal
     function openMapelModal() {
-        const mapelModal = new bootstrap.Modal(document.getElementById('mapelModal'));
+        const mapelModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('mapelModal'));
         mapelModal.show();
         loadMapelOptions();
     }
@@ -842,7 +842,7 @@
             alert('Silakan pilih mata pelajaran terlebih dahulu!');
             return;
         }
-        const rombelModal = new bootstrap.Modal(document.getElementById('rombelModal'));
+        const rombelModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('rombelModal'));
         rombelModal.show();
         loadRombelOptions();
     }
@@ -956,7 +956,7 @@
         document.getElementById('btnSimpanPenilaian').disabled = true;
 
         // Close modal
-        bootstrap.Modal.getInstance(document.getElementById('mapelModal')).hide();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('mapelModal')).hide();
     }
 
     // Select Rombel
@@ -972,7 +972,7 @@
         document.getElementById('inputNamaRombel').value = name;
 
         // Close modal
-        bootstrap.Modal.getInstance(document.getElementById('rombelModal')).hide();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('rombelModal')).hide();
 
         // Load students
         loadStudents();
@@ -1102,7 +1102,7 @@
             <p><strong>NISN:</strong> ${nisn}</p>
         `;
         
-        const modal = new bootstrap.Modal(document.getElementById('fotoModal'));
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('fotoModal'));
         modal.show();
     }
 </script>

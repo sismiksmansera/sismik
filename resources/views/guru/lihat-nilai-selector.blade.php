@@ -657,7 +657,7 @@
 
     // Open Mapel Modal
     function openMapelModal() {
-        const mapelModal = new bootstrap.Modal(document.getElementById('mapelModal'));
+        const mapelModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('mapelModal'));
         mapelModal.show();
     }
 
@@ -667,7 +667,7 @@
             alert('Silakan pilih mata pelajaran terlebih dahulu!');
             return;
         }
-        const rombelModal = new bootstrap.Modal(document.getElementById('rombelModal'));
+        const rombelModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('rombelModal'));
         rombelModal.show();
         loadRombelOptions();
     }
@@ -736,7 +736,7 @@
         document.getElementById('studentsSection').classList.remove('show');
 
         // Close modal
-        bootstrap.Modal.getInstance(document.getElementById('mapelModal')).hide();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('mapelModal')).hide();
     }
 
     // Select Rombel
@@ -750,7 +750,7 @@
         document.getElementById('rombelValue').style.display = 'block';
 
         // Close modal
-        bootstrap.Modal.getInstance(document.getElementById('rombelModal')).hide();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('rombelModal')).hide();
 
         // Load students with nilai
         loadNilaiData();
