@@ -543,7 +543,7 @@
                             $jamKeParam = implode(',', $jadwal['jam_list']);
                         @endphp
                         <div class="schedule-card collapsed {{ $jadwal['sudah_izin'] ? 'status-izin' : ($jadwal['sudah_presensi'] ? 'status-done' : 'status-pending') }}">
-                            <div class="schedule-card-header" onclick="toggleScheduleCard(this.parentElement, event)">
+                            <div class="schedule-card-header">
                                 <div style="flex: 1;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <i class="fas fa-school"></i>
@@ -632,16 +632,32 @@
 
 @push('scripts')
 <script>
-    function toggleScheduleCard(card, e) {
-        // Prevent toggle if clicking on a link/button inside the header
-        if (e && e.target && (e.target.closest('.action-btn') || e.target.closest('a'))) {
-            return;
-        }
-        card.classList.toggle('collapsed');
-    }
-    
-    // Expand all cards on desktop, collapse on mobile
     document.addEventListener('DOMContentLoaded', function() {
+        // Attach click handlers to all schedule card headers
+        document.querySelectorAll('.schedule-card-header').forEach(function(header) {
+            header.addEventListener('click', function(e) {
+                // Don't toggle if clicking on a link/button
+                if (e.target.closest && (e.target.closest('.action-btn') || e.target.closest('a'))) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                var card = this.closest('.schedule-card');
+                if (card) card.classList.toggle('collapsed');
+            });
+            
+            // Touch support for iOS Safari
+            header.addEventListener('touchend', function(e) {
+                if (e.target.closest && (e.target.closest('.action-btn') || e.target.closest('a'))) {
+                    return;
+                }
+                e.preventDefault();
+                var card = this.closest('.schedule-card');
+                if (card) card.classList.toggle('collapsed');
+            });
+        });
+        
+        // Expand all cards on desktop, collapse on mobile
         if (window.innerWidth > 768) {
             document.querySelectorAll('.schedule-card').forEach(function(card) {
                 card.classList.remove('collapsed');

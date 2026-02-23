@@ -400,7 +400,7 @@
 
             <!-- Selection Cards Row -->
             <div class="selection-info-row">
-                <div class="selection-card" id="mapelCard" onclick="openMapelModal()">
+                <div class="selection-card" id="mapelCard">
                     <div class="card-icon mapel-icon">
                         <i class="fas fa-book"></i>
                     </div>
@@ -410,7 +410,7 @@
                         <span class="card-label">Mata Pelajaran</span>
                     </div>
                 </div>
-                <div class="selection-card" id="rombelCard" onclick="openRombelModal()">
+                <div class="selection-card" id="rombelCard">
                     <div class="card-icon rombel-icon">
                         <i class="fas fa-users"></i>
                     </div>
@@ -461,7 +461,7 @@
                     @if(count($mapelList) > 0)
                         <div class="modal-option-grid">
                             @foreach($mapelList as $mapel)
-                                <div class="option-card" onclick="selectMapel({{ $mapel->id }}, '{{ addslashes($mapel->nama_mapel) }}')">
+                                <div class="option-card" data-mapel-id="{{ $mapel->id }}" data-mapel-name="{{ addslashes($mapel->nama_mapel) }}">
                                     <div class="option-icon mapel">
                                         <i class="fas fa-book"></i>
                                     </div>
@@ -507,72 +507,103 @@
 @push('scripts')
 <script>
     // Selected data
-    let selectedMapel = null;
-    let selectedRombel = null;
+    var selectedMapel = null;
+    var selectedRombel = null;
 
-    // Open Mapel Modal
-    function openMapelModal() {
-        const mapelModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('mapelModal'));
-        mapelModal.show();
-    }
-
-    // Open Rombel Modal
-    function openRombelModal() {
-        if (!selectedMapel) {
-            alert('Silakan pilih mata pelajaran terlebih dahulu!');
-            return;
+    // Safe modal helper — works even if Bootstrap loads late
+    function safeShowModal(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            bootstrap.Modal.getOrCreateInstance(el).show();
+        } else {
+            // Fallback: try again after a short delay for slow CDN
+            setTimeout(function() {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(el).show();
+                } else {
+                    alert('Halaman belum siap, silakan coba lagi.');
+                }
+            }, 500);
         }
-        const rombelModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('rombelModal'));
-        rombelModal.show();
-        loadRombelOptions();
     }
+
+    function safeHideModal(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            var instance = bootstrap.Modal.getInstance(el);
+            if (instance) instance.hide();
+        }
+    }
+
+    // Attach event listeners after DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        var mapelCard = document.getElementById('mapelCard');
+        var rombelCard = document.getElementById('rombelCard');
+
+        if (mapelCard) {
+            mapelCard.addEventListener('click', function(e) {
+                e.preventDefault();
+                safeShowModal('mapelModal');
+            });
+        }
+
+        if (rombelCard) {
+            rombelCard.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (!selectedMapel) {
+                    alert('Silakan pilih mata pelajaran terlebih dahulu!');
+                    return;
+                }
+                safeShowModal('rombelModal');
+                loadRombelOptions();
+            });
+        }
+
+        // Attach click handlers to server-rendered mapel option cards
+        document.querySelectorAll('#mapelOptionsContainer .option-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                selectMapel(parseInt(this.dataset.mapelId), this.dataset.mapelName);
+            });
+        });
+    });
 
     // Load Rombel Options
     function loadRombelOptions() {
-        const container = document.getElementById('rombelOptionsContainer');
+        var container = document.getElementById('rombelOptionsContainer');
         container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
 
-        fetch(`{{ route("guru.input-penilaian.rombel") }}?id_mapel=${selectedMapel.id}`)
-            .then(response => response.json())
-            .then(data => {
+        fetch('{{ route("guru.input-penilaian.rombel") }}?id_mapel=' + selectedMapel.id)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
                 if (data.success && data.data.length > 0) {
-                    let html = '<div class="modal-option-grid">';
-                    data.data.forEach(rombel => {
-                        html += `
-                            <div class="option-card" onclick="selectRombel(${rombel.id}, '${escapeHtml(rombel.nama_rombel)}')">
-                                <div class="option-icon rombel">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <p class="option-name">${escapeHtml(rombel.nama_rombel)}</p>
-                            </div>
-                        `;
+                    var html = '<div class="modal-option-grid">';
+                    data.data.forEach(function(rombel) {
+                        html += '<div class="option-card" data-rombel-id="' + rombel.id + '" data-rombel-name="' + escapeHtml(rombel.nama_rombel) + '">' +
+                            '<div class="option-icon rombel"><i class="fas fa-users"></i></div>' +
+                            '<p class="option-name">' + escapeHtml(rombel.nama_rombel) + '</p></div>';
                     });
                     html += '</div>';
                     container.innerHTML = html;
+                    // Attach click handlers to new option cards
+                    container.querySelectorAll('.option-card').forEach(function(card) {
+                        card.addEventListener('click', function() {
+                            selectRombel(parseInt(this.dataset.rombelId), this.dataset.rombelName);
+                        });
+                    });
                 } else {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-users-slash empty-icon"></i>
-                            <h3>Tidak Ada Rombel</h3>
-                            <p>Tidak ada rombel untuk mata pelajaran ini.</p>
-                        </div>
-                    `;
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-users-slash empty-icon"></i><h3>Tidak Ada Rombel</h3><p>Tidak ada rombel untuk mata pelajaran ini.</p></div>';
                 }
             })
-            .catch(error => {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle empty-icon"></i>
-                        <h3>Error</h3>
-                        <p>Gagal memuat data rombel.</p>
-                    </div>
-                `;
+            .catch(function() {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle empty-icon"></i><h3>Error</h3><p>Gagal memuat data rombel.</p></div>';
             });
     }
 
     // Select Mapel
     function selectMapel(id, name) {
-        selectedMapel = { id, name };
+        selectedMapel = { id: id, name: name };
         selectedRombel = null;
 
         // Update UI
@@ -592,12 +623,12 @@
         document.getElementById('actionButtonRow').classList.remove('show');
 
         // Close modal
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('mapelModal')).hide();
+        safeHideModal('mapelModal');
     }
 
     // Select Rombel
     function selectRombel(id, name) {
-        selectedRombel = { id, name };
+        selectedRombel = { id: id, name: name };
 
         // Update UI
         document.getElementById('rombelCard').classList.add('selected');
@@ -606,12 +637,12 @@
         document.getElementById('rombelValue').style.display = 'block';
 
         // Close modal
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('rombelModal')).hide();
+        safeHideModal('rombelModal');
 
         // Show action button with correct link
-        const actionRow = document.getElementById('actionButtonRow');
-        const btnPresensi = document.getElementById('btnLakukanPresensi');
-        const presensiUrl = `{{ route('guru.presensi.index') }}?mapel=${encodeURIComponent(selectedMapel.name)}&id_rombel=${selectedRombel.id}&nama_rombel=${encodeURIComponent(selectedRombel.name)}&from=presensi-selector`;
+        var actionRow = document.getElementById('actionButtonRow');
+        var btnPresensi = document.getElementById('btnLakukanPresensi');
+        var presensiUrl = '{{ route("guru.presensi.index") }}?mapel=' + encodeURIComponent(selectedMapel.name) + '&id_rombel=' + selectedRombel.id + '&nama_rombel=' + encodeURIComponent(selectedRombel.name) + '&from=presensi-selector';
         btnPresensi.href = presensiUrl;
         actionRow.classList.add('show');
 
@@ -621,102 +652,64 @@
 
     // Load Rekap Data
     function loadRekapData() {
-        const container = document.getElementById('studentsContainer');
-        const section = document.getElementById('studentsSection');
+        var container = document.getElementById('studentsContainer');
+        var section = document.getElementById('studentsSection');
         
         section.classList.add('show');
         container.innerHTML = '<div class="loading-spinner" style="grid-column: 1 / -1;"><div class="spinner"></div></div>';
 
-        fetch(`{{ route("guru.presensi-selector.rekap-data") }}?id_rombel=${selectedRombel.id}&mapel=${encodeURIComponent(selectedMapel.name)}`)
-            .then(response => response.json())
-            .then(data => {
+        fetch('{{ route("guru.presensi-selector.rekap-data") }}?id_rombel=' + selectedRombel.id + '&mapel=' + encodeURIComponent(selectedMapel.name))
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
                 if (data.success && data.data.length > 0) {
                     document.getElementById('siswaCount').textContent = data.total_siswa + ' Siswa';
                     
-                    let html = '';
-                    data.data.forEach(siswa => {
+                    var html = '';
+                    data.data.forEach(function(siswa) {
                         html += createStudentCard(siswa);
                     });
                     container.innerHTML = html;
                 } else {
-                    container.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1 / -1;">
-                            <i class="fas fa-chart-bar empty-icon"></i>
-                            <h3>Tidak Ada Data Rekap</h3>
-                            <p>Tidak ada data presensi ditemukan untuk rombel ${data.nama_rombel || selectedRombel.name}.</p>
-                        </div>
-                    `;
+                    container.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-chart-bar empty-icon"></i><h3>Tidak Ada Data Rekap</h3><p>Tidak ada data presensi ditemukan untuk rombel ' + (data.nama_rombel || selectedRombel.name) + '.</p></div>';
                     document.getElementById('siswaCount').textContent = '0 Siswa';
                 }
             })
-            .catch(error => {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <i class="fas fa-exclamation-triangle empty-icon"></i>
-                        <h3>Error</h3>
-                        <p>Gagal memuat data rekap presensi.</p>
-                    </div>
-                `;
+            .catch(function() {
+                container.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-exclamation-triangle empty-icon"></i><h3>Error</h3><p>Gagal memuat data rekap presensi.</p></div>';
             });
     }
 
     // Create Student Card HTML
     function createStudentCard(siswa) {
-        const avatarContent = siswa.foto_exists
-            ? `<img src="${siswa.foto_path}" alt="${escapeHtml(siswa.nama)}">`
+        var avatarContent = siswa.foto_exists
+            ? '<img src="' + siswa.foto_path + '" alt="' + escapeHtml(siswa.nama) + '">'
             : siswa.initials;
 
-        return `
-            <div class="rekap-card ${siswa.warna_kartu}">
-                <div class="rekap-card-header">
-                    <div class="student-avatar">${avatarContent}</div>
-                    <div class="student-info">
-                        <h4 class="student-name">${escapeHtml(siswa.nama)}</h4>
-                        <p class="student-nisn">NISN: ${siswa.nisn}</p>
-                    </div>
-                    <div class="persentase-circle">${siswa.persentase}%</div>
-                </div>
-                <div class="rekap-card-body">
-                    <div class="rekap-stats-grid">
-                        <div class="stat-item hadir">
-                            <i class="fas fa-check-circle"></i>
-                            <strong>${siswa.hadir}</strong>
-                            <small>Hadir</small>
-                        </div>
-                        <div class="stat-item dispen">
-                            <i class="fas fa-user-tie"></i>
-                            <strong>${siswa.dispen}</strong>
-                            <small>Dispen</small>
-                        </div>
-                        <div class="stat-item izin">
-                            <i class="fas fa-clock"></i>
-                            <strong>${siswa.izin}</strong>
-                            <small>Izin</small>
-                        </div>
-                        <div class="stat-item sakit">
-                            <i class="fas fa-first-aid"></i>
-                            <strong>${siswa.sakit}</strong>
-                            <small>Sakit</small>
-                        </div>
-                        <div class="stat-item alfa">
-                            <i class="fas fa-times-circle"></i>
-                            <strong>${siswa.alfa}</strong>
-                            <small>Alfa</small>
-                        </div>
-                        <div class="stat-item bolos">
-                            <i class="fas fa-running"></i>
-                            <strong>${siswa.bolos}</strong>
-                            <small>Bolos</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        return '<div class="rekap-card ' + siswa.warna_kartu + '">' +
+            '<div class="rekap-card-header">' +
+                '<div class="student-avatar">' + avatarContent + '</div>' +
+                '<div class="student-info">' +
+                    '<h4 class="student-name">' + escapeHtml(siswa.nama) + '</h4>' +
+                    '<p class="student-nisn">NISN: ' + siswa.nisn + '</p>' +
+                '</div>' +
+                '<div class="persentase-circle">' + siswa.persentase + '%</div>' +
+            '</div>' +
+            '<div class="rekap-card-body">' +
+                '<div class="rekap-stats-grid">' +
+                    '<div class="stat-item hadir"><i class="fas fa-check-circle"></i><strong>' + siswa.hadir + '</strong><small>Hadir</small></div>' +
+                    '<div class="stat-item dispen"><i class="fas fa-user-tie"></i><strong>' + siswa.dispen + '</strong><small>Dispen</small></div>' +
+                    '<div class="stat-item izin"><i class="fas fa-clock"></i><strong>' + siswa.izin + '</strong><small>Izin</small></div>' +
+                    '<div class="stat-item sakit"><i class="fas fa-first-aid"></i><strong>' + siswa.sakit + '</strong><small>Sakit</small></div>' +
+                    '<div class="stat-item alfa"><i class="fas fa-times-circle"></i><strong>' + siswa.alfa + '</strong><small>Alfa</small></div>' +
+                    '<div class="stat-item bolos"><i class="fas fa-running"></i><strong>' + siswa.bolos + '</strong><small>Bolos</small></div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
     }
 
     // Escape HTML
     function escapeHtml(text) {
-        const div = document.createElement('div');
+        var div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
