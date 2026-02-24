@@ -150,7 +150,7 @@ class GuruBKController extends Controller
 
         // Cascade name update if name changed
         if ($oldName !== $request->nama) {
-            NameCascadeService::updateGuruBKName($oldName, $request->nama);
+            NameCascadeService::updateGuruBKName($oldName, $request->nama, (int) $id);
         }
 
         // Redirect back to edit page if only uploading foto
