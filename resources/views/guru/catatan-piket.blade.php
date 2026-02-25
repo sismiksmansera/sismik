@@ -547,8 +547,19 @@
                                                 <div class="guru-mapel-text">{{ $entry['nama_mapel'] }}</div>
                                                 @if($isIzin)
                                                     <div class="izin-inline-info">
-                                                        <i class="fas fa-info-circle"></i> Izin: {{ Str::limit($izinData['alasan'], 50) }}
+                                                        <i class="fas fa-info-circle"></i> <strong>Izin:</strong> {{ Str::limit($izinData['alasan'], 40) }}
                                                     </div>
+                                                    @if(!empty($izinData['materi']) || !empty($izinData['tugas']))
+                                                        <div class="izin-inline-info" style="margin-top:2px; background:#f0f9ff; border-color:#bae6fd; color:#0c4a6e;">
+                                                            <i class="fas fa-book"></i>
+                                                            @if(!empty($izinData['materi']))
+                                                                <span>Materi: {{ Str::limit($izinData['materi'], 40) }}</span>
+                                                            @endif
+                                                            @if(!empty($izinData['tugas']))
+                                                                <span>| Tugas: {{ Str::limit($izinData['tugas'], 30) }}</span>
+                                                            @endif
+                                                        </div>
+                                                    @endif
                                                 @endif
                                             </div>
 
@@ -558,7 +569,7 @@
                                                 <span class="guru-status-badge" id="badge-{{ $uniqueId }}" style="display:none;"></span>
                                             @endif
 
-                                            <div class="guru-status-click {{ $isIzin ? 'disabled' : '' }}"
+                                            <div class="guru-status-click"
                                                  onclick="openPiketModal('{{ $uniqueId }}', {{ $jam }}, '{{ addslashes($entry['nama_guru']) }}', '{{ addslashes($entry['nama_mapel']) }}', '{{ addslashes($namaRombel) }}', '{{ $currentStatus }}', '{{ addslashes($existing->keterangan ?? '') }}', {{ $isIzin ? 'true' : 'false' }}, '{{ addslashes($izinData['alasan'] ?? '') }}', '{{ addslashes($izinData['materi'] ?? '') }}', '{{ addslashes($izinData['tugas'] ?? '') }}')">
                                                 <div style="text-align:center;">
                                                     <div class="status-label">Status</div>
@@ -697,13 +708,11 @@
         // Reset option selections
         document.querySelectorAll('.piket-modal-option').forEach(opt => opt.classList.remove('selected'));
 
-        // Handle izin mode
+        // Handle izin mode — show izin info + status options with Izin pre-selected
         if (isIzin) {
-            document.getElementById('modalOptionsSection').style.display = 'none';
+            // Show izin info box
             document.getElementById('modalIzinBox').style.display = 'block';
             document.getElementById('modalIzinAlasan').textContent = izinAlasan;
-            document.getElementById('modalKeteranganSection').style.display = 'none';
-            document.getElementById('btnSimpanModal').style.display = 'none';
 
             // Show materi if available
             if (izinMateri) {
@@ -720,6 +729,21 @@
             } else {
                 document.getElementById('modalIzinTugasRow').style.display = 'none';
             }
+
+            // Show status options + pre-select Izin
+            document.getElementById('modalOptionsSection').style.display = 'block';
+            document.getElementById('modalKeteranganSection').style.display = 'block';
+            document.getElementById('btnSimpanModal').style.display = 'inline-block';
+
+            // Pre-select Izin status
+            currentSelectedStatus = 'Izin';
+            document.querySelector('.piket-modal-option.izin').classList.add('selected');
+
+            // Auto-fill keterangan with izin details
+            var keteranganParts = ['Izin: ' + izinAlasan];
+            if (izinMateri) keteranganParts.push('Materi: ' + izinMateri);
+            if (izinTugas) keteranganParts.push('Tugas: ' + izinTugas);
+            document.getElementById('modalKeterangan').value = keterangan || keteranganParts.join(' | ');
         } else {
             document.getElementById('modalOptionsSection').style.display = 'block';
             document.getElementById('modalIzinBox').style.display = 'none';
