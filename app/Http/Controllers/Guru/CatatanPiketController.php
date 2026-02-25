@@ -112,11 +112,11 @@ class CatatanPiketController extends Controller
                 ->where('tanggal_izin', $tanggalHariIni)
                 ->get();
             foreach ($izinRows as $izin) {
-                // Key: guru-rombel-jam combination
+                // Key: guru(lowercase)-rombel-jam for case-insensitive matching
                 $jamList = explode(',', $izin->jam_ke);
                 foreach ($jamList as $jk) {
                     $jk = trim($jk);
-                    $key = $izin->guru . '|' . $izin->id_rombel . '|' . $jk;
+                    $key = mb_strtolower($izin->guru) . '|' . $izin->id_rombel . '|' . $jk;
                     $izinGuruHariIni[$key] = [
                         'alasan' => $izin->alasan_izin,
                         'materi' => $izin->materi ?? '',
@@ -156,7 +156,7 @@ class CatatanPiketController extends Controller
                 if (isset($jadwalPerJam[$jamInt])) {
                     foreach ($jadwalPerJam[$jamInt] as $rNama => $entries) {
                         foreach ($entries as $e) {
-                            if ($e['nama_guru'] === $izinGuru && (string)$e['id_rombel'] === (string)$izinRombelId) {
+                            if (mb_strtolower($e['nama_guru']) === mb_strtolower($izinGuru) && (string)$e['id_rombel'] === (string)$izinRombelId) {
                                 $matchedEntry = $e;
                                 $matchedRombelName = $rNama;
                                 break 2;
@@ -336,7 +336,7 @@ class CatatanPiketController extends Controller
                 $jamList = explode(',', $izin->jam_ke);
                 foreach ($jamList as $jk) {
                     $jk = trim($jk);
-                    $key = $izin->guru . '|' . $izin->id_rombel . '|' . $jk;
+                    $key = mb_strtolower($izin->guru) . '|' . $izin->id_rombel . '|' . $jk;
                     $izinGuruHariIni[$key] = $izin->alasan_izin;
                 }
             }
@@ -350,7 +350,7 @@ class CatatanPiketController extends Controller
             $jamKe = (int)$j->jam_ke;
             $rombel = $j->nama_rombel;
             $key = $jamKe . '|' . $j->nama_guru . '|' . $rombel;
-            $izinKey = $j->nama_guru . '|' . $j->id_rombel . '|' . $jamKe;
+            $izinKey = mb_strtolower($j->nama_guru) . '|' . $j->id_rombel . '|' . $jamKe;
 
             if (!isset($rombelJadwal[$rombel])) {
                 $rombelJadwal[$rombel] = [];

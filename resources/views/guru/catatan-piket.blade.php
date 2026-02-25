@@ -464,7 +464,7 @@
                     $totalGuru += count($entries);
                     foreach ($entries as $e) {
                         $ck = $jam . '|' . $e['nama_guru'] . '|' . $rNama;
-                        $ik = $e['nama_guru'] . '|' . $e['id_rombel'] . '|' . $jam;
+                        $ik = mb_strtolower($e['nama_guru']) . '|' . $e['id_rombel'] . '|' . $jam;
                         if (isset($catatanHariIni[$ck]) || isset($izinGuruHariIni[$ik])) {
                             $confirmedGuru++;
                         }
@@ -510,7 +510,7 @@
                                             $uniqueId = $jam . '-' . Str::slug($entry['nama_guru'] . '-' . $namaRombel);
                                             $catatanKey = $jam . '|' . $entry['nama_guru'] . '|' . $namaRombel;
                                             $existing = $catatanHariIni[$catatanKey] ?? null;
-                                            $izinKey = $entry['nama_guru'] . '|' . $entry['id_rombel'] . '|' . $jam;
+                                            $izinKey = mb_strtolower($entry['nama_guru']) . '|' . $entry['id_rombel'] . '|' . $jam;
                                             $izinData = $izinGuruHariIni[$izinKey] ?? null;
                                             $isIzin = !is_null($izinData);
 
