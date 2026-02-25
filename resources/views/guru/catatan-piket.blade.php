@@ -547,7 +547,7 @@
                                                 <div class="guru-mapel-text">{{ $entry['nama_mapel'] }}</div>
                                                 @if($isIzin)
                                                     <div class="izin-inline-info">
-                                                        <i class="fas fa-info-circle"></i> Izin dikonfirmasi oleh guru
+                                                        <i class="fas fa-info-circle"></i> Izin: {{ Str::limit($izinData['alasan'], 50) }}
                                                     </div>
                                                 @endif
                                             </div>
@@ -559,7 +559,7 @@
                                             @endif
 
                                             <div class="guru-status-click {{ $isIzin ? 'disabled' : '' }}"
-                                                 onclick="openPiketModal('{{ $uniqueId }}', {{ $jam }}, '{{ addslashes($entry['nama_guru']) }}', '{{ addslashes($entry['nama_mapel']) }}', '{{ addslashes($namaRombel) }}', '{{ $currentStatus }}', '{{ $existing->keterangan ?? '' }}', {{ $isIzin ? 'true' : 'false' }}, '{{ addslashes($izinData['alasan'] ?? '') }}', '{{ addslashes($izinData['tugas'] ?? '') }}')">
+                                                 onclick="openPiketModal('{{ $uniqueId }}', {{ $jam }}, '{{ addslashes($entry['nama_guru']) }}', '{{ addslashes($entry['nama_mapel']) }}', '{{ addslashes($namaRombel) }}', '{{ $currentStatus }}', '{{ addslashes($existing->keterangan ?? '') }}', {{ $isIzin ? 'true' : 'false' }}, '{{ addslashes($izinData['alasan'] ?? '') }}', '{{ addslashes($izinData['materi'] ?? '') }}', '{{ addslashes($izinData['tugas'] ?? '') }}')">
                                                 <div style="text-align:center;">
                                                     <div class="status-label">Status</div>
                                                     <div class="status-value" id="statusVal-{{ $uniqueId }}">{{ $statusText }}</div>
@@ -639,8 +639,12 @@
                         <div class="izin-label-text"><i class="fas fa-info-circle"></i> Alasan Izin</div>
                         <div class="izin-value-text" id="modalIzinAlasan"></div>
                     </div>
+                    <div class="izin-row" id="modalIzinMateriRow" style="display:none;">
+                        <div class="izin-label-text"><i class="fas fa-book"></i> Penugasan Materi</div>
+                        <div class="izin-value-text" id="modalIzinMateri"></div>
+                    </div>
                     <div class="izin-row" id="modalIzinTugasRow" style="display:none;">
-                        <div class="izin-label-text"><i class="fas fa-tasks"></i> Tugas yang Diberikan</div>
+                        <div class="izin-label-text"><i class="fas fa-tasks"></i> Uraian Tugas</div>
                         <div class="izin-value-text" id="modalIzinTugas"></div>
                     </div>
                 </div>
@@ -677,7 +681,7 @@
         document.getElementById('jam-card-' + jam).classList.toggle('open');
     }
 
-    function openPiketModal(uniqueId, jamKe, namaGuru, namaMapel, namaRombel, currentStatus, keterangan, isIzin, izinAlasan, izinTugas) {
+    function openPiketModal(uniqueId, jamKe, namaGuru, namaMapel, namaRombel, currentStatus, keterangan, isIzin, izinAlasan, izinMateri, izinTugas) {
         currentUniqueId = uniqueId;
         currentJamKe = jamKe;
         currentNamaGuru = namaGuru;
@@ -701,6 +705,15 @@
             document.getElementById('modalKeteranganSection').style.display = 'none';
             document.getElementById('btnSimpanModal').style.display = 'none';
 
+            // Show materi if available
+            if (izinMateri) {
+                document.getElementById('modalIzinMateriRow').style.display = 'block';
+                document.getElementById('modalIzinMateri').textContent = izinMateri;
+            } else {
+                document.getElementById('modalIzinMateriRow').style.display = 'none';
+            }
+
+            // Show tugas if available
             if (izinTugas) {
                 document.getElementById('modalIzinTugasRow').style.display = 'block';
                 document.getElementById('modalIzinTugas').textContent = izinTugas;
@@ -710,6 +723,8 @@
         } else {
             document.getElementById('modalOptionsSection').style.display = 'block';
             document.getElementById('modalIzinBox').style.display = 'none';
+            document.getElementById('modalIzinMateriRow').style.display = 'none';
+            document.getElementById('modalIzinTugasRow').style.display = 'none';
             document.getElementById('modalKeteranganSection').style.display = 'block';
             document.getElementById('btnSimpanModal').style.display = 'inline-block';
             document.getElementById('modalKeterangan').value = keterangan || '';

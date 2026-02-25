@@ -119,10 +119,77 @@ class CatatanPiketController extends Controller
                     $key = $izin->guru . '|' . $izin->id_rombel . '|' . $jk;
                     $izinGuruHariIni[$key] = [
                         'alasan' => $izin->alasan_izin,
+                        'materi' => $izin->materi ?? '',
                         'tugas' => $izin->uraian_tugas ?? '',
                     ];
                 }
             }
+        }
+
+        // Auto-create catatan_piket_kbm records for guru with confirmed izin
+        if (!empty($izinGuruHariIni) && $piketHariIni) {
+            foreach ($izinGuruHariIni as $izinKey => $izinInfo) {
+                // Parse key: guru|id_rombel|jam_ke
+                $parts = explode('|', $izinKey);
+                if (count($parts) !== 3) continue;
+                [$izinGuru, $izinRombelId, $izinJam] = $parts;
+
+                // Find matching jadwal to get mapel and rombel name
+                $matchedEntry = null;
+                $matchedRombelName = '';
+                $jamInt = (int) $izinJam;
+                if (isset($jadwalPerJam[$jamInt])) {
+                    foreach ($jadwalPerJam[$jamInt] as $rNama => $entries) {
+                        foreach ($entries as $e) {
+                            if ($e['nama_guru'] === $izinGuru && (string)$e['id_rombel'] === (string)$izinRombelId) {
+                                $matchedEntry = $e;
+                                $matchedRombelName = $rNama;
+                                break 2;
+                            }
+                        }
+                    }
+                }
+
+                if (!$matchedEntry) continue;
+
+                // Build keterangan from izin data
+                $keteranganParts = ['Izin: ' . $izinInfo['alasan']];
+                if (!empty($izinInfo['materi'])) {
+                    $keteranganParts[] = 'Materi: ' . $izinInfo['materi'];
+                }
+                if (!empty($izinInfo['tugas'])) {
+                    $keteranganParts[] = 'Tugas: ' . $izinInfo['tugas'];
+                }
+                $keteranganText = implode(' | ', $keteranganParts);
+
+                // Auto-create or update catatan_piket_kbm record
+                $catatanKey = $izinJam . '|' . $izinGuru . '|' . $matchedRombelName;
+                if (!isset($catatanHariIni[$catatanKey])) {
+                    CatatanPiketKbm::updateOrCreate(
+                        [
+                            'tanggal' => $tanggalHariIni,
+                            'jam_ke' => $izinJam,
+                            'nama_guru' => $izinGuru,
+                            'nama_rombel' => $matchedRombelName,
+                        ],
+                        [
+                            'piket_kbm_id' => $piketHariIni->id,
+                            'nama_mapel' => $matchedEntry['nama_mapel'],
+                            'status_kehadiran' => 'Izin',
+                            'keterangan' => $keteranganText,
+                            'dicatat_oleh' => 'Sistem (Konfirmasi Guru)',
+                        ]
+                    );
+                }
+            }
+
+            // Reload catatan after auto-creation
+            $catatanHariIni = CatatanPiketKbm::where('tanggal', $tanggalHariIni)
+                ->whereIn('piket_kbm_id', $allPiketIds)
+                ->get()
+                ->keyBy(function ($item) {
+                    return $item->jam_ke . '|' . $item->nama_guru . '|' . $item->nama_rombel;
+                });
         }
 
         // Get all piket guru for today
