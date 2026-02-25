@@ -126,8 +126,23 @@ class CatatanPiketController extends Controller
             }
         }
 
+        // Get all piket guru for today
+        $semuaPiketHariIni = PiketKbm::where('hari', $hariIni)
+            ->orderBy('created_at')
+            ->get();
+
+        // Get existing catatan for today from ALL piket team members
+        $allPiketIds = $semuaPiketHariIni->pluck('id')->toArray();
+        $catatanHariIni = CatatanPiketKbm::where('tanggal', $tanggalHariIni)
+            ->whereIn('piket_kbm_id', $allPiketIds)
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->jam_ke . '|' . $item->nama_guru . '|' . $item->nama_rombel;
+            });
+
         // Auto-create catatan_piket_kbm records for guru with confirmed izin
         if (!empty($izinGuruHariIni) && $piketHariIni) {
+            $izinAutoCreated = false;
             foreach ($izinGuruHariIni as $izinKey => $izinInfo) {
                 // Parse key: guru|id_rombel|jam_ke
                 $parts = explode('|', $izinKey);
@@ -162,7 +177,7 @@ class CatatanPiketController extends Controller
                 }
                 $keteranganText = implode(' | ', $keteranganParts);
 
-                // Auto-create or update catatan_piket_kbm record
+                // Auto-create catatan_piket_kbm record if not exists
                 $catatanKey = $izinJam . '|' . $izinGuru . '|' . $matchedRombelName;
                 if (!isset($catatanHariIni[$catatanKey])) {
                     CatatanPiketKbm::updateOrCreate(
@@ -180,31 +195,20 @@ class CatatanPiketController extends Controller
                             'dicatat_oleh' => 'Sistem (Konfirmasi Guru)',
                         ]
                     );
+                    $izinAutoCreated = true;
                 }
             }
 
             // Reload catatan after auto-creation
-            $catatanHariIni = CatatanPiketKbm::where('tanggal', $tanggalHariIni)
-                ->whereIn('piket_kbm_id', $allPiketIds)
-                ->get()
-                ->keyBy(function ($item) {
-                    return $item->jam_ke . '|' . $item->nama_guru . '|' . $item->nama_rombel;
-                });
+            if ($izinAutoCreated) {
+                $catatanHariIni = CatatanPiketKbm::where('tanggal', $tanggalHariIni)
+                    ->whereIn('piket_kbm_id', $allPiketIds)
+                    ->get()
+                    ->keyBy(function ($item) {
+                        return $item->jam_ke . '|' . $item->nama_guru . '|' . $item->nama_rombel;
+                    });
+            }
         }
-
-        // Get all piket guru for today
-        $semuaPiketHariIni = PiketKbm::where('hari', $hariIni)
-            ->orderBy('created_at')
-            ->get();
-
-        // Get existing catatan for today from ALL piket team members
-        $allPiketIds = $semuaPiketHariIni->pluck('id')->toArray();
-        $catatanHariIni = CatatanPiketKbm::where('tanggal', $tanggalHariIni)
-            ->whereIn('piket_kbm_id', $allPiketIds)
-            ->get()
-            ->keyBy(function ($item) {
-                return $item->jam_ke . '|' . $item->nama_guru . '|' . $item->nama_rombel;
-            });
 
         return view('guru.catatan-piket', compact(
             'guru',
