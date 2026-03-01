@@ -63,6 +63,10 @@ Route::get('/tamu', [\App\Http\Controllers\TamuController::class, 'create'])->na
 Route::post('/tamu', [\App\Http\Controllers\TamuController::class, 'store'])->name('tamu.store');
 Route::get('/tamu/print/{id}', [\App\Http\Controllers\TamuController::class, 'print'])->name('tamu.print');
 
+// Cari Login Ujian (public, no auth required)
+Route::get('/cari-login-ujian', [\App\Http\Controllers\CariLoginUjianController::class, 'index'])->name('cari-login-ujian');
+Route::post('/cari-login-ujian/search', [\App\Http\Controllers\CariLoginUjianController::class, 'search'])->name('cari-login-ujian.search');
+
 // Admin Routes
 Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -332,6 +336,13 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/migrasi-nilai/get-rombels', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'getRombels'])->name('migrasi-nilai.get-rombels');
     Route::post('/migrasi-nilai/download-template', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'downloadTemplate'])->name('migrasi-nilai.download-template');
     Route::post('/migrasi-nilai/import', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'import'])->name('migrasi-nilai.import');
+    
+    // Kartu Login Ujian
+    Route::get('/kartu-login-ujian', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'index'])->name('kartu-login-ujian.index');
+    Route::post('/kartu-login-ujian/import', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'import'])->name('kartu-login-ujian.import');
+    Route::get('/kartu-login-ujian/template', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'downloadTemplate'])->name('kartu-login-ujian.template');
+    Route::delete('/kartu-login-ujian/{id}', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'destroy'])->name('kartu-login-ujian.destroy');
+    Route::post('/kartu-login-ujian/destroy-all', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'destroyAll'])->name('kartu-login-ujian.destroy-all');
 });
 
 

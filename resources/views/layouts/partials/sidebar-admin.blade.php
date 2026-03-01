@@ -73,6 +73,10 @@
             <i class="fas fa-file-upload"></i>
             <span>Migrasi Nilai Manual</span>
         </a>
+        <a href="{{ route('admin.kartu-login-ujian.index') }}" class="menu-item {{ request()->routeIs('admin.kartu-login-ujian.*') ? 'active' : '' }}">
+            <i class="fas fa-id-card"></i>
+            <span>Kartu Login Ujian</span>
+        </a>
         <a href="{{ route('admin.prestasi.index') }}" class="menu-item {{ request()->routeIs('admin.prestasi.*') ? 'active' : '' }}">
             <i class="fas fa-trophy"></i>
             <span>Prestasi</span>
