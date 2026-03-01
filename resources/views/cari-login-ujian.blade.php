@@ -248,9 +248,13 @@
             border-radius: 12px;
             padding: 16px;
             transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
         }
         .login-item:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
         }
         .login-item .label {
             font-size: 11px;
@@ -267,6 +271,19 @@
             font-weight: 600;
             letter-spacing: 0.5px;
             word-break: break-all;
+        }
+        .login-item .download-hint {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .login-item:hover .download-hint {
+            opacity: 1;
         }
         .login-item.dsmart { border-left: 3px solid #7c3aed; }
         .login-item.bimasoft { border-left: 3px solid #3b82f6; }
@@ -478,17 +495,20 @@
                             </div>
                         </div>
                         <div class="login-grid">
-                            <div class="login-item dsmart">
+                            <div class="login-item dsmart" onclick="downloadCard('KARTU LOGIN UJIAN D-SMART', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_dsmart || '-')}', '#7c3aed', '#a78bfa')">
                                 <div class="label"><i class="fas fa-key"></i> Password D-Smart</div>
                                 <div class="value">${escapeHtml(item.password_dsmart || '-')}</div>
+                                <div class="download-hint"><i class="fas fa-download"></i> Klik untuk download kartu</div>
                             </div>
-                            <div class="login-item bimasoft">
+                            <div class="login-item bimasoft" onclick="downloadCard('KARTU LOGIN UJIAN ONLINE BIMASOFT', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_bimasoft || '-')}', '#3b82f6', '#60a5fa')">
                                 <div class="label"><i class="fas fa-key"></i> Password Bimasoft</div>
                                 <div class="value">${escapeHtml(item.password_bimasoft || '-')}</div>
+                                <div class="download-hint"><i class="fas fa-download"></i> Klik untuk download kartu</div>
                             </div>
-                            <div class="login-item jihan">
+                            <div class="login-item jihan" onclick="downloadCard('KARTU LOGIN AKSI JIHAN', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_aksi_jihan || '-')}', '#10b981', '#34d399')">
                                 <div class="label"><i class="fas fa-key"></i> Password Aksi Jihan</div>
                                 <div class="value">${escapeHtml(item.password_aksi_jihan || '-')}</div>
+                                <div class="download-hint"><i class="fas fa-download"></i> Klik untuk download kartu</div>
                             </div>
                         </div>
                     `;
@@ -508,6 +528,124 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function escapeAttr(text) {
+            return String(text).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function downloadCard(judul, nama, nisn, password, color1, color2) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const w = 800;
+            const h = 450;
+            canvas.width = w;
+            canvas.height = h;
+
+            // Background gradient
+            const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+            bgGrad.addColorStop(0, '#1e1b4b');
+            bgGrad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Accent bar top
+            const barGrad = ctx.createLinearGradient(0, 0, w, 0);
+            barGrad.addColorStop(0, color1);
+            barGrad.addColorStop(1, color2);
+            ctx.fillStyle = barGrad;
+            ctx.fillRect(0, 0, w, 8);
+
+            // Decorative circle
+            ctx.beginPath();
+            ctx.arc(w - 80, 80, 120, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.03)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(60, h - 60, 80, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.02)';
+            ctx.fill();
+
+            // Title
+            ctx.fillStyle = color2;
+            ctx.font = 'bold 28px Poppins, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(judul, w / 2, 60);
+
+            // Divider line
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(100, 85);
+            ctx.lineTo(w - 100, 85);
+            ctx.stroke();
+
+            // Content area
+            const startY = 140;
+            const leftX = 80;
+            const valueX = 300;
+
+            // Labels
+            ctx.textAlign = 'left';
+            ctx.font = '600 18px Poppins, Arial, sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('Nama', leftX, startY);
+            ctx.fillText('Username (NISN)', leftX, startY + 70);
+            ctx.fillText('Password', leftX, startY + 140);
+
+            // Colon
+            ctx.fillText(':', valueX - 20, startY);
+            ctx.fillText(':', valueX - 20, startY + 70);
+            ctx.fillText(':', valueX - 20, startY + 140);
+
+            // Values
+            ctx.font = 'bold 22px Poppins, Arial, sans-serif';
+            ctx.fillStyle = '#f1f5f9';
+            ctx.fillText(nama, valueX, startY);
+            ctx.fillText(nisn, valueX, startY + 70);
+
+            // Password with highlight box
+            const pwText = password;
+            const pwMetrics = ctx.measureText(pwText);
+            const pwBoxPad = 16;
+            ctx.fillStyle = color1 + '33';
+            roundRect(ctx, valueX - pwBoxPad/2, startY + 140 - 24, pwMetrics.width + pwBoxPad, 36, 8);
+            ctx.fill();
+            ctx.strokeStyle = color1;
+            ctx.lineWidth = 1.5;
+            roundRect(ctx, valueX - pwBoxPad/2, startY + 140 - 24, pwMetrics.width + pwBoxPad, 36, 8);
+            ctx.stroke();
+
+            ctx.fillStyle = color2;
+            ctx.font = 'bold 22px "Courier New", monospace';
+            ctx.fillText(pwText, valueX, startY + 140);
+
+            // Footer
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.font = '12px Poppins, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('SISMIK — Sistem Informasi Sekolah', w / 2, h - 25);
+
+            // Download
+            const link = document.createElement('a');
+            link.download = `${judul.replace(/\s+/g, '_')}_${nama.replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
         }
     </script>
 </body>
