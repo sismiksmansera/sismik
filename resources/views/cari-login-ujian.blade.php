@@ -14,6 +14,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -347,6 +350,107 @@
         }
         .back-link a:hover { color: #a78bfa; }
 
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: linear-gradient(145deg, #1e1b4b, #0f172a);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 36px;
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            animation: modalIn 0.3s ease-out;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px; right: 16px;
+            background: rgba(255,255,255,0.1);
+            border: none; color: #94a3b8;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .modal-close:hover { background: rgba(239,68,68,0.3); color: #ef4444; }
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            padding-right: 40px;
+        }
+        .modal-field {
+            margin-bottom: 16px;
+        }
+        .modal-field .mf-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .modal-field .mf-value {
+            font-size: 17px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+        .modal-field .mf-value.mono {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+        .modal-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+            margin: 20px 0;
+        }
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 24px;
+        }
+        .modal-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .modal-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .modal-btn.btn-download {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+        }
+        .modal-btn.btn-exam {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
         @media (max-width: 640px) {
             .container { padding: 20px 14px; }
             .page-header h1 { font-size: 24px; }
@@ -355,6 +459,7 @@
             .result-card { padding: 18px; }
             .login-grid { grid-template-columns: 1fr; }
             .student-meta { flex-direction: column; gap: 4px; }
+            .modal-box { padding: 24px; }
         }
     </style>
 </head>
@@ -416,6 +521,37 @@
         <!-- Back to login -->
         <div class="back-link">
             <a href="{{ route('login') }}"><i class="fas fa-arrow-left"></i> Kembali ke halaman login</a>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="cardModal" onclick="if(event.target===this)closeModal()">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-field">
+                <div class="mf-label">Nama</div>
+                <div class="mf-value" id="modalNama"></div>
+            </div>
+            <div class="modal-field">
+                <div class="mf-label">Username (NISN)</div>
+                <div class="mf-value mono" id="modalNisn"></div>
+            </div>
+            <div class="modal-field">
+                <div class="mf-label">Password</div>
+                <div class="mf-value mono" id="modalPassword"></div>
+            </div>
+            <div id="modalLinkInfo" style="display:none;">
+                <div class="modal-field">
+                    <div class="mf-label">Link Ujian</div>
+                    <div class="mf-value" style="color:#60a5fa; font-size:14px;">https://lamteng2.dsmartlampung.com</div>
+                </div>
+            </div>
+            <div class="modal-divider"></div>
+            <div class="modal-actions">
+                <button class="modal-btn btn-download" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Download Kartu (PDF)</button>
+                <a class="modal-btn btn-exam" id="modalExamLink" href="https://lamteng2.dsmartlampung.com" target="_blank" style="display:none;"><i class="fas fa-external-link-alt"></i> Masuk Ujian D-Smart</a>
+            </div>
         </div>
     </div>
 
@@ -495,17 +631,17 @@
                             </div>
                         </div>
                         <div class="login-grid">
-                            <div class="login-item dsmart" onclick="downloadCard('KARTU LOGIN UJIAN D-SMART', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_dsmart || '-')}', '#7c3aed', '#a78bfa')">
+                            <div class="login-item dsmart" onclick="showCardModal('KARTU LOGIN UJIAN D-SMART', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_dsmart || '-')}', '#7c3aed', true)">
                                 <div class="label"><i class="fas fa-key"></i> Password D-Smart</div>
                                 <div class="value">${escapeHtml(item.password_dsmart || '-')}</div>
                                 <div class="download-hint"><i class="fas fa-download"></i> Klik untuk download kartu</div>
                             </div>
-                            <div class="login-item bimasoft" onclick="downloadCard('KARTU LOGIN UJIAN ONLINE BIMASOFT', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_bimasoft || '-')}', '#3b82f6', '#60a5fa')">
+                            <div class="login-item bimasoft" onclick="showCardModal('KARTU LOGIN UJIAN ONLINE BIMASOFT', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_bimasoft || '-')}', '#3b82f6', false)">
                                 <div class="label"><i class="fas fa-key"></i> Password Bimasoft</div>
                                 <div class="value">${escapeHtml(item.password_bimasoft || '-')}</div>
                                 <div class="download-hint"><i class="fas fa-download"></i> Klik untuk download kartu</div>
                             </div>
-                            <div class="login-item jihan" onclick="downloadCard('KARTU LOGIN AKSI JIHAN', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_aksi_jihan || '-')}', '#10b981', '#34d399')">
+                            <div class="login-item jihan" onclick="showCardModal('KARTU LOGIN AKSI JIHAN', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_aksi_jihan || '-')}', '#10b981', false)">
                                 <div class="label"><i class="fas fa-key"></i> Password Aksi Jihan</div>
                                 <div class="value">${escapeHtml(item.password_aksi_jihan || '-')}</div>
                                 <div class="download-hint"><i class="fas fa-download"></i> Klik untuk download kartu</div>
@@ -534,118 +670,130 @@
             return String(text).replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
-        function downloadCard(judul, nama, nisn, password, color1, color2) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const w = 800;
-            const h = 450;
-            canvas.width = w;
-            canvas.height = h;
+        // Modal state
+        let currentCard = {};
 
-            // Background gradient
-            const bgGrad = ctx.createLinearGradient(0, 0, w, h);
-            bgGrad.addColorStop(0, '#1e1b4b');
-            bgGrad.addColorStop(1, '#0f172a');
-            ctx.fillStyle = bgGrad;
-            ctx.fillRect(0, 0, w, h);
+        function showCardModal(judul, nama, nisn, password, color, isDsmart) {
+            currentCard = { judul, nama, nisn, password, color, isDsmart };
 
-            // Accent bar top
-            const barGrad = ctx.createLinearGradient(0, 0, w, 0);
-            barGrad.addColorStop(0, color1);
-            barGrad.addColorStop(1, color2);
-            ctx.fillStyle = barGrad;
-            ctx.fillRect(0, 0, w, 8);
+            document.getElementById('modalTitle').textContent = judul;
+            document.getElementById('modalTitle').style.color = color;
+            document.getElementById('modalNama').textContent = nama;
+            document.getElementById('modalNisn').textContent = nisn;
+            document.getElementById('modalPassword').textContent = password;
 
-            // Decorative circle
-            ctx.beginPath();
-            ctx.arc(w - 80, 80, 120, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,255,255,0.03)';
-            ctx.fill();
+            // D-Smart link & exam button
+            document.getElementById('modalLinkInfo').style.display = isDsmart ? 'block' : 'none';
+            document.getElementById('modalExamLink').style.display = isDsmart ? 'flex' : 'none';
 
-            ctx.beginPath();
-            ctx.arc(60, h - 60, 80, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,255,255,0.02)';
-            ctx.fill();
-
-            // Title
-            ctx.fillStyle = color2;
-            ctx.font = 'bold 28px Poppins, Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(judul, w / 2, 60);
-
-            // Divider line
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(100, 85);
-            ctx.lineTo(w - 100, 85);
-            ctx.stroke();
-
-            // Content area
-            const startY = 140;
-            const leftX = 80;
-            const valueX = 300;
-
-            // Labels
-            ctx.textAlign = 'left';
-            ctx.font = '600 18px Poppins, Arial, sans-serif';
-            ctx.fillStyle = '#94a3b8';
-            ctx.fillText('Nama', leftX, startY);
-            ctx.fillText('Username (NISN)', leftX, startY + 70);
-            ctx.fillText('Password', leftX, startY + 140);
-
-            // Colon
-            ctx.fillText(':', valueX - 20, startY);
-            ctx.fillText(':', valueX - 20, startY + 70);
-            ctx.fillText(':', valueX - 20, startY + 140);
-
-            // Values
-            ctx.font = 'bold 22px Poppins, Arial, sans-serif';
-            ctx.fillStyle = '#f1f5f9';
-            ctx.fillText(nama, valueX, startY);
-            ctx.fillText(nisn, valueX, startY + 70);
-
-            // Password with highlight box
-            const pwText = password;
-            const pwMetrics = ctx.measureText(pwText);
-            const pwBoxPad = 16;
-            ctx.fillStyle = color1 + '33';
-            roundRect(ctx, valueX - pwBoxPad/2, startY + 140 - 24, pwMetrics.width + pwBoxPad, 36, 8);
-            ctx.fill();
-            ctx.strokeStyle = color1;
-            ctx.lineWidth = 1.5;
-            roundRect(ctx, valueX - pwBoxPad/2, startY + 140 - 24, pwMetrics.width + pwBoxPad, 36, 8);
-            ctx.stroke();
-
-            ctx.fillStyle = color2;
-            ctx.font = 'bold 22px "Courier New", monospace';
-            ctx.fillText(pwText, valueX, startY + 140);
-
-            // Footer
-            ctx.fillStyle = 'rgba(255,255,255,0.15)';
-            ctx.font = '12px Poppins, Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('SISMIK — Sistem Informasi Sekolah', w / 2, h - 25);
-
-            // Download
-            const link = document.createElement('a');
-            link.download = `${judul.replace(/\s+/g, '_')}_${nama.replace(/\s+/g, '_')}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            document.getElementById('cardModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
         }
 
-        function roundRect(ctx, x, y, w, h, r) {
-            ctx.beginPath();
-            ctx.moveTo(x + r, y);
-            ctx.lineTo(x + w - r, y);
-            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-            ctx.lineTo(x + w, y + h - r);
-            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-            ctx.lineTo(x + r, y + h);
-            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-            ctx.lineTo(x, y + r);
-            ctx.quadraticCurveTo(x, y, x + r, y);
-            ctx.closePath();
+        function closeModal() {
+            document.getElementById('cardModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Close on Escape
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [140, 90] });
+
+            const { judul, nama, nisn, password, color, isDsmart } = currentCard;
+
+            // Background
+            doc.setFillColor(30, 27, 75);
+            doc.rect(0, 0, 140, 90, 'F');
+
+            // Top accent bar
+            const r = parseInt(color.slice(1,3),16);
+            const g = parseInt(color.slice(3,5),16);
+            const b = parseInt(color.slice(5,7),16);
+            doc.setFillColor(r, g, b);
+            doc.rect(0, 0, 140, 3, 'F');
+
+            // Title
+            doc.setTextColor(r, g, b);
+            doc.setFontSize(13);
+            doc.setFont('helvetica', 'bold');
+            doc.text(judul, 70, 14, { align: 'center' });
+
+            // Divider
+            doc.setDrawColor(255, 255, 255, 30);
+            doc.setLineWidth(0.2);
+            doc.line(15, 18, 125, 18);
+
+            // Labels
+            const leftX = 15;
+            const valX = 55;
+            let y = 28;
+
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(148, 163, 184);
+            doc.text('Nama', leftX, y);
+            doc.text(':', valX - 3, y);
+
+            doc.setTextColor(241, 245, 249);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text(nama, valX, y);
+
+            y += 12;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(148, 163, 184);
+            doc.text('Username (NISN)', leftX, y);
+            doc.text(':', valX - 3, y);
+
+            doc.setTextColor(241, 245, 249);
+            doc.setFont('courier', 'bold');
+            doc.setFontSize(11);
+            doc.text(nisn, valX, y);
+
+            y += 12;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(148, 163, 184);
+            doc.text('Password', leftX, y);
+            doc.text(':', valX - 3, y);
+
+            // Password with highlight
+            doc.setFillColor(r, g, b, 50);
+            const pwWidth = doc.getTextWidth(password) + 6;
+            doc.roundedRect(valX - 2, y - 4, pwWidth + 2, 7, 1.5, 1.5, 'F');
+
+            doc.setTextColor(r, g, b);
+            doc.setFont('courier', 'bold');
+            doc.setFontSize(11);
+            doc.text(password, valX, y);
+
+            // D-Smart link
+            if (isDsmart) {
+                y += 12;
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(148, 163, 184);
+                doc.text('Link Ujian', leftX, y);
+                doc.text(':', valX - 3, y);
+
+                doc.setTextColor(96, 165, 250);
+                doc.setFont('helvetica', 'bold');
+                doc.textWithLink('https://lamteng2.dsmartlampung.com', valX, y, { url: 'https://lamteng2.dsmartlampung.com' });
+            }
+
+            // Footer
+            doc.setFontSize(6);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(100, 116, 139);
+            doc.text('SISMIK \u2014 Sistem Informasi Sekolah', 70, 86, { align: 'center' });
+
+            // Save
+            const filename = `${judul.replace(/\s+/g, '_')}_${nama.replace(/\s+/g, '_')}.pdf`;
+            doc.save(filename);
         }
     </script>
 </body>
