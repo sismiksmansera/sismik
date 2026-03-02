@@ -404,6 +404,26 @@
         color: white;
     }
 
+    .btn-delete-nilai {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 10px;
+    }
+
+    .btn-delete-nilai:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: scale(1.1);
+    }
+
     /* TAMBAH NILAI BUTTON */
     .student-card-footer {
         padding: 12px 15px;
@@ -847,12 +867,15 @@
             siswa.nilai.forEach(function(n) {
                 var editUrl = '{{ route("guru.edit-nilai-siswa") }}?id_rombel=' + selectedRombel.id + '&mapel=' + encodeURIComponent(selectedMapel.name) + '&tanggal=' + n.tanggal + '&nisn=' + siswa.nisn;
                 var materiHtml = n.materi ? '<div class="nilai-materi">Materi: ' + escapeHtml(n.materi.substring(0, 40)) + (n.materi.length > 40 ? '...' : '') + '</div>' : '';
-                nilaiItems += '<div class="nilai-item">' +
+                nilaiItems += '<div class="nilai-item" id="nilai-' + siswa.nisn + '-' + n.tanggal + '">' +
                     '<div class="nilai-header">' +
                         '<span class="nilai-date">' +
                             '<a href="' + editUrl + '" class="btn-edit-nilai" title="Edit nilai tanggal ' + n.tanggal_formatted + '">' +
                                 '<i class="fas fa-edit"></i>' +
                             '</a>' +
+                            '<button class="btn-delete-nilai" onclick="deleteNilai(\'' + siswa.nisn + '\', \'' + n.tanggal + '\', \'' + n.tanggal_formatted + '\', \'' + escapeHtml(siswa.nama) + '\')" title="Hapus nilai tanggal ' + n.tanggal_formatted + '">' +
+                                '<i class="fas fa-trash"></i>' +
+                            '</button>' +
                             n.tanggal_formatted +
                         '</span>' +
                         '<span class="nilai-score">' +
@@ -908,6 +931,40 @@
         var div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // Delete Nilai
+    function deleteNilai(nisn, tanggal, tanggalFormatted, namaSiswa) {
+        if (!confirm('Yakin ingin menghapus nilai ' + namaSiswa + ' pada tanggal ' + tanggalFormatted + '?')) {
+            return;
+        }
+
+        fetch('{{ route("guru.lihat-nilai-selector.delete-nilai") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                nisn: nisn,
+                tanggal: tanggal,
+                mapel: selectedMapel.name,
+                nama_rombel: selectedRombel.name
+            })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                // Reload data to refresh statistics and cards
+                loadNilaiData();
+            } else {
+                alert('Gagal menghapus: ' + (data.message || 'Terjadi kesalahan'));
+            }
+        })
+        .catch(function() {
+            alert('Gagal menghapus nilai. Silakan coba lagi.');
+        });
     }
 </script>
 @endpush

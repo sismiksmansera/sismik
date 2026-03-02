@@ -374,4 +374,42 @@ class LihatNilaiController extends Controller
             'siswa_belum_dinilai' => $siswaBelumDinilai
         ]);
     }
+
+    /**
+     * Delete penilaian for a specific student on a specific date
+     */
+    public function deleteNilai(Request $request)
+    {
+        $nisn = $request->input('nisn');
+        $tanggal = $request->input('tanggal');
+        $mapel = $request->input('mapel');
+        $namaRombel = $request->input('nama_rombel');
+
+        if (empty($nisn) || empty($tanggal) || empty($mapel) || empty($namaRombel)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parameter tidak lengkap'
+            ]);
+        }
+
+        try {
+            $deleted = DB::table('penilaian')
+                ->where('nisn', $nisn)
+                ->where('tanggal_penilaian', $tanggal)
+                ->where('mapel', $mapel)
+                ->where('nama_rombel', $namaRombel)
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Nilai berhasil dihapus',
+                'deleted' => $deleted
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus nilai: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

@@ -394,6 +394,7 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     // Lihat Nilai via Sidebar routes (selector)
     Route::get('/lihat-nilai-selector', [\App\Http\Controllers\Guru\LihatNilaiController::class, 'selector'])->name('lihat-nilai-selector');
     Route::get('/lihat-nilai-selector/nilai-data', [\App\Http\Controllers\Guru\LihatNilaiController::class, 'getNilaiData'])->name('lihat-nilai-selector.nilai-data');
+    Route::post('/lihat-nilai-selector/delete-nilai', [\App\Http\Controllers\Guru\LihatNilaiController::class, 'deleteNilai'])->name('lihat-nilai-selector.delete-nilai');
     
     // Tambah Nilai Siswa routes
     Route::get('/tambah-nilai', [\App\Http\Controllers\Guru\TambahNilaiController::class, 'index'])->name('tambah-nilai');
