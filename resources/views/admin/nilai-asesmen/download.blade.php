@@ -134,6 +134,12 @@
                                 <option value="Asesmen Sumatif Akhir Jenjang">Asesmen Sumatif Akhir Jenjang</option>
                                 <option value="Asesmen Formatif">Asesmen Formatif</option>
                                 <option value="Asesmen Diagnostik">Asesmen Diagnostik</option>
+                                <option value="Asesmen Prakampus Sekolah">Asesmen Prakampus Sekolah</option>
+                                <option value="Asesmen Prakampus Kabupaten">Asesmen Prakampus Kabupaten</option>
+                                <option value="Asesmen Prakampus Provinsi">Asesmen Prakampus Provinsi</option>
+                                <option value="Tes Kompetensi Akademik">Tes Kompetensi Akademik</option>
+                                <option value="Asesmen Komprehensif">Asesmen Komprehensif</option>
+                                <option value="Asesmen Capaian Pembelajaran">Asesmen Capaian Pembelajaran</option>
                             </select>
                         </div>
                         <div class="col-md-4">
