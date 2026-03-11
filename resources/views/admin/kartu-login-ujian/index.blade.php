@@ -201,6 +201,60 @@
     .btn-delete:hover {
         background: #fef2f2;
     }
+    .btn-edit {
+        background: none;
+        border: none;
+        color: #7c3aed;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .btn-edit:hover {
+        background: #ede9fe;
+    }
+
+    /* Edit Modal */
+    .edit-modal-overlay {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+        z-index: 1000; align-items: center; justify-content: center;
+    }
+    .edit-modal-overlay.open { display: flex; }
+    .edit-modal {
+        background: #fff; border-radius: 16px; padding: 30px;
+        width: 95%; max-width: 520px; box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .edit-modal h3 {
+        font-size: 18px; margin-bottom: 20px; color: #1f2937;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .edit-modal h3 i { color: #7c3aed; }
+    .edit-field { margin-bottom: 14px; }
+    .edit-field label {
+        display: block; font-size: 12px; font-weight: 600;
+        color: #6b7280; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .edit-field input {
+        width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb;
+        border-radius: 10px; font-size: 14px; font-family: 'Poppins', sans-serif;
+        transition: border-color 0.2s;
+    }
+    .edit-field input:focus { outline: none; border-color: #7c3aed; }
+    .edit-modal-actions {
+        display: flex; gap: 10px; justify-content: flex-end;
+        margin-top: 20px; padding-top: 16px; border-top: 1px solid #e5e7eb;
+    }
+    .edit-modal-actions .btn-cancel-edit {
+        padding: 10px 20px; border-radius: 10px; border: 2px solid #e5e7eb;
+        background: #fff; color: #6b7280; font-weight: 600; cursor: pointer; font-size: 14px;
+    }
+    .edit-modal-actions .btn-save-edit {
+        padding: 10px 20px; border-radius: 10px; border: none;
+        background: linear-gradient(135deg, #7C3AED, #6D28D9); color: #fff;
+        font-weight: 600; cursor: pointer; font-size: 14px;
+    }
     
     .btn-danger-outline {
         background: none;
@@ -414,8 +468,16 @@
                             <td class="password-cell">{{ $item->nisn }}</td>
                             <td class="password-cell">{{ $item->password_dsmart ?: '-' }}</td>
                             <td class="password-cell">{{ $item->password_bimasoft ?: '-' }}</td>
-                            <td class="password-cell">{{ $item->password_aksi_jihan ?: '-' }}</td>
-                            <td>
+                            <td class="password-cell" style="white-space:nowrap;">
+                                {{ $item->password_aksi_jihan ?: '-' }}
+                                @if($item->password_aksi_jihan)
+                                <a href="https://lamteng1.aksijihan.com" target="_blank" title="Buka Aksi Jihan" style="margin-left:6px;color:#7c3aed;"><i class="fas fa-external-link-alt"></i></a>
+                                @endif
+                            </td>
+                            <td style="white-space:nowrap;">
+                                <button class="btn-edit" onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->nama_siswa) }}', '{{ addslashes($item->kelas) }}', '{{ $item->nisn }}', '{{ addslashes($item->password_dsmart) }}', '{{ addslashes($item->password_bimasoft) }}', '{{ addslashes($item->password_aksi_jihan) }}')" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                                 <button class="btn-delete" onclick="deleteRecord({{ $item->id }})" title="Hapus">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -431,6 +493,42 @@
                 <p>Belum ada data kartu login ujian.<br>Import data menggunakan form di atas.</p>
             </div>
             @endif
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="edit-modal-overlay" id="editModal" onclick="if(event.target===this) closeEditModal()">
+    <div class="edit-modal">
+        <h3><i class="fas fa-edit"></i> Edit Data Siswa</h3>
+        <input type="hidden" id="editId">
+        <div class="edit-field">
+            <label>Nama Siswa</label>
+            <input type="text" id="editNama">
+        </div>
+        <div class="edit-field">
+            <label>Kelas</label>
+            <input type="text" id="editKelas">
+        </div>
+        <div class="edit-field">
+            <label>NISN (Username)</label>
+            <input type="text" id="editNisn">
+        </div>
+        <div class="edit-field">
+            <label>Password D-Smart</label>
+            <input type="text" id="editDsmart">
+        </div>
+        <div class="edit-field">
+            <label>Password Bimasoft</label>
+            <input type="text" id="editBimasoft">
+        </div>
+        <div class="edit-field">
+            <label>Password Aksi Jihan</label>
+            <input type="text" id="editJihan">
+        </div>
+        <div class="edit-modal-actions">
+            <button class="btn-cancel-edit" onclick="closeEditModal()">Batal</button>
+            <button class="btn-save-edit" onclick="saveEdit()"><i class="fas fa-save"></i> Simpan</button>
         </div>
     </div>
 </div>
@@ -521,6 +619,63 @@
             }
         })
         .catch(() => alert('Gagal menghapus data'));
+    }
+
+    // Edit functions
+    function openEditModal(id, nama, kelas, nisn, dsmart, bimasoft, jihan) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editNama').value = nama;
+        document.getElementById('editKelas').value = kelas;
+        document.getElementById('editNisn').value = nisn;
+        document.getElementById('editDsmart').value = dsmart;
+        document.getElementById('editBimasoft').value = bimasoft;
+        document.getElementById('editJihan').value = jihan;
+        document.getElementById('editModal').classList.add('open');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('open');
+    }
+
+    function saveEdit() {
+        const id = document.getElementById('editId').value;
+        const data = {
+            nama_siswa: document.getElementById('editNama').value,
+            kelas: document.getElementById('editKelas').value,
+            nisn: document.getElementById('editNisn').value,
+            password_dsmart: document.getElementById('editDsmart').value,
+            password_bimasoft: document.getElementById('editBimasoft').value,
+            password_aksi_jihan: document.getElementById('editJihan').value,
+        };
+
+        fetch(`{{ url('admin/kartu-login-ujian') }}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                const row = document.getElementById('row-' + id);
+                row.cells[1].innerHTML = '<strong>' + data.nama_siswa + '</strong>';
+                row.cells[2].textContent = data.kelas;
+                row.cells[3].textContent = data.nisn;
+                row.cells[4].textContent = data.password_dsmart || '-';
+                row.cells[5].textContent = data.password_bimasoft || '-';
+                row.cells[6].textContent = data.password_aksi_jihan || '-';
+                // Update edit button onclick
+                const editBtn = row.querySelector('.btn-edit');
+                editBtn.setAttribute('onclick', `openEditModal(${id}, '${data.nama_siswa.replace(/'/g, "\\'") }', '${data.kelas.replace(/'/g, "\\\'")}', '${data.nisn}', '${data.password_dsmart.replace(/'/g, "\\\'")}', '${data.password_bimasoft.replace(/'/g, "\\\'")}', '${data.password_aksi_jihan.replace(/'/g, "\\\'")}')`);
+                closeEditModal();
+            } else {
+                alert(result.message || 'Gagal menyimpan');
+            }
+        })
+        .catch(() => alert('Gagal menyimpan data'));
     }
 </script>
 @endpush

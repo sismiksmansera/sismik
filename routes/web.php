@@ -337,10 +337,20 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/migrasi-nilai/download-template', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'downloadTemplate'])->name('migrasi-nilai.download-template');
     Route::post('/migrasi-nilai/import', [\App\Http\Controllers\Admin\MigrasiNilaiController::class, 'import'])->name('migrasi-nilai.import');
     
+    // Nilai Asesmen Sekolah
+    Route::get('/nilai-asesmen', [\App\Http\Controllers\Admin\NilaiAsesmenSekolahController::class, 'index'])->name('nilai-asesmen.index');
+    Route::get('/nilai-asesmen/download', [\App\Http\Controllers\Admin\NilaiAsesmenSekolahController::class, 'downloadFormat'])->name('nilai-asesmen.download');
+    Route::post('/nilai-asesmen/download-template', [\App\Http\Controllers\Admin\NilaiAsesmenSekolahController::class, 'downloadTemplate'])->name('nilai-asesmen.download-template');
+    Route::get('/nilai-asesmen/import', [\App\Http\Controllers\Admin\NilaiAsesmenSekolahController::class, 'importPage'])->name('nilai-asesmen.import');
+    Route::post('/nilai-asesmen/import', [\App\Http\Controllers\Admin\NilaiAsesmenSekolahController::class, 'import'])->name('nilai-asesmen.import.process');
+    Route::delete('/nilai-asesmen/{id}', [\App\Http\Controllers\Admin\NilaiAsesmenSekolahController::class, 'destroy'])->name('nilai-asesmen.destroy');
+    Route::post('/nilai-asesmen/destroy-bulk', [\App\Http\Controllers\Admin\NilaiAsesmenSekolahController::class, 'destroyBulk'])->name('nilai-asesmen.destroy-bulk');
+    
     // Kartu Login Ujian
     Route::get('/kartu-login-ujian', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'index'])->name('kartu-login-ujian.index');
     Route::post('/kartu-login-ujian/import', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'import'])->name('kartu-login-ujian.import');
     Route::get('/kartu-login-ujian/template', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'downloadTemplate'])->name('kartu-login-ujian.template');
+    Route::put('/kartu-login-ujian/{id}', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'update'])->name('kartu-login-ujian.update');
     Route::delete('/kartu-login-ujian/{id}', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'destroy'])->name('kartu-login-ujian.destroy');
     Route::post('/kartu-login-ujian/destroy-all', [\App\Http\Controllers\Admin\KartuLoginUjianController::class, 'destroyAll'])->name('kartu-login-ujian.destroy-all');
 });

@@ -50,6 +50,7 @@ class Rombel extends Model
         'mapel_pjok', 'guru_pjok', 'jam_pjok',
         'mapel_bahasa_lampung', 'guru_bahasa_lampung', 'jam_bahasa_lampung',
         'mapel_prakarya_dan_kewirausahaan', 'guru_prakarya_dan_kewirausahaan', 'jam_prakarya_dan_kewirausahaan',
+        'mapel_pendidikan_anti_korupsi', 'guru_pendidikan_anti_korupsi', 'jam_pendidikan_anti_korupsi',
     ];
 
     protected $casts = [

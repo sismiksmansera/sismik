@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -544,13 +545,13 @@
             <div id="modalLinkInfo" style="display:none;">
                 <div class="modal-field">
                     <div class="mf-label">Link Ujian</div>
-                    <div class="mf-value" style="color:#60a5fa; font-size:14px;">https://lamteng2.dsmartlampung.com</div>
+                    <div class="mf-value" id="modalLinkText" style="color:#60a5fa; font-size:14px;"></div>
                 </div>
             </div>
             <div class="modal-divider"></div>
             <div class="modal-actions">
                 <button class="modal-btn btn-download" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Download Kartu (PDF)</button>
-                <a class="modal-btn btn-exam" id="modalExamLink" href="https://lamteng2.dsmartlampung.com" target="_blank" style="display:none;"><i class="fas fa-external-link-alt"></i> Masuk Ujian D-Smart</a>
+                <a class="modal-btn btn-exam" id="modalExamLink" href="#" target="_blank" style="display:none;"><i class="fas fa-external-link-alt"></i> <span id="modalExamLinkText"></span></a>
             </div>
         </div>
     </div>
@@ -641,7 +642,7 @@
                                 <div class="value">${escapeHtml(item.password_bimasoft || '-')}</div>
                                 <div class="download-hint"><i class="fas fa-download"></i> Klik untuk download kartu</div>
                             </div>
-                            <div class="login-item jihan" onclick="showCardModal('KARTU LOGIN AKSI JIHAN', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_aksi_jihan || '-')}', '#10b981', false)">
+                            <div class="login-item jihan" onclick="showCardModal('KARTU LOGIN AKSI JIHAN', '${escapeAttr(item.nama_siswa)}', '${escapeAttr(item.nisn)}', '${escapeAttr(item.password_aksi_jihan || '-')}', '#10b981', false, true)">
                                 <div class="label"><i class="fas fa-key"></i> Password Aksi Jihan</div>
                                 <div class="value">${escapeHtml(item.password_aksi_jihan || '-')}</div>
                                 <div class="download-hint"><i class="fas fa-download"></i> Klik untuk download kartu</div>
@@ -673,8 +674,8 @@
         // Modal state
         let currentCard = {};
 
-        function showCardModal(judul, nama, nisn, password, color, isDsmart) {
-            currentCard = { judul, nama, nisn, password, color, isDsmart };
+        function showCardModal(judul, nama, nisn, password, color, isDsmart, isJihan) {
+            currentCard = { judul, nama, nisn, password, color, isDsmart, isJihan: isJihan || false };
 
             document.getElementById('modalTitle').textContent = judul;
             document.getElementById('modalTitle').style.color = color;
@@ -682,9 +683,20 @@
             document.getElementById('modalNisn').textContent = nisn;
             document.getElementById('modalPassword').textContent = password;
 
-            // D-Smart link & exam button
-            document.getElementById('modalLinkInfo').style.display = isDsmart ? 'block' : 'none';
-            document.getElementById('modalExamLink').style.display = isDsmart ? 'flex' : 'none';
+            const showLink = isDsmart || isJihan;
+            const linkUrl = isDsmart ? 'https://lamteng2.dsmartlampung.com' : 'https://lamteng1.aksijihan.com/auth';
+            const linkLabel = isDsmart ? 'Masuk Ujian D-Smart' : 'Masuk Ujian Aksi Jihan';
+
+            document.getElementById('modalLinkInfo').style.display = showLink ? 'block' : 'none';
+            document.getElementById('modalLinkText').textContent = linkUrl;
+            document.getElementById('modalExamLink').style.display = showLink ? 'flex' : 'none';
+            document.getElementById('modalExamLink').href = linkUrl;
+            document.getElementById('modalExamLinkText').textContent = linkLabel;
+            if (isJihan) {
+                document.getElementById('modalExamLink').style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            } else {
+                document.getElementById('modalExamLink').style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+            }
 
             document.getElementById('cardModal').classList.add('show');
             document.body.style.overflow = 'hidden';
@@ -771,8 +783,9 @@
             doc.setFontSize(11);
             doc.text(password, valX, y);
 
-            // D-Smart link
-            if (isDsmart) {
+            // Link info for D-Smart or Jihan
+            if (isDsmart || currentCard.isJihan) {
+                const linkUrl = isDsmart ? 'https://lamteng2.dsmartlampung.com' : 'https://lamteng1.aksijihan.com/auth';
                 y += 12;
                 doc.setFontSize(8);
                 doc.setFont('helvetica', 'normal');
@@ -782,7 +795,7 @@
 
                 doc.setTextColor(96, 165, 250);
                 doc.setFont('helvetica', 'bold');
-                doc.textWithLink('https://lamteng2.dsmartlampung.com', valX, y, { url: 'https://lamteng2.dsmartlampung.com' });
+                doc.textWithLink(linkUrl, valX, y, { url: linkUrl });
             }
 
             // Footer

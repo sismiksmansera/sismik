@@ -90,7 +90,7 @@ class LegerController extends Controller
                 'matematika', 'matematika_lanjut', 'pendidikan_agama_buddha', 'pendidikan_agama_hindu',
                 'pendidikan_agama_islam', 'pendidikan_agama_katholik', 'pendidikan_agama_kristen',
                 'pendidikan_kewarganegaraan', 'pjok', 'prakarya_dan_kewirausahaan',
-                'sejarah', 'seni_budaya', 'sosiologi', 'ipa', 'ips'
+                'pendidikan_anti_korupsi', 'sejarah', 'seni_budaya', 'sosiologi', 'ipa', 'ips'
             ];
             
             $activeMapels = [];
@@ -236,7 +236,7 @@ class LegerController extends Controller
             'matematika', 'matematika_lanjut', 'pendidikan_agama_buddha', 'pendidikan_agama_hindu',
             'pendidikan_agama_islam', 'pendidikan_agama_katholik', 'pendidikan_agama_kristen',
             'pendidikan_kewarganegaraan', 'pjok', 'prakarya_dan_kewirausahaan',
-            'sejarah', 'seni_budaya', 'sosiologi', 'ipa', 'ips'
+            'pendidikan_anti_korupsi', 'sejarah', 'seni_budaya', 'sosiologi', 'ipa', 'ips'
         ];
         
         $activeMapels = [];
@@ -349,7 +349,7 @@ class LegerController extends Controller
             'matematika', 'matematika_lanjut', 'pendidikan_agama_buddha', 'pendidikan_agama_hindu',
             'pendidikan_agama_islam', 'pendidikan_agama_katholik', 'pendidikan_agama_kristen',
             'pendidikan_kewarganegaraan', 'pjok', 'prakarya_dan_kewirausahaan',
-            'sejarah', 'seni_budaya', 'sosiologi', 'ipa', 'ips'
+            'pendidikan_anti_korupsi', 'sejarah', 'seni_budaya', 'sosiologi', 'ipa', 'ips'
         ];
         
         $activeMapels = [];

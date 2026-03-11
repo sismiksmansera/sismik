@@ -138,7 +138,7 @@ class MigrasiNilaiController extends Controller
             'Sejarah', 'Ekonomi', 'Sosiologi', 'Geografi',
             'Pendidikan Agama Islam', 'Pendidikan Kewarganegaraan',
             'Informatika', 'KKA', 'PJOK', 'Seni Budaya', 'Prakarya dan Kewirausahaan',
-            'IPA', 'IPS'
+            'Pendidikan Anti Korupsi', 'IPA', 'IPS'
         ];
         
         $col = 'A';
@@ -263,8 +263,9 @@ class MigrasiNilaiController extends Controller
                     'pjok' => $row[20] ?: null,
                     'seni_budaya' => $row[21] ?: null,
                     'prakarya_dan_kewirausahaan' => $row[22] ?: null,
-                    'ipa' => $row[23] ?: null,
-                    'ips' => $row[24] ?: null,
+                    'pendidikan_anti_korupsi' => $row[23] ?: null,
+                    'ipa' => $row[24] ?: null,
+                    'ips' => $row[25] ?: null,
                     'nilai_min_baru' => 0,
                     'nilai_max_baru' => 100,
                     'generated_by' => auth()->user()->name ?? 'Manual Import'

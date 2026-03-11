@@ -138,6 +138,20 @@ class KartuLoginUjianController extends Controller
     }
 
     /**
+     * Update single record via AJAX.
+     */
+    public function update(Request $request, $id)
+    {
+        $record = KartuLoginUjian::findOrFail($id);
+        $record->update($request->only([
+            'nama_siswa', 'kelas', 'nisn',
+            'password_dsmart', 'password_bimasoft', 'password_aksi_jihan',
+        ]));
+
+        return response()->json(['success' => true, 'message' => 'Data berhasil diupdate']);
+    }
+
+    /**
      * Delete single record.
      */
     public function destroy($id)
