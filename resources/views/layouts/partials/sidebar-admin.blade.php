@@ -128,6 +128,10 @@
             <i class="fas fa-shield-alt"></i>
             <span>Keamanan</span>
         </a>
+        <a href="{{ route('admin.feature-lock.index') }}" class="menu-item {{ request()->routeIs('admin.feature-lock.*') ? 'active' : '' }}">
+            <i class="fas fa-lock"></i>
+            <span>Kunci Fitur</span>
+        </a>
         <a href="{{ route('admin.backup-restore') }}" class="menu-item {{ request()->routeIs('admin.backup-restore') || request()->routeIs('admin.backup.*') ? 'active' : '' }}">
             <i class="fas fa-database"></i>
             <span>Backup & Restore</span>

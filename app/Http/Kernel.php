@@ -72,5 +72,6 @@ class Kernel extends HttpKernel
         'check.guru' => \App\Http\Middleware\CheckGuru::class,
         'check.guru_bk' => \App\Http\Middleware\CheckGuruBK::class,
         'check.siswa' => \App\Http\Middleware\CheckSiswa::class,
+        'feature.lock' => \App\Http\Middleware\CheckFeatureLock::class,
     ];
 }

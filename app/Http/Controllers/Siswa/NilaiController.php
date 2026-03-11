@@ -48,13 +48,22 @@ class NilaiController extends Controller
         $rataRataKeseluruhan = $mapelList->count() > 0 ? round($mapelList->avg('rata_rata'), 1) : 0;
         $mapelKompeten = $mapelList->where('status', 'kompeten')->count();
         
+        // Get nilai asesmen sekolah grouped by mata_pelajaran
+        $nilaiAsesmenSekolah = DB::table('nilai_asesmen_sekolah')
+            ->where('nisn', $siswa->nisn)
+            ->orderBy('mata_pelajaran')
+            ->orderBy('jenis_asesmen')
+            ->get()
+            ->groupBy('mata_pelajaran');
+
         return view('siswa.nilai', compact(
             'siswa',
             'periodik',
             'mapelList',
             'totalNilai',
             'rataRataKeseluruhan',
-            'mapelKompeten'
+            'mapelKompeten',
+            'nilaiAsesmenSekolah'
         ));
     }
     

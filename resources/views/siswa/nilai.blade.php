@@ -294,6 +294,47 @@
             </div>
             @endif
         </div>
+
+        <!-- Nilai Asesmen Tingkat Sekolah -->
+        <div class="mapel-section" style="margin-top:20px;">
+            <div class="section-header">
+                <h2><i class="fas fa-school" style="color: #667eea;"></i> Nilai Asesmen Tingkat Sekolah</h2>
+                <span class="badge">{{ $nilaiAsesmenSekolah->count() }} Mapel</span>
+            </div>
+
+            @if($nilaiAsesmenSekolah->count() > 0)
+            <div class="mapel-grid">
+                @foreach($nilaiAsesmenSekolah as $mapelName => $items)
+                    <div class="mapel-card" style="cursor:default;">
+                        <div class="mapel-card-header">
+                            <h4 class="mapel-name">{{ $mapelName }}</h4>
+                            <span style="font-size:11px;color:#6b7280;">{{ $items->count() }} asesmen</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            @foreach($items as $item)
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:white;border-radius:10px;border:1px solid #e1e8ff;">
+                                <div>
+                                    <div style="font-size:13px;font-weight:600;color:#1f2937;">{{ $item->jenis_asesmen }}</div>
+                                    <div style="font-size:11px;color:#6b7280;margin-top:2px;">
+                                        {{ $item->semester ?? '' }} • {{ $item->tahun_pelajaran ?? '' }}
+                                    </div>
+                                </div>
+                                @php $nClass = $item->nilai >= 85 ? 'high' : ($item->nilai >= 75 ? 'medium' : 'low'); @endphp
+                                <span class="rata-rata-badge {{ $nClass }}" style="font-size:1.1rem;padding:6px 12px;">{{ number_format($item->nilai, 1) }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @else
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-school"></i></div>
+                <h3>Belum Ada Nilai Asesmen Sekolah</h3>
+                <p>Belum ada data nilai asesmen tingkat sekolah untuk Anda.</p>
+            </div>
+            @endif
+        </div>
     </div>
 </div>
 @endsection

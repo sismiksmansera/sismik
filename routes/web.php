@@ -113,6 +113,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/backup/storage', [BackupController::class, 'backupStorage'])->name('backup.storage');
     Route::post('/backup/restore-storage', [BackupController::class, 'restoreStorage'])->name('backup.restore-storage');
     
+    // Kunci Fitur
+    Route::get('/feature-lock', [\App\Http\Controllers\Admin\FeatureLockController::class, 'index'])->name('feature-lock.index');
+    Route::post('/feature-lock/toggle', [\App\Http\Controllers\Admin\FeatureLockController::class, 'toggle'])->name('feature-lock.toggle');
+    
     // Rombel (Rombongan Belajar) Management
     Route::get('/rombel', [RombelController::class, 'index'])->name('rombel.index');
     Route::get('/rombel/create', [RombelController::class, 'create'])->name('rombel.create');
@@ -358,16 +362,16 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
 
 // Guru Routes
 Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function () {
-    Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [GuruDashboardController::class, 'index'])->middleware('feature.lock:guru.dashboard')->name('dashboard');
     Route::get('/stop-impersonate', [GuruDashboardController::class, 'stopImpersonate'])->name('stop-impersonate');
     
     // Profile routes
-    Route::get('/profil', [\App\Http\Controllers\Guru\ProfileController::class, 'index'])->name('profil');
+    Route::get('/profil', [\App\Http\Controllers\Guru\ProfileController::class, 'index'])->middleware('feature.lock:guru.profil')->name('profil');
     Route::put('/profil', [\App\Http\Controllers\Guru\ProfileController::class, 'update'])->name('profil.update');
     Route::post('/profil/foto', [\App\Http\Controllers\Guru\ProfileController::class, 'uploadPhoto'])->name('profil.upload-foto');
     
     // Presensi routes
-    Route::get('/presensi', [\App\Http\Controllers\Guru\PresensiController::class, 'index'])->name('presensi.index');
+    Route::get('/presensi', [\App\Http\Controllers\Guru\PresensiController::class, 'index'])->middleware('feature.lock:guru.presensi')->name('presensi.index');
     Route::post('/presensi', [\App\Http\Controllers\Guru\PresensiController::class, 'store'])->name('presensi.store');
     
     // Penilaian routes
@@ -375,7 +379,7 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::post('/penilaian', [\App\Http\Controllers\Guru\PenilaianController::class, 'store'])->name('penilaian.store');
     
     // Input Penilaian via Sidebar routes
-    Route::get('/input-penilaian', [\App\Http\Controllers\Guru\InputPenilaianController::class, 'index'])->name('input-penilaian');
+    Route::get('/input-penilaian', [\App\Http\Controllers\Guru\InputPenilaianController::class, 'index'])->middleware('feature.lock:guru.input-penilaian')->name('input-penilaian');
     Route::get('/input-penilaian/mapel-options', [\App\Http\Controllers\Guru\InputPenilaianController::class, 'getMapelOptions'])->name('input-penilaian.mapel');
     Route::get('/input-penilaian/rombel-options', [\App\Http\Controllers\Guru\InputPenilaianController::class, 'getRombelOptions'])->name('input-penilaian.rombel');
     Route::get('/input-penilaian/siswa-list', [\App\Http\Controllers\Guru\InputPenilaianController::class, 'getSiswaList'])->name('input-penilaian.siswa');
@@ -386,23 +390,23 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::post('/izin-guru', [\App\Http\Controllers\Guru\IzinGuruController::class, 'store'])->name('izin-guru.store');
     
     // Jadwal Pelajaran route
-    Route::get('/jadwal', [\App\Http\Controllers\Guru\JadwalController::class, 'index'])->name('jadwal');
+    Route::get('/jadwal', [\App\Http\Controllers\Guru\JadwalController::class, 'index'])->middleware('feature.lock:guru.jadwal')->name('jadwal');
     
     // Tugas Mengajar route
-    Route::get('/tugas-mengajar', [\App\Http\Controllers\Guru\TugasMengajarController::class, 'index'])->name('tugas-mengajar');
+    Route::get('/tugas-mengajar', [\App\Http\Controllers\Guru\TugasMengajarController::class, 'index'])->middleware('feature.lock:guru.tugas-mengajar')->name('tugas-mengajar');
     
     // Rekap Presensi route
     Route::get('/rekap-presensi', [\App\Http\Controllers\Guru\RekapPresensiController::class, 'index'])->name('rekap-presensi');
     
     // Presensi Siswa via Sidebar routes (selector)
-    Route::get('/presensi-selector', [\App\Http\Controllers\Guru\RekapPresensiController::class, 'selector'])->name('presensi-selector');
+    Route::get('/presensi-selector', [\App\Http\Controllers\Guru\RekapPresensiController::class, 'selector'])->middleware('feature.lock:guru.presensi')->name('presensi-selector');
     Route::get('/presensi-selector/rekap-data', [\App\Http\Controllers\Guru\RekapPresensiController::class, 'getRekapData'])->name('presensi-selector.rekap-data');
     
     // Lihat Nilai route
     Route::get('/lihat-nilai', [\App\Http\Controllers\Guru\LihatNilaiController::class, 'index'])->name('lihat-nilai');
     
     // Lihat Nilai via Sidebar routes (selector)
-    Route::get('/lihat-nilai-selector', [\App\Http\Controllers\Guru\LihatNilaiController::class, 'selector'])->name('lihat-nilai-selector');
+    Route::get('/lihat-nilai-selector', [\App\Http\Controllers\Guru\LihatNilaiController::class, 'selector'])->middleware('feature.lock:guru.lihat-nilai')->name('lihat-nilai-selector');
     Route::get('/lihat-nilai-selector/nilai-data', [\App\Http\Controllers\Guru\LihatNilaiController::class, 'getNilaiData'])->name('lihat-nilai-selector.nilai-data');
     Route::post('/lihat-nilai-selector/delete-nilai', [\App\Http\Controllers\Guru\LihatNilaiController::class, 'deleteNilai'])->name('lihat-nilai-selector.delete-nilai');
     
@@ -415,7 +419,7 @@ Route::prefix('guru')->name('guru.')->middleware('check.guru')->group(function (
     Route::post('/edit-nilai-siswa', [\App\Http\Controllers\Guru\EditNilaiSiswaController::class, 'update'])->name('edit-nilai-siswa.update');
     
     // Tugas Tambahan route
-    Route::get('/tugas-tambahan', [\App\Http\Controllers\Guru\TugasTambahanController::class, 'index'])->name('tugas-tambahan');
+    Route::get('/tugas-tambahan', [\App\Http\Controllers\Guru\TugasTambahanController::class, 'index'])->middleware('feature.lock:guru.tugas-tambahan')->name('tugas-tambahan');
     
     // Catatan Piket KBM routes
     Route::get('/catatan-piket', [\App\Http\Controllers\Guru\CatatanPiketController::class, 'index'])->name('catatan-piket');
@@ -635,40 +639,40 @@ Route::prefix('guru-bk')->name('guru_bk.')->middleware('check.guru_bk')->group(f
 
 // Siswa Routes
 Route::prefix('siswa')->name('siswa.')->middleware('check.siswa')->group(function () {
-    Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->middleware('feature.lock:siswa.dashboard')->name('dashboard');
     Route::get('/stop-impersonate', [SiswaDashboardController::class, 'stopImpersonate'])->name('stop-impersonate');
     Route::post('/save-kehadiran-guru', [SiswaDashboardController::class, 'saveKehadiranGuru'])->name('save-kehadiran-guru');
     
     // Profile routes
-    Route::get('/profil', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('profil');
+    Route::get('/profil', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->middleware('feature.lock:siswa.profil')->name('profil');
     Route::put('/profil', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('profil.update');
     Route::post('/profil/foto', [\App\Http\Controllers\Siswa\ProfileController::class, 'uploadPhoto'])->name('profil.upload-foto');
     
     // Fase 1: Jadwal, Presensi, Nilai
-    Route::get('/jadwal', [\App\Http\Controllers\Siswa\JadwalController::class, 'index'])->name('jadwal');
-    Route::get('/presensi', [\App\Http\Controllers\Siswa\PresensiController::class, 'index'])->name('presensi');
+    Route::get('/jadwal', [\App\Http\Controllers\Siswa\JadwalController::class, 'index'])->middleware('feature.lock:siswa.jadwal')->name('jadwal');
+    Route::get('/presensi', [\App\Http\Controllers\Siswa\PresensiController::class, 'index'])->middleware('feature.lock:siswa.presensi')->name('presensi');
     Route::get('/presensi/detail', [\App\Http\Controllers\Siswa\PresensiController::class, 'detail'])->name('presensi.detail');
-    Route::get('/nilai', [\App\Http\Controllers\Siswa\NilaiController::class, 'index'])->name('nilai');
+    Route::get('/nilai', [\App\Http\Controllers\Siswa\NilaiController::class, 'index'])->middleware('feature.lock:siswa.nilai')->name('nilai');
     
     // Fase 2: Catatan BK, Pengaduan
-    Route::get('/catatan-bk', [\App\Http\Controllers\Siswa\CatatanBkController::class, 'index'])->name('catatan-bk');
-    Route::get('/pengaduan', [\App\Http\Controllers\Siswa\PengaduanController::class, 'index'])->name('pengaduan.index');
+    Route::get('/catatan-bk', [\App\Http\Controllers\Siswa\CatatanBkController::class, 'index'])->middleware('feature.lock:siswa.catatan-bk')->name('catatan-bk');
+    Route::get('/pengaduan', [\App\Http\Controllers\Siswa\PengaduanController::class, 'index'])->middleware('feature.lock:siswa.pengaduan')->name('pengaduan.index');
     Route::get('/pengaduan/create', [\App\Http\Controllers\Siswa\PengaduanController::class, 'create'])->name('pengaduan.create');
     Route::post('/pengaduan', [\App\Http\Controllers\Siswa\PengaduanController::class, 'store'])->name('pengaduan.store');
     Route::delete('/pengaduan/{id}', [\App\Http\Controllers\Siswa\PengaduanController::class, 'destroy'])->name('pengaduan.destroy');
     
     // Fase 3: Ekskul, Prestasi, Mapel
-    Route::get('/ekstrakurikuler', [\App\Http\Controllers\Siswa\EkstrakurikulerController::class, 'index'])->name('ekstrakurikuler');
-    Route::get('/prestasi', [\App\Http\Controllers\Siswa\PrestasiController::class, 'index'])->name('prestasi');
-    Route::get('/mapel', [\App\Http\Controllers\Siswa\MapelController::class, 'index'])->name('mapel');
+    Route::get('/ekstrakurikuler', [\App\Http\Controllers\Siswa\EkstrakurikulerController::class, 'index'])->middleware('feature.lock:siswa.ekstrakurikuler')->name('ekstrakurikuler');
+    Route::get('/prestasi', [\App\Http\Controllers\Siswa\PrestasiController::class, 'index'])->middleware('feature.lock:siswa.prestasi')->name('prestasi');
+    Route::get('/mapel', [\App\Http\Controllers\Siswa\MapelController::class, 'index'])->middleware('feature.lock:siswa.mapel')->name('mapel');
     
     // Riwayat Akademik
-    Route::get('/riwayat-akademik', [\App\Http\Controllers\Siswa\RiwayatAkademikController::class, 'index'])->name('riwayat-akademik');
+    Route::get('/riwayat-akademik', [\App\Http\Controllers\Siswa\RiwayatAkademikController::class, 'index'])->middleware('feature.lock:siswa.riwayat-akademik')->name('riwayat-akademik');
     Route::get('/riwayat-akademik/print', [\App\Http\Controllers\Siswa\RiwayatAkademikController::class, 'print'])->name('riwayat-akademik.print');
     
     // Catatan Guru Wali
-    Route::get('/catatan-guru-wali', [\App\Http\Controllers\Siswa\CatatanGuruWaliController::class, 'index'])->name('catatan-guru-wali');
+    Route::get('/catatan-guru-wali', [\App\Http\Controllers\Siswa\CatatanGuruWaliController::class, 'index'])->middleware('feature.lock:siswa.catatan-guru-wali')->name('catatan-guru-wali');
     
     // Pelanggaran
-    Route::get('/pelanggaran', [\App\Http\Controllers\Siswa\PelanggaranController::class, 'index'])->name('pelanggaran');
+    Route::get('/pelanggaran', [\App\Http\Controllers\Siswa\PelanggaranController::class, 'index'])->middleware('feature.lock:siswa.pelanggaran')->name('pelanggaran');
 });
