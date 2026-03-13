@@ -132,13 +132,15 @@ class MigrasiNilaiController extends Controller
         // Headers
         $headers = [
             'No', 'NISN', 'Nama Siswa',
-            'Bahasa Indonesia', 'Bahasa Inggris', 'Bahasa Inggris Lanjut', 'Bahasa Lampung',
-            'Matematika', 'Matematika Lanjut',
-            'Biologi', 'Fisika', 'Kimia',
-            'Sejarah', 'Ekonomi', 'Sosiologi', 'Geografi',
-            'Pendidikan Agama Islam', 'Pendidikan Kewarganegaraan',
-            'Informatika', 'KKA', 'PJOK', 'Seni Budaya', 'Prakarya dan Kewirausahaan',
-            'Pendidikan Anti Korupsi', 'IPA', 'IPS'
+            'Pendidikan Agama Islam', 'Pendidikan Agama Hindu', 'Pendidikan Agama Buddha',
+            'Pendidikan Agama Katholik', 'Pendidikan Agama Kristen',
+            'Pendidikan Kewarganegaraan',
+            'Bahasa Indonesia', 'Bahasa Inggris',
+            'Matematika', 'Matematika Lanjut', 'Bahasa Inggris Lanjut',
+            'Biologi', 'Fisika', 'Kimia', 'IPA',
+            'Geografi', 'Sejarah', 'Sosiologi', 'Ekonomi', 'IPS',
+            'Seni Budaya', 'Informatika', 'PJOK', 'Bahasa Lampung',
+            'KKA', 'Prakarya dan Kewirausahaan', 'Pendidikan Anti Korupsi'
         ];
         
         $col = 'A';
@@ -162,8 +164,9 @@ class MigrasiNilaiController extends Controller
             $row++;
         }
         
-        // Auto width
-        foreach(range('A','Z') as $col) {
+        // Auto width (A through AD = 30 columns)
+        $autoCols = array_merge(range('A','Z'), ['AA','AB','AC','AD']);
+        foreach($autoCols as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
         
@@ -172,11 +175,39 @@ class MigrasiNilaiController extends Controller
         
         // Add borders
         $lastRow = $row - 1;
-        $sheet->getStyle('A1:Z' . $lastRow)->applyFromArray([
+        $sheet->getStyle('A1:AD' . $lastRow)->applyFromArray([
             'borders' => [
                 'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '000000']]
             ]
         ]);
+        
+        // Add Metadata sheet with tahun, semester, rombel info
+        $metaSheet = $spreadsheet->createSheet();
+        $metaSheet->setTitle('Metadata');
+        $metaSheet->setCellValue('A1', 'Key');
+        $metaSheet->setCellValue('B1', 'Value');
+        $metaSheet->setCellValue('A2', 'tahun_pelajaran');
+        $metaSheet->setCellValue('B2', $tahunPelajaran);
+        $metaSheet->setCellValue('A3', 'semester');
+        $metaSheet->setCellValue('B3', $semester);
+        $metaSheet->setCellValue('A4', 'rombel_id');
+        $metaSheet->setCellValue('B4', $rombelId);
+        $metaSheet->setCellValue('A5', 'rombel_nama');
+        $metaSheet->setCellValue('B5', $rombelNama);
+        
+        // Style metadata header
+        $metaSheet->getStyle('A1:B1')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+        ]);
+        $metaSheet->getColumnDimension('A')->setAutoSize(true);
+        $metaSheet->getColumnDimension('B')->setAutoSize(true);
+        
+        // Protect metadata sheet so users don't accidentally edit it
+        $metaSheet->getProtection()->setSheet(true);
+        
+        // Set active sheet back to data sheet
+        $spreadsheet->setActiveSheetIndex(0);
         
         // Output
         $fileName = 'Template_Migrasi_Nilai_' . $rombelNama . '_' . $tahunPelajaran . '_' . $semester . '.xlsx';
@@ -196,20 +227,34 @@ class MigrasiNilaiController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'tahun_pelajaran' => 'required',
-            'semester' => 'required',
-            'rombel_id' => 'required|exists:rombel,id',
             'file' => 'required|file|mimes:xlsx,xls|max:5120'
         ]);
         
         try {
-            $tahunPelajaran = $request->tahun_pelajaran;
-            $semester = $request->semester;
-            $rombelId = $request->rombel_id;
-            
             $file = $request->file('file');
             $spreadsheet = IOFactory::load($file->getPathname());
-            $sheet = $spreadsheet->getActiveSheet();
+            
+            // Read metadata from the Metadata sheet
+            $metaSheet = $spreadsheet->getSheetByName('Metadata');
+            if (!$metaSheet) {
+                return back()->with('error', 'File tidak valid! Sheet "Metadata" tidak ditemukan. Gunakan template yang didownload dari sistem.');
+            }
+            
+            $tahunPelajaran = $metaSheet->getCell('B2')->getValue();
+            $semester = $metaSheet->getCell('B3')->getValue();
+            $rombelId = $metaSheet->getCell('B4')->getValue();
+            
+            if (!$tahunPelajaran || !$semester || !$rombelId) {
+                return back()->with('error', 'Metadata tidak lengkap! Pastikan file template tidak diubah.');
+            }
+            
+            // Validate rombel exists
+            $rombel = Rombel::find($rombelId);
+            if (!$rombel) {
+                return back()->with('error', 'Rombel ID ' . $rombelId . ' tidak ditemukan di database!');
+            }
+            
+            $sheet = $spreadsheet->getSheet(0);
             $rows = $sheet->toArray();
             
             // Skip header
@@ -243,29 +288,33 @@ class MigrasiNilaiController extends Controller
                     'semester' => $semester,
                     'nisn' => $nisn,
                     'nama_siswa' => $namaSiswa,
-                    'bahasa_indonesia' => $row[3] ?: null,
-                    'bahasa_inggris' => $row[4] ?: null,
-                    'bahasa_inggris_lanjut' => $row[5] ?: null,
-                    'bahasa_lampung' => $row[6] ?: null,
-                    'matematika' => $row[7] ?: null,
-                    'matematika_lanjut' => $row[8] ?: null,
-                    'biologi' => $row[9] ?: null,
-                    'fisika' => $row[10] ?: null,
-                    'kimia' => $row[11] ?: null,
-                    'sejarah' => $row[12] ?: null,
-                    'ekonomi' => $row[13] ?: null,
-                    'sosiologi' => $row[14] ?: null,
-                    'geografi' => $row[15] ?: null,
-                    'pendidikan_agama_islam' => $row[16] ?: null,
-                    'pendidikan_kewarganegaraan' => $row[17] ?: null,
-                    'informatika' => $row[18] ?: null,
-                    'kka' => $row[19] ?: null,
-                    'pjok' => $row[20] ?: null,
-                    'seni_budaya' => $row[21] ?: null,
-                    'prakarya_dan_kewirausahaan' => $row[22] ?: null,
-                    'pendidikan_anti_korupsi' => $row[23] ?: null,
-                    'ipa' => $row[24] ?: null,
-                    'ips' => $row[25] ?: null,
+                    'pendidikan_agama_islam' => $row[3] ?: null,
+                    'pendidikan_agama_hindu' => $row[4] ?: null,
+                    'pendidikan_agama_buddha' => $row[5] ?: null,
+                    'pendidikan_agama_katholik' => $row[6] ?: null,
+                    'pendidikan_agama_kristen' => $row[7] ?: null,
+                    'pendidikan_kewarganegaraan' => $row[8] ?: null,
+                    'bahasa_indonesia' => $row[9] ?: null,
+                    'bahasa_inggris' => $row[10] ?: null,
+                    'matematika' => $row[11] ?: null,
+                    'matematika_lanjut' => $row[12] ?: null,
+                    'bahasa_inggris_lanjut' => $row[13] ?: null,
+                    'biologi' => $row[14] ?: null,
+                    'fisika' => $row[15] ?: null,
+                    'kimia' => $row[16] ?: null,
+                    'ipa' => $row[17] ?: null,
+                    'geografi' => $row[18] ?: null,
+                    'sejarah' => $row[19] ?: null,
+                    'sosiologi' => $row[20] ?: null,
+                    'ekonomi' => $row[21] ?: null,
+                    'ips' => $row[22] ?: null,
+                    'seni_budaya' => $row[23] ?: null,
+                    'informatika' => $row[24] ?: null,
+                    'pjok' => $row[25] ?: null,
+                    'bahasa_lampung' => $row[26] ?: null,
+                    'kka' => $row[27] ?: null,
+                    'prakarya_dan_kewirausahaan' => $row[28] ?: null,
+                    'pendidikan_anti_korupsi' => $row[29] ?: null,
                     'nilai_min_baru' => 0,
                     'nilai_max_baru' => 100,
                     'generated_by' => auth()->user()->name ?? 'Manual Import'

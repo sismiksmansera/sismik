@@ -128,12 +128,9 @@
             <!-- Import Card -->
             <div class="filter-card">
                 <h5 class="mb-3"><i class="fas fa-upload"></i> Import File Excel</h5>
-                <p class="text-muted">Upload file Excel yang sudah diisi dengan nilai siswa.</p>
+                <p class="text-muted">Upload file Excel template yang sudah diisi dengan nilai siswa. Tahun pelajaran, semester, dan rombel otomatis terbaca dari template.</p>
                 <form action="{{ route('admin.migrasi-nilai.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
                     @csrf
-                    <input type="hidden" name="tahun_pelajaran" id="import_tahun">
-                    <input type="hidden" name="semester" id="import_semester">
-                    <input type="hidden" name="rombel_id" id="import_rombel">
                     
                     <div class="mb-3">
                         <input type="file" class="form-control" name="file" id="fileInput" accept=".xlsx,.xls" required>
@@ -154,7 +151,7 @@
                     <li>Klik tombol <strong>Download Template Excel</strong> untuk mendapatkan template dengan daftar siswa</li>
                     <li>Isi nilai untuk setiap mata pelajaran di file Excel (kolom-kolom yang tersedia)</li>
                     <li>Simpan file Excel yang sudah diisi</li>
-                    <li>Upload file Excel menggunakan tombol <strong>Import Nilai</strong></li>
+                    <li>Upload file Excel menggunakan tombol <strong>Import Nilai</strong> (tahun pelajaran, semester, dan rombel otomatis terbaca dari template)</li>
                     <li>Sistem akan menyimpan nilai ke tabel <code>katrol_nilai_leger</code></li>
                 </ol>
             </div>
@@ -262,30 +259,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const rombel = rombelInput.value;
 
         if (tahun && semester && rombel) {
-            // Enable buttons
+            // Enable download button
             btnDownload.disabled = false;
-            btnImport.disabled = false;
             
-            // Set hidden values
+            // Set hidden values for download form
             document.getElementById('download_tahun').value = tahun;
             document.getElementById('download_semester').value = semester;
             document.getElementById('download_rombel').value = rombel;
-            document.getElementById('import_tahun').value = tahun;
-            document.getElementById('import_semester').value = semester;
-            document.getElementById('import_rombel').value = rombel;
         } else {
             btnDownload.disabled = true;
-            btnImport.disabled = true;
         }
     }
     
     // Disable import button if no file selected
     document.getElementById('fileInput').addEventListener('change', function() {
-        if (!this.files.length) {
-            btnImport.disabled = true;
-        } else {
-            checkFilters();
-        }
+        btnImport.disabled = !this.files.length;
     });
 });
 </script>
