@@ -27,6 +27,7 @@ use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 Route::get('/setup', [\App\Http\Controllers\SetupController::class, 'index'])->name('setup');
 Route::post('/setup/test-connection', [\App\Http\Controllers\SetupController::class, 'testConnection']);
 Route::post('/setup/install', [\App\Http\Controllers\SetupController::class, 'install']);
+Route::post('/setup/fix-limits', [\App\Http\Controllers\SetupController::class, 'fixLimits']);
 Route::get('/setup/success', [\App\Http\Controllers\SetupController::class, 'success']);
 
 // Pendaftaran OSN (public, no auth required)

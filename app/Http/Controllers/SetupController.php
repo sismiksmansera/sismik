@@ -8,6 +8,16 @@ use Illuminate\Support\Facades\Artisan;
 class SetupController extends Controller
 {
     /**
+     * Minimum required PHP limits for setup
+     */
+    private const REQUIRED_LIMITS = [
+        'upload_max_filesize' => 100,  // MB
+        'post_max_size'       => 100,  // MB
+        'memory_limit'        => 512,  // MB
+        'max_execution_time'  => 600,  // seconds
+    ];
+
+    /**
      * Show the setup page
      */
     public function index(Request $request)
@@ -34,7 +44,35 @@ class SetupController extends Controller
             'db_database' => env('DB_DATABASE', 'simas_db'),
         ];
 
-        return view('setup', compact('reason', 'defaults'));
+        // Check and auto-fix PHP limits
+        $serverChecks = $this->checkServerLimits();
+        $fixApplied = false;
+
+        if ($serverChecks['needs_fix']) {
+            $fixApplied = $this->applyUserIni();
+        }
+
+        return view('setup', compact('reason', 'defaults', 'serverChecks', 'fixApplied'));
+    }
+
+    /**
+     * Check PHP limits and fix them via .user.ini (AJAX)
+     */
+    public function fixLimits()
+    {
+        $applied = $this->applyUserIni();
+        $checks = $this->checkServerLimits();
+
+        // Also try to restart PHP-FPM to apply .user.ini immediately
+        $this->tryRestartPhpFpm();
+
+        return response()->json([
+            'success' => $applied,
+            'checks' => $checks,
+            'message' => $applied
+                ? 'File .user.ini telah dibuat. Silakan refresh halaman untuk menerapkan perubahan.'
+                : 'Gagal membuat file .user.ini. Pastikan folder public/ memiliki permission write.',
+        ]);
     }
 
     /**
@@ -65,10 +103,16 @@ class SetupController extends Controller
                 return !in_array($db, ['information_schema', 'mysql', 'performance_schema', 'sys', 'phpmyadmin']);
             }));
 
+            // Get max_allowed_packet
+            $stmt = $pdo->query("SHOW VARIABLES LIKE 'max_allowed_packet'");
+            $maxPacket = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $maxPacketMB = $maxPacket ? round($maxPacket['Value'] / 1048576) : 0;
+
             return response()->json([
                 'success' => true,
                 'message' => "Koneksi berhasil! MySQL v{$version}",
                 'databases' => $databases,
+                'max_allowed_packet_mb' => $maxPacketMB,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -83,16 +127,36 @@ class SetupController extends Controller
      */
     public function install(Request $request)
     {
-        // Increase time limit for large SQL imports
-        set_time_limit(300);
-        ini_set('max_execution_time', '300');
+        // Override PHP limits at runtime (for what we can change)
+        set_time_limit(600);
+        ini_set('max_execution_time', '600');
+        ini_set('memory_limit', '512M');
+
+        // Determine the max file size we can actually accept
+        $maxUploadBytes = min(
+            $this->parseSize(ini_get('upload_max_filesize')),
+            $this->parseSize(ini_get('post_max_size'))
+        );
+        $maxUploadKB = intval($maxUploadBytes / 1024);
+
+        // Check if the request was rejected by PHP before reaching Laravel
+        if (empty($_FILES) && empty($_POST) && $request->server('CONTENT_LENGTH') > 0) {
+            $attemptedMB = round($request->server('CONTENT_LENGTH') / 1048576, 1);
+            return back()->withErrors([
+                'sql_file' => "File terlalu besar ({$attemptedMB} MB). Server hanya mengizinkan upload maksimal " 
+                    . ini_get('upload_max_filesize') . ". Klik tombol 'Perbaiki Otomatis' di halaman setup untuk memperbesar batas upload, lalu refresh halaman."
+            ])->withInput();
+        }
 
         $request->validate([
             'db_host' => 'required|string',
             'db_port' => 'required|numeric',
             'db_username' => 'required|string',
             'db_database' => 'required|string|regex:/^[a-zA-Z0-9_]+$/',
-            'sql_file' => 'required|file|max:51200', // max 50MB
+            'sql_file' => 'required|file|max:' . $maxUploadKB,
+        ], [
+            'sql_file.max' => 'File SQL terlalu besar. Maksimal: ' . ini_get('upload_max_filesize') . '. Klik "Perbaiki Otomatis" untuk memperbesar batas.',
+            'sql_file.required' => 'File SQL wajib diupload.',
         ]);
 
         $host = $request->input('db_host');
@@ -119,7 +183,20 @@ class SetupController extends Controller
             return back()->withErrors(['database' => 'Gagal membuat database: ' . $e->getMessage()])->withInput();
         }
 
-        // Step 3: Import SQL file
+        // Step 3: Increase MySQL max_allowed_packet for this session
+        try {
+            $pdo->exec("SET GLOBAL max_allowed_packet = 104857600"); // 100MB
+        } catch (\Exception $e) {
+            // Not critical — may not have SUPER privilege
+            try {
+                $pdo->exec("SET SESSION max_allowed_packet = 104857600");
+            } catch (\Exception $e2) {
+                // Ignore — will use default
+            }
+        }
+
+        // Step 4: Import SQL file
+        $tempPath = null;
         try {
             $sqlFile = $request->file('sql_file');
             $sqlContent = file_get_contents($sqlFile->getRealPath());
@@ -137,7 +214,7 @@ class SetupController extends Controller
             
             if ($mysqlBin) {
                 $passwordArg = !empty($password) ? "-p\"{$password}\"" : '';
-                $cmd = "\"{$mysqlBin}\" -h {$host} -P {$port} -u {$username} {$passwordArg} {$database} < \"{$tempPath}\" 2>&1";
+                $cmd = "\"{$mysqlBin}\" -h {$host} -P {$port} -u {$username} {$passwordArg} --max_allowed_packet=100M {$database} < \"{$tempPath}\" 2>&1";
                 
                 exec($cmd, $output, $returnCode);
                 @unlink($tempPath);
@@ -157,7 +234,7 @@ class SetupController extends Controller
             return back()->withErrors(['sql_file' => 'Gagal import SQL: ' . $e->getMessage()])->withInput();
         }
 
-        // Step 4: Update .env file
+        // Step 5: Update .env file
         try {
             $this->updateEnv([
                 'DB_HOST' => $host,
@@ -170,19 +247,18 @@ class SetupController extends Controller
             return back()->withErrors(['env' => 'Database terinstall tapi gagal update .env: ' . $e->getMessage()])->withInput();
         }
 
-        // Step 5: Clear config cache manually (avoid Artisan::call which can kill the process)
+        // Step 6: Clear config cache manually
         try {
             $cachedConfigPath = base_path('bootstrap/cache/config.php');
             if (file_exists($cachedConfigPath)) {
                 @unlink($cachedConfigPath);
             }
-            // Clear file-based cache
             $cachePath = storage_path('framework/cache/data');
             if (is_dir($cachePath)) {
                 array_map('unlink', glob($cachePath . '/*') ?: []);
             }
         } catch (\Exception $e) {
-            // Non-critical, continue
+            // Non-critical
         }
 
         return redirect('/setup/success');
@@ -196,6 +272,109 @@ class SetupController extends Controller
         return view('setup-success');
     }
 
+    // ================================================================
+    // PRIVATE HELPERS
+    // ================================================================
+
+    /**
+     * Check server PHP limits and return status
+     */
+    private function checkServerLimits(): array
+    {
+        $checks = [];
+        $needsFix = false;
+
+        foreach (self::REQUIRED_LIMITS as $directive => $required) {
+            $current = $this->parseSizeMB($directive);
+            $ok = $current >= $required;
+            if (!$ok) $needsFix = true;
+            $checks[$directive] = [
+                'current' => $current,
+                'required' => $required,
+                'ok' => $ok,
+                'unit' => in_array($directive, ['max_execution_time']) ? 'detik' : 'MB',
+            ];
+        }
+
+        // Check if .user.ini already exists
+        $userIniExists = file_exists(public_path('.user.ini'));
+
+        return [
+            'checks' => $checks,
+            'needs_fix' => $needsFix,
+            'user_ini_exists' => $userIniExists,
+        ];
+    }
+
+    /**
+     * Parse a PHP size directive into megabytes
+     */
+    private function parseSizeMB(string $directive): int
+    {
+        if ($directive === 'max_execution_time') {
+            return (int) ini_get($directive);
+        }
+        $value = ini_get($directive);
+        return intval($this->parseSize($value) / 1048576);
+    }
+
+    /**
+     * Parse PHP size string (e.g., "128M") to bytes
+     */
+    private function parseSize(string $size): int
+    {
+        $size = trim($size);
+        $last = strtolower(substr($size, -1));
+        $value = (int) $size;
+        
+        switch ($last) {
+            case 'g': $value *= 1073741824; break;
+            case 'm': $value *= 1048576; break;
+            case 'k': $value *= 1024; break;
+        }
+        
+        return $value;
+    }
+
+    /**
+     * Create/update .user.ini in public/ directory to fix PHP limits.
+     * This works with PHP-FPM (Nginx) without needing sudo or editing php.ini.
+     */
+    private function applyUserIni(): bool
+    {
+        $iniPath = public_path('.user.ini');
+        
+        $content = "; Auto-generated by SISMIK Setup\n";
+        $content .= "; This file overrides PHP settings for this application only.\n";
+        $content .= "; It is read by PHP-FPM automatically.\n\n";
+        $content .= "upload_max_filesize = 100M\n";
+        $content .= "post_max_size = 105M\n";
+        $content .= "memory_limit = 512M\n";
+        $content .= "max_execution_time = 600\n";
+        $content .= "max_input_time = 600\n";
+        $content .= "max_input_vars = 5000\n";
+
+        try {
+            file_put_contents($iniPath, $content);
+            return file_exists($iniPath);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Try to restart PHP-FPM to apply .user.ini immediately
+     */
+    private function tryRestartPhpFpm(): void
+    {
+        // The optimize script has sudo access, try using it for a quick restart
+        $script = base_path('scripts/optimize-server.sh');
+        if (file_exists($script)) {
+            // Only restart PHP-FPM, not full optimization
+            @exec("sudo systemctl reload php*-fpm 2>/dev/null");
+        }
+    }
+
     /**
      * Find mysql binary path
      */
@@ -204,7 +383,6 @@ class SetupController extends Controller
         $paths = [];
 
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            // Scan Laragon mysql directories dynamically
             $laragonMysqlDir = 'C:\\laragon\\bin\\mysql';
             if (is_dir($laragonMysqlDir)) {
                 $dirs = glob($laragonMysqlDir . '\\mysql-*', GLOB_ONLYDIR);
@@ -244,6 +422,13 @@ class SetupController extends Controller
         $pdo->exec("SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO'");
         $pdo->exec("SET NAMES utf8mb4");
 
+        // Try to set max_allowed_packet for this session
+        try {
+            $pdo->exec("SET SESSION max_allowed_packet = 104857600");
+        } catch (\Exception $e) {
+            // Ignore
+        }
+
         $length = strlen($sqlContent);
         $statement = '';
         $inString = false;
@@ -258,18 +443,16 @@ class SetupController extends Controller
             $char = $sqlContent[$i];
             $nextChar = ($i + 1 < $length) ? $sqlContent[$i + 1] : '';
 
-            // Handle escape characters inside strings
             if ($escaped) {
                 $statement .= $char;
                 $escaped = false;
                 continue;
             }
 
-            // Handle line comments (-- or #)
             if (!$inString && !$inBlockComment) {
                 if ($char === '-' && $nextChar === '-') {
                     $inLineComment = true;
-                    $i++; // skip next char
+                    $i++;
                     continue;
                 }
                 if ($char === '#') {
@@ -285,28 +468,24 @@ class SetupController extends Controller
                 continue;
             }
 
-            // Handle block comments /* */
             if (!$inString && $char === '/' && $nextChar === '*') {
-                // Keep /*!40101 ... */ conditional comments as they are MySQL-specific
                 if (($i + 2 < $length) && $sqlContent[$i + 2] === '!') {
-                    // This is a conditional comment, include it
                     $statement .= $char;
                     continue;
                 }
                 $inBlockComment = true;
-                $i++; // skip *
+                $i++;
                 continue;
             }
 
             if ($inBlockComment) {
                 if ($char === '*' && $nextChar === '/') {
                     $inBlockComment = false;
-                    $i++; // skip /
+                    $i++;
                 }
                 continue;
             }
 
-            // Handle string literals
             if (!$inString && ($char === "'" || $char === '"')) {
                 $inString = true;
                 $stringChar = $char;
@@ -321,7 +500,6 @@ class SetupController extends Controller
                     continue;
                 }
                 if ($char === $stringChar) {
-                    // Check for escaped quote (double quote like '')
                     if ($nextChar === $stringChar) {
                         $statement .= $char . $nextChar;
                         $i++;
@@ -333,7 +511,6 @@ class SetupController extends Controller
                 continue;
             }
 
-            // Statement terminator
             if ($char === ';') {
                 $trimmed = trim($statement);
                 if (!empty($trimmed)) {
@@ -352,7 +529,6 @@ class SetupController extends Controller
             $statement .= $char;
         }
 
-        // Execute any remaining statement
         $trimmed = trim($statement);
         if (!empty($trimmed) && $trimmed !== ';') {
             try {
@@ -378,7 +554,6 @@ class SetupController extends Controller
         $envContent = file_get_contents($envPath);
 
         foreach ($data as $key => $value) {
-            // Escape value if it contains spaces
             $escapedValue = $value;
             if (str_contains($value, ' ') || str_contains($value, '#') || empty($value)) {
                 $escapedValue = "\"$value\"";

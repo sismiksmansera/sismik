@@ -82,6 +82,7 @@
             justify-content: center;
             font-size: 16px;
             color: white;
+            flex-shrink: 0;
         }
         .section-title h2 { color: #f1f5f9; font-size: 18px; font-weight: 700; }
         .section-title p { color: #94a3b8; font-size: 12px; }
@@ -181,6 +182,16 @@
             margin-bottom: 14px;
         }
 
+        .btn-fix {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            margin-top: 12px;
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+        .btn-fix:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3); }
+        .btn-fix:disabled { opacity: 0.6; cursor: not-allowed; }
+
         .status-box {
             padding: 12px 16px;
             border-radius: 10px;
@@ -193,6 +204,7 @@
         .status-box.success { display: flex; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; }
         .status-box.error { display: flex; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; }
         .status-box.loading { display: flex; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd; }
+        .status-box.warning { display: flex; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; }
 
         .error-box {
             padding: 12px 16px;
@@ -209,6 +221,34 @@
             background: #334155;
             margin: 24px 0;
         }
+
+        /* Server Health Table */
+        .health-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        .health-table td {
+            padding: 8px 10px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(51,65,85,0.5);
+        }
+        .health-table td:first-child {
+            color: #94a3b8;
+            font-weight: 500;
+            width: 40%;
+        }
+        .health-table td:nth-child(2) {
+            color: #f1f5f9;
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+        }
+        .health-table td:last-child {
+            width: 32px;
+            text-align: center;
+        }
+        .badge-ok { color: #10b981; }
+        .badge-fail { color: #ef4444; }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -261,6 +301,7 @@
             <div class="card-body">
                 <!-- Step Indicator -->
                 <div class="step-indicator">
+                    <div class="step" id="step0"></div>
                     <div class="step active" id="step1"></div>
                     <div class="step" id="step2"></div>
                     <div class="step" id="step3"></div>
@@ -280,6 +321,72 @@
                 <div class="error-box">
                     <i class="fas fa-database"></i> Database ditemukan tetapi kosong. Silakan import file SQL.
                 </div>
+                @endif
+
+                <!-- ===================== -->
+                <!-- SERVER HEALTH CHECK   -->
+                <!-- ===================== -->
+                @if(isset($serverChecks))
+                <div class="section-title">
+                    <div class="icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div>
+                        <h2>Kesiapan Server</h2>
+                        <p>Pengecekan batas konfigurasi PHP untuk proses import database</p>
+                    </div>
+                </div>
+
+                @php $allOk = !$serverChecks['needs_fix']; @endphp
+
+                @if($allOk)
+                    <div class="status-box success">
+                        <i class="fas fa-check-circle"></i>
+                        <div>Server siap! Semua konfigurasi PHP memenuhi syarat.</div>
+                    </div>
+                @else
+                    <div class="status-box warning" style="display:flex; flex-direction:column; align-items:flex-start;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Beberapa konfigurasi PHP belum optimal</strong>
+                        </div>
+                        <div style="font-size:12px;opacity:0.9;">
+                            Batas upload/memori server terlalu rendah untuk import database besar. Klik tombol di bawah untuk memperbaiki otomatis.
+                        </div>
+                    </div>
+                @endif
+
+                <table class="health-table">
+                    @foreach($serverChecks['checks'] as $directive => $check)
+                    <tr>
+                        <td>{{ $directive }}</td>
+                        <td>{{ $check['current'] }} {{ $check['unit'] }} <span style="color:#64748b;font-weight:400;">/ {{ $check['required'] }} {{ $check['unit'] }}</span></td>
+                        <td>
+                            @if($check['ok'])
+                                <i class="fas fa-check-circle badge-ok"></i>
+                            @else
+                                <i class="fas fa-times-circle badge-fail"></i>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </table>
+
+                @if(!$allOk)
+                    <button type="button" class="btn btn-fix" id="btnFixLimits" onclick="fixServerLimits()">
+                        <i class="fas fa-wrench"></i> Perbaiki Otomatis
+                    </button>
+                    <div id="fixResult" style="margin-top:10px;"></div>
+                @endif
+
+                @if($fixApplied ?? false)
+                    <div class="status-box success" style="display:flex;margin-top:12px;">
+                        <i class="fas fa-info-circle"></i>
+                        <div>File <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">.user.ini</code> telah dibuat. Jika nilai belum berubah, <strong>refresh halaman ini</strong> (tekan F5) atau tunggu beberapa saat.</div>
+                    </div>
+                @endif
+
+                <div class="divider"></div>
                 @endif
 
                 <!-- Connection Status -->
@@ -358,13 +465,27 @@
                         </div>
                     </div>
 
+                    @php
+                        $uploadMaxMB = intval(min(
+                            (function($s) { $l=strtolower(substr($s,-1)); $v=(int)$s; return match($l){'g'=>$v*1024,'m'=>$v,'k'=>$v/1024,default=>$v/1048576}; })(ini_get('upload_max_filesize')),
+                            (function($s) { $l=strtolower(substr($s,-1)); $v=(int)$s; return match($l){'g'=>$v*1024,'m'=>$v,'k'=>$v/1024,default=>$v/1048576}; })(ini_get('post_max_size'))
+                        ));
+                        if ($uploadMaxMB < 1) $uploadMaxMB = 2;
+                    @endphp
+
                     <div class="upload-area" onclick="document.getElementById('sqlFileInput').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <h4>Pilih File SQL</h4>
-                        <p>Format: .sql | Maksimal: 50MB</p>
+                        <p>Format: .sql | Maksimal: {{ $uploadMaxMB }} MB</p>
                         <div class="file-name" id="sqlFileName"></div>
                     </div>
                     <input type="file" name="sql_file" id="sqlFileInput" accept=".sql" style="display: none;" onchange="showSqlFileName(this)">
+
+                    <!-- File too big warning -->
+                    <div id="fileSizeWarning" style="display:none;margin-top:10px;padding:12px 16px;border-radius:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;font-size:13px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="fileSizeMsg"></span>
+                    </div>
 
                     <div style="height: 20px;"></div>
 
@@ -386,14 +507,18 @@
     <script>
         let connectionOk = false;
         let fileSelected = false;
+        let fileOk = false;
+        const maxUploadMB = {{ $uploadMaxMB }};
 
         function updateInstallBtn() {
-            document.getElementById('btnInstall').disabled = !(connectionOk && fileSelected);
+            document.getElementById('btnInstall').disabled = !(connectionOk && fileSelected && fileOk);
 
             // Update steps
-            document.getElementById('step1').className = connectionOk ? 'step done' : 'step active';
+            const serverOk = {{ ($serverChecks['needs_fix'] ?? false) ? 'false' : 'true' }};
+            document.getElementById('step0').className = serverOk ? 'step done' : 'step active';
+            document.getElementById('step1').className = connectionOk ? 'step done' : (serverOk ? 'step active' : 'step');
             document.getElementById('step2').className = connectionOk ? (fileSelected ? 'step done' : 'step active') : 'step';
-            document.getElementById('step3').className = (connectionOk && fileSelected) ? 'step active' : 'step';
+            document.getElementById('step3').className = (connectionOk && fileSelected && fileOk) ? 'step active' : 'step';
         }
 
         function showStatus(type, message) {
@@ -429,7 +554,11 @@
 
                 if (data.success) {
                     connectionOk = true;
-                    showStatus('success', data.message);
+                    let msg = data.message;
+                    if (data.max_allowed_packet_mb && data.max_allowed_packet_mb < 50) {
+                        msg += ' ⚠️ max_allowed_packet: ' + data.max_allowed_packet_mb + 'MB (akan dinaikkan otomatis saat install)';
+                    }
+                    showStatus('success', msg);
                 } else {
                     connectionOk = false;
                     showStatus('error', data.message);
@@ -452,7 +581,66 @@
                 el.textContent = '📄 ' + file.name + ' (' + sizeMB + ' MB)';
                 el.style.display = 'block';
                 fileSelected = true;
+
+                // Check file size against actual server limit
+                const warningDiv = document.getElementById('fileSizeWarning');
+                if (parseFloat(sizeMB) > maxUploadMB) {
+                    fileOk = false;
+                    document.getElementById('fileSizeMsg').innerHTML =
+                        'File <strong>' + sizeMB + ' MB</strong> melebihi batas upload server <strong>' + maxUploadMB + ' MB</strong>. ' +
+                        'Klik tombol <strong>"Perbaiki Otomatis"</strong> di bagian Kesiapan Server di atas, lalu <strong>refresh halaman</strong>, kemudian pilih file lagi.';
+                    warningDiv.style.display = 'block';
+                } else {
+                    fileOk = true;
+                    warningDiv.style.display = 'none';
+                }
                 updateInstallBtn();
+            }
+        }
+
+        // Fix server limits via AJAX
+        async function fixServerLimits() {
+            const btn = document.getElementById('btnFixLimits');
+            const resultDiv = document.getElementById('fixResult');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;"></div> Memperbaiki...';
+
+            try {
+                const response = await fetch('{{ url("/setup/fix-limits") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML =
+                        '<div class="status-box success" style="display:flex;">' +
+                        '<i class="fas fa-check-circle"></i>' +
+                        '<div><strong>Berhasil!</strong> File .user.ini telah dibuat. Halaman akan refresh dalam 3 detik untuk menerapkan perubahan...</div>' +
+                        '</div>';
+                    setTimeout(() => location.reload(), 3000);
+                } else {
+                    resultDiv.innerHTML =
+                        '<div class="status-box error" style="display:flex;flex-direction:column;align-items:flex-start;">' +
+                        '<div><i class="fas fa-times-circle"></i> ' + data.message + '</div>' +
+                        '<div style="font-size:12px;margin-top:8px;opacity:0.9;">Solusi manual: jalankan perintah ini di terminal server:<br>' +
+                        '<code style="display:block;margin-top:6px;padding:8px;background:rgba(0,0,0,0.3);border-radius:6px;word-break:break-all;">' +
+                        'echo "upload_max_filesize = 100M\\npost_max_size = 105M\\nmemory_limit = 512M\\nmax_execution_time = 600" | sudo tee /etc/php/$(php -r "echo PHP_MAJOR_VERSION.\\\".\\\".PHP_MINOR_VERSION;")/fpm/conf.d/99-sismik.ini && sudo systemctl restart php*-fpm' +
+                        '</code></div>' +
+                        '</div>';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-wrench"></i> Coba Lagi';
+                }
+            } catch (e) {
+                resultDiv.innerHTML =
+                    '<div class="status-box error" style="display:flex;">' +
+                    '<i class="fas fa-times-circle"></i> Error: ' + e.message +
+                    '</div>';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-wrench"></i> Coba Lagi';
             }
         }
 
@@ -460,6 +648,9 @@
         document.getElementById('setupForm').addEventListener('submit', function(e) {
             document.getElementById('processingOverlay').classList.add('active');
         });
+
+        // Initial step update
+        updateInstallBtn();
     </script>
 </body>
 </html>

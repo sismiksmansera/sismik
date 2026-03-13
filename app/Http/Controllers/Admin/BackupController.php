@@ -96,7 +96,19 @@ class BackupController extends Controller
      */
     public function restoreStorage(Request $request)
     {
-        set_time_limit(300);
+        set_time_limit(600);
+        ini_set('memory_limit', '512M');
+
+        // Check if PHP rejected the upload before Laravel received it
+        if (empty($_FILES) && empty($_POST) && $request->server('CONTENT_LENGTH') > 0) {
+            $attemptedMB = round($request->server('CONTENT_LENGTH') / 1048576, 1);
+            $maxUpload = ini_get('upload_max_filesize');
+            return back()->withErrors(['backup' =>
+                "File terlalu besar ({$attemptedMB} MB). Server hanya mengizinkan upload maksimal {$maxUpload}. " .
+                "Solusi: jalankan perintah berikut di terminal server, lalu refresh halaman:\n" .
+                "echo 'upload_max_filesize = 200M\npost_max_size = 210M' | sudo tee \$(php -r \"echo '/etc/php/' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '/fpm/conf.d/99-sismik.ini';\") && sudo systemctl restart php*-fpm"
+            ]);
+        }
 
         if (!$request->hasFile('storage_zip')) {
             return back()->withErrors(['backup' => 'Tidak ada file ZIP yang diupload.']);
@@ -119,8 +131,12 @@ class BackupController extends Controller
             return back()->withErrors(['backup' => 'Gagal membuka file ZIP. File mungkin rusak.']);
         }
 
+        // Dangerous file extensions to block
+        $blockedExtensions = ['php', 'phar', 'phtml', 'php3', 'php4', 'php5', 'php7', 'php8', 'phps', 'sh', 'bash', 'exe', 'bat', 'cmd'];
+
         $storagePath = storage_path('app/public');
         $extractedCount = 0;
+        $skippedCount = 0;
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $entryName = $zip->getNameIndex($i);
@@ -132,6 +148,14 @@ class BackupController extends Controller
 
             if (empty($relativePath) || $relativePath === '.gitignore') continue;
             if (strpos($relativePath, '..') !== false) continue;
+
+            // Block dangerous file types
+            $ext = strtolower(pathinfo($relativePath, PATHINFO_EXTENSION));
+            if (in_array($ext, $blockedExtensions)) {
+                $skippedCount++;
+                \Log::warning("Restore: blocked dangerous file: {$entryName}");
+                continue;
+            }
 
             $targetPath = $storagePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
 
@@ -150,13 +174,106 @@ class BackupController extends Controller
             $content = $zip->getFromIndex($i);
             if ($content !== false) {
                 file_put_contents($targetPath, $content);
+                @chmod($targetPath, 0644);
                 $extractedCount++;
             }
         }
 
         $zip->close();
 
-        return back()->with('success', "Restore berhasil! {$extractedCount} file telah dipulihkan.");
+        // Auto-create storage symlink if it doesn't exist
+        $symlinkResult = $this->ensureStorageLink();
+
+        // Fix directory permissions
+        $this->fixStoragePermissions($storagePath);
+
+        // Build success message
+        $message = "Restore berhasil! {$extractedCount} file telah dipulihkan.";
+        if ($skippedCount > 0) {
+            $message .= " ({$skippedCount} file berbahaya diblokir)";
+        }
+        if ($symlinkResult === 'created') {
+            $message .= " Storage link telah dibuat otomatis.";
+        } elseif ($symlinkResult === 'failed') {
+            $message .= " ⚠️ Storage link gagal dibuat. Jalankan: php artisan storage:link";
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * Ensure the public/storage symlink exists
+     */
+    private function ensureStorageLink(): string
+    {
+        $publicStoragePath = public_path('storage');
+        $targetPath = storage_path('app/public');
+
+        // Already exists and is valid
+        if (is_link($publicStoragePath) && readlink($publicStoragePath) === $targetPath) {
+            return 'exists';
+        }
+
+        // Exists but broken or is a real directory — remove it
+        if (file_exists($publicStoragePath) || is_link($publicStoragePath)) {
+            if (is_link($publicStoragePath)) {
+                @unlink($publicStoragePath);
+            } elseif (is_dir($publicStoragePath)) {
+                // It's a real directory (not a symlink). Don't delete, just warn.
+                return 'directory_exists';
+            }
+        }
+
+        // Create symlink
+        try {
+            if (@symlink($targetPath, $publicStoragePath)) {
+                return 'created';
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Failed to create storage symlink: " . $e->getMessage());
+        }
+
+        // Fallback: try via artisan command
+        try {
+            \Artisan::call('storage:link');
+            if (is_link($publicStoragePath)) {
+                return 'created';
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Artisan storage:link failed: " . $e->getMessage());
+        }
+
+        return 'failed';
+    }
+
+    /**
+     * Fix permissions on storage directory so web server can read files
+     */
+    private function fixStoragePermissions(string $storagePath): void
+    {
+        try {
+            // Set directory permissions
+            $dirs = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($storagePath, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::SELF_FIRST
+            );
+
+            foreach ($dirs as $item) {
+                if ($item->isDir()) {
+                    @chmod($item->getRealPath(), 0755);
+                } else {
+                    @chmod($item->getRealPath(), 0644);
+                }
+            }
+
+            // If running as root or has sudo, try to chown to www-data
+            $webUser = 'www-data';
+            if (function_exists('posix_getuid') && posix_getuid() === 0) {
+                @exec("chown -R {$webUser}:{$webUser} " . escapeshellarg($storagePath) . " 2>/dev/null");
+            }
+        } catch (\Exception $e) {
+            \Log::warning("fixStoragePermissions: " . $e->getMessage());
+        }
     }
 
     /**
